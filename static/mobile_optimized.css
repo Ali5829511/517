@@ -1,0 +1,73 @@
+/* تحسينات خاصة بالجوال */
+
+/* منع الـ zoom عند النقر على inputs */
+input, select, textarea {
+    font-size: 16px !important;
+}
+
+/* تحسين الأزرار للجوال */
+@media (max-width: 768px) {
+    button {
+        min-height: 48px !important;
+        font-size: 16px !important;
+        padding: 12px 20px !important;
+        margin: 8px 0 !important;
+    }
+    
+    /* تحسين الجداول */
+    table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        font-size: 14px !important;
+    }
+    
+    th, td {
+        padding: 12px 8px !important;
+        white-space: nowrap;
+    }
+    
+    /* تحسين البطاقات */
+    .stat-card {
+        margin: 10px 0 !important;
+        padding: 20px !important;
+    }
+    
+    .stat-card h3 {
+        font-size: 32px !important;
+    }
+    
+    .stat-card p {
+        font-size: 16px !important;
+    }
+    
+    /* تحسين الترويسة */
+    h1 {
+        font-size: 24px !important;
+    }
+    
+    h2 {
+        font-size: 20px !important;
+    }
+    
+    /* تحسين اللوحات */
+    .saudi-plate {
+        transform: scale(0.9);
+    }
+}
+
+/* تحسينات إضافية للشاشات الصغيرة جداً */
+@media (max-width: 480px) {
+    .stat-card h3 {
+        font-size: 28px !important;
+    }
+    
+    table {
+        font-size: 12px !important;
+    }
+    
+    th, td {
+        padding: 8px 4px !important;
+    }
+}
+

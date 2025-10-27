@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فرز الصور حسب نوع الموقف - نظام إدارة الإسكان الجامعي</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="plate_display.css">
+    <link rel="stylesheet" href="mobile_optimized.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2D5F3F;
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: #2D5F3F;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: #1a3d28;
+            transform: translateY(-2px);
+        }
+
+        /* قسم الإحصائيات */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #2D5F3F;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* قسم الرفع */
+        .upload-section {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .drop-zone {
+            border: 3px dashed #2D5F3F;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .drop-zone:hover {
+            background: #e8f5e9;
+            border-color: #1a3d28;
+        }
+
+        .drop-zone.dragover {
+            background: #c8e6c9;
+            border-color: #2D5F3F;
+            transform: scale(1.02);
+        }
+
+        .drop-zone .icon {
+            font-size: 60px;
+            color: #2D5F3F;
+            margin-bottom: 20px;
+        }
+
+        .drop-zone h3 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            background: #2D5F3F;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-btn:hover {
+            background: #1a3d28;
+            transform: translateY(-2px);
+        }
+
+        /* شريط التقدم */
+        .progress-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .progress-section.active {
+            display: block;
+        }
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #2D5F3F 0%, #4CAF50 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* قسم الفلاتر */
+        .filters-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .filters-section.active {
+            display: block;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .filter-btn:hover {
+            border-color: #2D5F3F;
+            background: #f8f9fa;
+        }
+
+        .filter-btn.active {
+            background: #2D5F3F;
+            color: white;
+            border-color: #2D5F3F;
+        }
+
+        .filter-btn .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .filter-btn .count {
+            display: block;
+            font-size: 20px;
+            margin-top: 5px;
+            color: #2D5F3F;
+        }
+
+        .filter-btn.active .count {
+            color: white;
+        }
+
+        /* أزرار الإجراءات */
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: #2D5F3F;
+            color: white;
+        }
+
+        .action-btn.primary:hover {
+            background: #1a3d28;
+        }
+
+        .action-btn.secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .action-btn.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* قسم النتائج */
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .category-group {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #2D5F3F;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2D5F3F;
+        }
+
+        .category-title .icon {
+            font-size: 32px;
+        }
+
+        .category-count {
+            background: #2D5F3F;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .image-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .image-info {
+            padding: 15px;
+        }
+
+        .image-filename {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .image-actions select {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .image-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background: #2D5F3F;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .image-actions button:hover {
+            background: #1a3d28;
+        }
+
+        .confidence-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(45, 95, 63, 0.9);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* رسائل فارغة */
+        .empty-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 18px;
+        }
+
+        .empty-message .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* تحسينات الجوال */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .back-btn {
+                position: static;
+                margin-bottom: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filters-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .actions-bar {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* CSS للطباعة */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .back-btn,
+            .upload-section,
+            .progress-section,
+            .filters-section,
+            .actions-bar,
+            .image-actions {
+                display: none !important;
+            }
+
+            .category-group {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #e0e0e0;
+            }
+
+            .image-card {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i>
+                العودة للوحة التحكم
+            </a>
+            <h1>
+                <i class="fas fa-layer-group"></i>
+                فرز الصور حسب نوع الموقف
+            </h1>
+            <p>تصنيف تلقائي للصور باستخدام الذكاء الاصطناعي</p>
+        </div>
+
+        <!-- الإحصائيات -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="icon">📊</div>
+                <div class="number" id="totalImages">0</div>
+                <div class="label">إجمالي الصور</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">✅</div>
+                <div class="number" id="processedImages">0</div>
+                <div class="label">تم التصنيف</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🅿️</div>
+                <div class="number" id="normalCount">0</div>
+                <div class="label">مواقف عادية</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">♿</div>
+                <div class="number" id="disabledCount">0</div>
+                <div class="label">مواقف معاقين</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🔒</div>
+                <div class="number" id="privateCount">0</div>
+                <div class="label">مواقف خاصة</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🏗️</div>
+                <div class="number" id="basementCount">0</div>
+                <div class="label">مواقف قبو</div>
+            </div>
+        </div>
+
+        <!-- قسم الرفع -->
+        <div class="upload-section" id="uploadSection">
+            <div class="drop-zone" id="dropZone">
+                <div class="icon">☁️</div>
+                <h3>اسحب الصور هنا أو انقر للاختيار</h3>
+                <p>يمكنك رفع عدة صور في نفس الوقت (JPG, PNG)</p>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-images"></i>
+                    اختيار الصور
+                </button>
+            </div>
+        </div>
+
+        <!-- شريط التقدم -->
+        <div class="progress-section" id="progressSection">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #2D5F3F;">
+                <i class="fas fa-spinner fa-spin"></i>
+                جاري تصنيف الصور باستخدام الذكاء الاصطناعي...
+            </h3>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+            <div class="progress-text" id="progressText">تصنيف 0 من 0 صورة</div>
+        </div>
+
+        <!-- الفلاتر -->
+        <div class="filters-section" id="filtersSection">
+            <div class="filters-grid">
+                <div class="filter-btn active" data-category="all" onclick="filterByCategory('all')">
+                    <span class="icon">📋</span>
+                    <span>الكل</span>
+                    <span class="count" id="filterAllCount">0</span>
+                </div>
+                <div class="filter-btn" data-category="normal" onclick="filterByCategory('normal')">
+                    <span class="icon">🅿️</span>
+                    <span>مواقف عادية</span>
+                    <span class="count" id="filterNormalCount">0</span>
+                </div>
+                <div class="filter-btn" data-category="disabled" onclick="filterByCategory('disabled')">
+                    <span class="icon">♿</span>
+                    <span>مواقف معاقين</span>
+                    <span class="count" id="filterDisabledCount">0</span>
+                </div>
+                <div class="filter-btn" data-category="private" onclick="filterByCategory('private')">
+                    <span class="icon">🔒</span>
+                    <span>مواقف خاصة</span>
+                    <span class="count" id="filterPrivateCount">0</span>
+                </div>
+                <div class="filter-btn" data-category="basement" onclick="filterByCategory('basement')">
+                    <span class="icon">🏗️</span>
+                    <span>مواقف قبو</span>
+                    <span class="count" id="filterBasementCount">0</span>
+                </div>
+                <div class="filter-btn" data-category="license" onclick="filterByCategory('license')">
+                    <span class="icon">📋</span>
+                    <span>تراخيص</span>
+                    <span class="count" id="filterLicenseCount">0</span>
+                </div>
+                <div class="filter-btn" data-category="qr" onclick="filterByCategory('qr')">
+                    <span class="icon">📱</span>
+                    <span>QR Code</span>
+                    <span class="count" id="filterQrCount">0</span>
+                </div>
+                <div class="filter-btn" data-category="violation" onclick="filterByCategory('violation')">
+                    <span class="icon">⚠️</span>
+                    <span>مخالفات</span>
+                    <span class="count" id="filterViolationCount">0</span>
+                </div>
+            </div>
+
+            <div class="actions-bar">
+                <button class="action-btn primary" onclick="exportResults()">
+                    <i class="fas fa-download"></i>
+                    تصدير النتائج
+                </button>
+                <button class="action-btn primary" onclick="printResults()">
+                    <i class="fas fa-print"></i>
+                    طباعة التقرير
+                </button>
+                <button class="action-btn secondary" onclick="resetAll()">
+                    <i class="fas fa-redo"></i>
+                    إعادة تعيين
+                </button>
+            </div>
+        </div>
+
+        <!-- النتائج -->
+        <div class="results-section" id="resultsSection">
+            <!-- سيتم إضافة المجموعات هنا ديناميكياً -->
+        </div>
+    </div>
+
+    <script>
+        let uploadedImages = [];
+        let currentFilter = 'all';
+        const categories = {
+            normal: { name: 'مواقف عادية', icon: '🅿️', count: 0 },
+            disabled: { name: 'مواقف معاقين', icon: '♿', count: 0 },
+            private: { name: 'مواقف خاصة', icon: '🔒', count: 0 },
+            basement: { name: 'مواقف قبو', icon: '🏗️', count: 0 },
+            license: { name: 'تراخيص', icon: '📋', count: 0 },
+            qr: { name: 'QR Code', icon: '📱', count: 0 },
+            violation: { name: 'مخالفات', icon: '⚠️', count: 0 },
+            other: { name: 'أخرى', icon: '📷', count: 0 }
+        };
+
+        // إعداد منطقة السحب والإفلات
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+            if (files.length > 0) {
+                processImages(files);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                processImages(files);
+            }
+        });
+
+        async function processImages(files) {
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('progressSection').classList.add('active');
+            
+            uploadedImages = [];
+            let processed = 0;
+            const total = files.length;
+
+            for (const file of files) {
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    const response = await fetch('/api/classify_parking', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+                    
+                    uploadedImages.push({
+                        file: file,
+                        url: URL.createObjectURL(file),
+                        filename: file.name,
+                        category: result.category || 'other',
+                        confidence: result.confidence || 0,
+                        details: result.details || {}
+                    });
+
+                } catch (error) {
+                    console.error('خطأ في تصنيف الصورة:', error);
+                    uploadedImages.push({
+                        file: file,
+                        url: URL.createObjectURL(file),
+                        filename: file.name,
+                        category: 'other',
+                        confidence: 0,
+                        details: {}
+                    });
+                }
+
+                processed++;
+                updateProgress(processed, total);
+            }
+
+            finishProcessing();
+        }
+
+        function updateProgress(current, total) {
+            const percentage = Math.round((current / total) * 100);
+            document.getElementById('progressBar').style.width = percentage + '%';
+            document.getElementById('progressBar').textContent = percentage + '%';
+            document.getElementById('progressText').textContent = `تصنيف ${current} من ${total} صورة`;
+        }
+
+        function finishProcessing() {
+            setTimeout(() => {
+                document.getElementById('progressSection').classList.remove('active');
+                document.getElementById('filtersSection').classList.add('active');
+                document.getElementById('resultsSection').classList.add('active');
+                updateStatistics();
+                displayResults();
+            }, 500);
+        }
+
+        function updateStatistics() {
+            // إعادة تعيين العدادات
+            Object.keys(categories).forEach(cat => categories[cat].count = 0);
+
+            // حساب العدادات
+            uploadedImages.forEach(img => {
+                if (categories[img.category]) {
+                    categories[img.category].count++;
+                }
+            });
+
+            // تحديث الإحصائيات
+            document.getElementById('totalImages').textContent = uploadedImages.length;
+            document.getElementById('processedImages').textContent = uploadedImages.length;
+            document.getElementById('normalCount').textContent = categories.normal.count;
+            document.getElementById('disabledCount').textContent = categories.disabled.count;
+            document.getElementById('privateCount').textContent = categories.private.count;
+            document.getElementById('basementCount').textContent = categories.basement.count;
+
+            // تحديث الفلاتر
+            document.getElementById('filterAllCount').textContent = uploadedImages.length;
+            document.getElementById('filterNormalCount').textContent = categories.normal.count;
+            document.getElementById('filterDisabledCount').textContent = categories.disabled.count;
+            document.getElementById('filterPrivateCount').textContent = categories.private.count;
+            document.getElementById('filterBasementCount').textContent = categories.basement.count;
+            document.getElementById('filterLicenseCount').textContent = categories.license.count;
+            document.getElementById('filterQrCount').textContent = categories.qr.count;
+            document.getElementById('filterViolationCount').textContent = categories.violation.count;
+        }
+
+        function displayResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.innerHTML = '';
+
+            const categoriesToShow = currentFilter === 'all' 
+                ? Object.keys(categories) 
+                : [currentFilter];
+
+            categoriesToShow.forEach(catKey => {
+                const images = uploadedImages.filter(img => img.category === catKey);
+                if (images.length === 0) return;
+
+                const category = categories[catKey];
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'category-group';
+                groupDiv.innerHTML = `
+                    <div class="category-header">
+                        <div class="category-title">
+                            <span class="icon">${category.icon}</span>
+                            <span>${category.name}</span>
+                        </div>
+                        <div class="category-count">${images.length}</div>
+                    </div>
+                    <div class="images-grid" id="grid-${catKey}"></div>
+                `;
+                resultsSection.appendChild(groupDiv);
+
+                const grid = document.getElementById(`grid-${catKey}`);
+                images.forEach((img, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card';
+                    card.innerHTML = `
+                        <div class="confidence-badge">${Math.round(img.confidence)}%</div>
+                        <img src="${img.url}" alt="${img.filename}">
+                        <div class="image-info">
+                            <div class="image-filename" title="${img.filename}">${img.filename}</div>
+                            <div class="image-actions">
+                                <select onchange="changeCategory(${uploadedImages.indexOf(img)}, this.value)">
+                                    <option value="normal" ${img.category === 'normal' ? 'selected' : ''}>موقف عادي</option>
+                                    <option value="disabled" ${img.category === 'disabled' ? 'selected' : ''}>موقف معاقين</option>
+                                    <option value="private" ${img.category === 'private' ? 'selected' : ''}>موقف خاص</option>
+                                    <option value="basement" ${img.category === 'basement' ? 'selected' : ''}>موقف قبو</option>
+                                    <option value="license" ${img.category === 'license' ? 'selected' : ''}>ترخيص</option>
+                                    <option value="qr" ${img.category === 'qr' ? 'selected' : ''}>QR Code</option>
+                                    <option value="violation" ${img.category === 'violation' ? 'selected' : ''}>مخالفة</option>
+                                    <option value="other" ${img.category === 'other' ? 'selected' : ''}>أخرى</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+
+            if (resultsSection.innerHTML === '') {
+                resultsSection.innerHTML = `
+                    <div class="empty-message">
+                        <div class="icon">📭</div>
+                        <div>لا توجد صور في هذا التصنيف</div>
+                    </div>
+                `;
+            }
+        }
+
+        function filterByCategory(category) {
+            currentFilter = category;
+            
+            // تحديث الأزرار
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-category="${category}"]`).classList.add('active');
+
+            displayResults();
+        }
+
+        function changeCategory(index, newCategory) {
+            uploadedImages[index].category = newCategory;
+            updateStatistics();
+            displayResults();
+        }
+
+        function exportResults() {
+            let csv = 'اسم الملف,التصنيف,نسبة الدقة\n';
+            uploadedImages.forEach(img => {
+                csv += `"${img.filename}","${categories[img.category].name}",${Math.round(img.confidence)}%\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `parking_classification_${new Date().getTime()}.csv`;
+            link.click();
+        }
+
+        function printResults() {
+            window.print();
+        }
+
+        function resetAll() {
+            if (confirm('هل أنت متأكد من إعادة تعيين جميع البيانات؟')) {
+                uploadedImages = [];
+                currentFilter = 'all';
+                document.getElementById('uploadSection').style.display = 'block';
+                document.getElementById('progressSection').classList.remove('active');
+                document.getElementById('filtersSection').classList.remove('active');
+                document.getElementById('resultsSection').classList.remove('active');
+                document.getElementById('fileInput').value = '';
+                updateStatistics();
+            }
+        }
+    </script>
+</body>
+</html>
+

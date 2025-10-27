@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة السكان - نظام إدارة إسكان أعضاء هيئة التدريس</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', Arial, sans-serif;
+            background: linear-gradient(120deg, #e0e7ef 0%, #f7fcff 100%);
+            direction: rtl;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #0f3d68 60%, #2e8bc0 100%);
+            color: #fff;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px #2e8bc055;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .university-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #0f3d68;
+            font-weight: bold;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #0f3d68;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            color: #0f3d68;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title i {
+            color: #2e8bc0;
+            font-size: 1.2em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #2e8bc0;
+            box-shadow: 0 0 10px rgba(46, 139, 192, 0.2);
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2e8bc0, #0f3d68);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 139, 192, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #0f3d68;
+            border: 2px solid #2e8bc0;
+        }
+
+        .btn-secondary:hover {
+            background: #2e8bc0;
+            color: #fff;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #f8fbff, #e0e7ef);
+            color: #0f3d68;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        .data-table tr:hover {
+            background: #f8fbff;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            margin: 0 2px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .btn-view {
+            background: #17a2b8;
+            color: #fff;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #0f3d68;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2e8bc0;
+            box-shadow: 0 0 10px rgba(46, 139, 192, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .data-table {
+                font-size: 0.9em;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <div class="university-logo">
+                    <i class="fas fa-university"></i>
+                </div>
+                <h1>إدارة السكان</h1>
+            </div>
+            <div class="nav-links">
+                <a href="main_portal.html" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    الرئيسية
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-users stat-icon" style="color: #28a745;"></i>
+                <div class="stat-number" id="totalResidents">342</div>
+                <div class="stat-label">إجمالي السكان</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-check stat-icon" style="color: #17a2b8;"></i>
+                <div class="stat-number" id="activeResidents">298</div>
+                <div class="stat-label">السكان النشطون</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-plus stat-icon" style="color: #ffc107;"></i>
+                <div class="stat-number" id="newRequests">15</div>
+                <div class="stat-label">طلبات جديدة</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-times stat-icon" style="color: #dc3545;"></i>
+                <div class="stat-number" id="expiredResidents">29</div>
+                <div class="stat-label">السكان المنتهون</div>
+            </div>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="main-content">
+            <div class="section-title">
+                <i class="fas fa-users"></i>
+                قائمة السكان
+            </div>
+
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="البحث بالاسم أو رقم الهوية أو المبنى...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <i class="fas fa-plus"></i>
+                        إضافة ساكن جديد
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportData()">
+                        <i class="fas fa-download"></i>
+                        تصدير البيانات
+                    </button>
+                </div>
+            </div>
+
+            <table class="data-table" id="residentsTable">
+                <thead>
+                    <tr>
+                        <th>رقم الهوية</th>
+                        <th>الاسم الكامل</th>
+                        <th>المبنى</th>
+                        <th>رقم الوحدة</th>
+                        <th>نوع الوحدة</th>
+                        <th>تاريخ الدخول</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="residentsTableBody">
+                    <tr>
+                        <td>1234567890</td>
+                        <td>د. أحمد محمد علي</td>
+                        <td>1</td>
+                        <td>101</td>
+                        <td>شقة</td>
+                        <td>2024/01/15</td>
+                        <td><span class="status-badge status-active">نشط</span></td>
+                        <td>
+                            <button class="action-btn btn-view" onclick="viewResident(1)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn btn-edit" onclick="editResident(1)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn btn-delete" onclick="deleteResident(1)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>9876543210</td>
+                        <td>د. فاطمة أحمد</td>
+                        <td>2</td>
+                        <td>205</td>
+                        <td>شقة</td>
+                        <td>2024/02/20</td>
+                        <td><span class="status-badge status-active">نشط</span></td>
+                        <td>
+                            <button class="action-btn btn-view" onclick="viewResident(2)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn btn-edit" onclick="editResident(2)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn btn-delete" onclick="deleteResident(2)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>5555555555</td>
+                        <td>د. محمد سعد</td>
+                        <td>3</td>
+                        <td>15</td>
+                        <td>فيلا</td>
+                        <td>2023/12/10</td>
+                        <td><span class="status-badge status-inactive">منتهي</span></td>
+                        <td>
+                            <button class="action-btn btn-view" onclick="viewResident(3)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn btn-edit" onclick="editResident(3)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn btn-delete" onclick="deleteResident(3)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة/تعديل ساكن -->
+    <div id="residentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">إضافة ساكن جديد</h2>
+            <form id="residentForm">
+                <div class="form-group">
+                    <label for="nationalId">رقم الهوية *</label>
+                    <input type="text" id="nationalId" required>
+                </div>
+                <div class="form-group">
+                    <label for="fullName">الاسم الكامل *</label>
+                    <input type="text" id="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="building">المبنى *</label>
+                    <select id="building" required>
+                        <option value="">اختر المبنى</option>
+                        <option value="1">المبنى 1</option>
+                        <option value="2">المبنى 2</option>
+                        <option value="3">المبنى 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="unitNumber">رقم الوحدة *</label>
+                    <input type="text" id="unitNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="unitType">نوع الوحدة *</label>
+                    <select id="unitType" required>
+                        <option value="">اختر نوع الوحدة</option>
+                        <option value="شقة">شقة</option>
+                        <option value="فيلا">فيلا</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="entryDate">تاريخ الدخول *</label>
+                    <input type="date" id="entryDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">رقم الهاتف</label>
+                    <input type="tel" id="phone">
+                </div>
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label for="notes">ملاحظات</label>
+                    <textarea id="notes" rows="3"></textarea>
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        حفظ
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // البيانات الحقيقية من قاعدة البيانات
+        let residentsData = [];
+
+        // تحميل البيانات من API
+        async function loadResidentsData() {
+            try {
+                const response = await fetch('/api/residents');
+                const result = await response.json();
+                if (result.success) {
+                    residentsData = result.data.map(r => ({
+                        id: r.id,
+                        nationalId: r.nationalId || r.national_id || 'غير محدد',
+                        fullName: r.name || r.full_name || 'غير محدد',
+                        building: r.building || r.building_number || 'غير محدد',
+                        unitNumber: r.unit || r.unit_number || 'غير محدد',
+                        unitType: r.unitType || r.unit_type || 'غير محدد',
+                        entryDate: r.moveInDate || r.move_in_date || r.entry_date || 'غير محدد',
+                        phone: r.phone || 'غير محدد',
+                        email: r.email || 'غير محدد',
+                        status: r.status || 'نشط',
+                        notes: r.notes || ''
+                    }));
+                    renderTable();
+                    updateStats();
+                } else {
+                    console.error('فشل تحميل البيانات:', result.error);
+                }
+            } catch (error) {
+                console.error('خطأ في تحميل البيانات:', error);
+            }
+        }
+
+        // تحديث الإحصائيات
+        function updateStats() {
+            const totalResidents = residentsData.length;
+            const activeResidents = residentsData.filter(r => r.status === 'نشط').length;
+            const expiredResidents = residentsData.filter(r => r.status === 'منتهي').length;
+            const newRequests = 0; // يمكن تحديثها لاحقاً
+            
+            // تحديث البطاقات
+            document.getElementById('totalResidents').textContent = totalResidents;
+            document.getElementById('activeResidents').textContent = activeResidents;
+            document.getElementById('expiredResidents').textContent = expiredResidents;
+            document.getElementById('newRequests').textContent = newRequests;
+            
+            console.log(`إجمالي السكان: ${totalResidents}, النشطين: ${activeResidents}, المنتهين: ${expiredResidents}`);
+        }
+
+        // تحميل البيانات عند تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', loadResidentsData);
+
+        // البحث
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredData = residentsData.filter(resident => 
+                resident.fullName.toLowerCase().includes(searchTerm) ||
+                resident.nationalId.includes(searchTerm) ||
+                resident.building.includes(searchTerm)
+            );
+            renderTable(filteredData);
+        });
+
+        // عرض الجدول
+        function renderTable(data = residentsData) {
+            const tbody = document.getElementById('residentsTableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach(resident => {
+                const row = document.createElement('tr');
+                const statusClass = resident.status === 'نشط' ? 'status-active' : 'status-inactive';
+                
+                row.innerHTML = `
+                    <td>${resident.nationalId}</td>
+                    <td>${resident.fullName}</td>
+                    <td>${resident.building}</td>
+                    <td>${resident.unitNumber}</td>
+                    <td>${resident.unitType}</td>
+                    <td>${resident.entryDate}</td>
+                    <td><span class="status-badge ${statusClass}">${resident.status}</span></td>
+                    <td>
+                        <button class="action-btn btn-view" onclick="viewResident(${resident.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn btn-edit" onclick="editResident(${resident.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn btn-delete" onclick="deleteResident(${resident.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // فتح نافذة الإضافة
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة ساكن جديد';
+            document.getElementById('residentForm').reset();
+            document.getElementById('residentModal').style.display = 'block';
+        }
+
+        // إغلاق النافذة
+        function closeModal() {
+            document.getElementById('residentModal').style.display = 'none';
+        }
+
+        // عرض تفاصيل الساكن
+        function viewResident(id) {
+            const resident = residentsData.find(r => r.id === id);
+            if (resident) {
+                alert(`تفاصيل الساكن:\nالاسم: ${resident.fullName}\nرقم الهوية: ${resident.nationalId}\nالمبنى: ${resident.building}\nالوحدة: ${resident.unitNumber}`);
+            }
+        }
+
+        // تعديل الساكن
+        function editResident(id) {
+            const resident = residentsData.find(r => r.id === id);
+            if (resident) {
+                document.getElementById('modalTitle').textContent = 'تعديل بيانات الساكن';
+                document.getElementById('nationalId').value = resident.nationalId;
+                document.getElementById('fullName').value = resident.fullName;
+                document.getElementById('building').value = resident.building;
+                document.getElementById('unitNumber').value = resident.unitNumber;
+                document.getElementById('unitType').value = resident.unitType;
+                document.getElementById('entryDate').value = resident.entryDate;
+                document.getElementById('phone').value = resident.phone;
+                document.getElementById('email').value = resident.email;
+                document.getElementById('notes').value = resident.notes;
+                document.getElementById('residentModal').style.display = 'block';
+            }
+        }
+
+        // حذف الساكن
+        function deleteResident(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الساكن؟')) {
+                residentsData = residentsData.filter(r => r.id !== id);
+                renderTable();
+                alert('تم حذف الساكن بنجاح');
+            }
+        }
+
+        // تصدير البيانات
+        function exportData() {
+            alert('سيتم تصدير البيانات قريباً');
+        }
+
+        // حفظ النموذج
+        document.getElementById('residentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                nationalId: document.getElementById('nationalId').value,
+                fullName: document.getElementById('fullName').value,
+                building: document.getElementById('building').value,
+                unitNumber: document.getElementById('unitNumber').value,
+                unitType: document.getElementById('unitType').value,
+                entryDate: document.getElementById('entryDate').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                notes: document.getElementById('notes').value,
+                status: 'نشط'
+            };
+            
+            // إضافة أو تحديث البيانات
+            const existingIndex = residentsData.findIndex(r => r.nationalId === formData.nationalId);
+            if (existingIndex >= 0) {
+                residentsData[existingIndex] = { ...residentsData[existingIndex], ...formData };
+            } else {
+                formData.id = Date.now();
+                residentsData.push(formData);
+            }
+            
+            renderTable();
+            closeModal();
+            alert('تم حفظ البيانات بنجاح');
+        });
+
+        // إغلاق النافذة عند النقر خارجها
+        window.onclick = function(event) {
+            const modal = document.getElementById('residentModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // تحميل البيانات عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير المخالفات - نظام إدارة الإسكان الجامعي</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="plate_display.css">
+    <link rel="stylesheet" href="mobile_optimized.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', Arial, sans-serif;
+            background: linear-gradient(135deg, #2D5F3F 0%, #1a3a28 100%);
+            direction: rtl;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #2D5F3F;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls input[type="text"] {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+            max-width: 300px;
+        }
+
+        .controls button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2D5F3F 0%, #1a3a28 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 95, 63, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .report-table th, .report-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .report-table th {
+            background: #f5f5f5;
+            color: #333;
+            font-weight: bold;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+
+        .report-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .plate-number {
+            font-weight: bold;
+            color: #2D5F3F;
+            font-size: 1.1em;
+        }
+
+        .violation-count {
+            font-weight: bold;
+            color: #D32F2F; /* أحمر للمخالفات */
+        }
+
+        .action-btn-small {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .action-btn-small:hover {
+            background: #1976D2;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        /* تصميم الصورة المصغرة */
+        .thumbnail {
+            width: 80px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .thumbnail:hover {
+            transform: scale(1.1);
+        }
+
+        /* تنسيق جدول صور غير السيارات */
+        .non-car-images {
+            margin-top: 40px;
+            border-top: 2px solid #2D5F3F;
+            padding-top: 20px;
+        }
+
+        .non-car-images h2 {
+            font-size: 24px;
+            color: #2D5F3F;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .non-car-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .non-car-table th, .non-car-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .non-car-table th {
+            background: #f5f5f5;
+            color: #333;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        /* تصميم عرض الصورة الكبيرة (Modal) */
+        .image-modal {
+            display: none; 
+            position: fixed; 
+            z-index: 10001; 
+            padding-top: 100px; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.9); 
+        }
+
+        .image-modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+
+        .image-modal-content, #caption {
+            animation-name: zoom;
+            animation-duration: 0.6s;
+        }
+
+        @keyframes zoom {
+            from {transform:scale(0)} 
+            to {transform:scale(1)}
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* تصميم الطباعة المحسّن */
+        @media print {
+            @page {
+                margin: 2cm 1.5cm;
+                size: A4 portrait;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                font-size: 11pt;
+                line-height: 1.4;
+            }
+
+            /* إخفاء العناصر غير الضرورية */
+            .header, .back-btn, .controls {
+                display: none;
+            }
+
+            .container {
+                max-width: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .main-card {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0;
+                background: white;
+            }
+
+            /* ترويسة الطباعة */
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 15px;
+                border-bottom: 3px solid #2D5F3F;
+            }
+
+            .print-header h1 {
+                color: #2D5F3F;
+                font-size: 24pt;
+                margin-bottom: 5px;
+            }
+
+            .print-header .subtitle {
+                color: #666;
+                font-size: 12pt;
+            }
+
+            .print-header .date {
+                color: #999;
+                font-size: 10pt;
+                margin-top: 5px;
+            }
+
+            /* تنسيق الجدول */
+            .report-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                font-size: 10pt;
+            }
+
+            .report-table th {
+                background: #2D5F3F !important;
+                color: white !important;
+                padding: 10px 8px;
+                font-weight: bold;
+                text-align: center;
+                border: 1px solid #000;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .report-table td {
+                padding: 8px;
+                border: 1px solid #333;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+            .report-table tbody tr:nth-child(even) {
+                background-color: #f5f5f5 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* تذييل الطباعة */
+            .print-footer {
+                display: block !important;
+                text-align: center;
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 2px solid #ddd;
+                font-size: 9pt;
+                color: #666;
+            }
+
+            /* تحسين الفواصل */
+            .report-table tbody tr {
+                page-break-inside: avoid;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">
+                <h1>
+                    <i class="fas fa-file-alt"></i>
+                    تقرير المخالفات
+                </h1>
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للوحة التحكم
+                </a>
+            </div>
+            <p class="subtitle">عرض شامل لجميع المخالفات المسجلة مع عدد تكرار المخالفة لكل لوحة.</p>
+        </div>
+
+        <div class="main-card">
+            <div class="controls">
+                <input type="text" id="plateSearch" placeholder="ابحث برقم اللوحة..." />
+                <button class="btn-primary" onclick="searchReport()">
+                    <i class="fas fa-search"></i> بحث
+                </button>
+                <button class="btn-info" onclick="exportToCSV()">
+                    <i class="fas fa-file-csv"></i> تصدير CSV
+                </button>
+                <button class="btn-info" onclick="window.print()">
+                    <i class="fas fa-print"></i> طباعة
+                </button>
+            </div>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>رقم اللوحة</th>
+                        <th>عدد تكرار المخالفة</th>
+                        <th>نوع السيارة</th>
+                        <th>تاريخ المخالفة</th>
+                        <th>صورة مصغرة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="reportBody">
+                    <!-- سيتم ملء البيانات بواسطة JavaScript -->
+                    <tr><td colspan="6" class="no-results" id="loadingMessage">جاري تحميل البيانات...</td></tr>
+                </tbody>
+            </table>
+
+            <!-- قسم صور غير السيارات (كما في الصورة المرفقة) -->
+            <div class="non-car-images">
+                <h2>
+                    <i class="fas fa-ban"></i>
+                    صور غير السيارات أو المتشابهة
+                </h2>
+                <table class="non-car-table">
+                    <thead>
+                        <tr>
+                            <th>صورة مصغرة</th>
+                            <th>نوع الصورة</th>
+                            <th>تاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nonCarBody">
+                        <!-- سيتم ملء البيانات بواسطة JavaScript -->
+                        <tr><td colspan="3" class="no-results" id="nonCarLoadingMessage">لا توجد صور غير مصنفة</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal لعرض الصورة الكبيرة -->
+    <div id="imageModal" class="image-modal" onclick="closeModal()">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <img class="image-modal-content" id="modalImage">
+    </div>
+
+    <script src="plate_formatter.js"></script>
+    <script>
+        const reportBody = document.getElementById('reportBody');
+        const nonCarBody = document.getElementById('nonCarBody');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const nonCarLoadingMessage = document.getElementById('nonCarLoadingMessage');
+        const plateSearchInput = document.getElementById('plateSearch');
+        let fullReportData = [];
+
+        // دالة تحميل التقرير
+        async function loadViolationReport() {
+            loadingMessage.textContent = 'جاري تحميل البيانات...';
+            nonCarLoadingMessage.textContent = 'جاري تحميل البيانات...';
+            
+            try {
+                const response = await fetch('/api/violation-report');
+                const result = await response.json();
+
+                if (result.success) {
+                    fullReportData = result.data;
+                    displayReport(fullReportData);
+                } else {
+                    reportBody.innerHTML = `<tr><td colspan="6" class="no-results">❌ فشل تحميل التقرير: ${result.error}</td></tr>`;
+                }
+            } catch (error) {
+                reportBody.innerHTML = `<tr><td colspan="6" class="no-results">❌ خطأ في الاتصال بالخادم: ${error.message}</td></tr>`;
+            }
+        }
+
+        // دالة عرض التقرير
+        function displayReport(data) {
+            reportBody.innerHTML = '';
+            nonCarBody.innerHTML = '';
+            
+            if (data.length === 0) {
+                reportBody.innerHTML = `<tr><td colspan="6" class="no-results">لا توجد مخالفات مسجلة حاليًا.</td></tr>`;
+                nonCarLoadingMessage.textContent = 'لا توجد صور غير مصنفة';
+                return;
+            }
+
+            // فصل صور السيارات عن صور غير السيارات
+            const carViolations = [];
+            const nonCarImages = [];
+
+            // في هذا التقرير، نفترض أن API /api/violation-report يعيد فقط المخالفات (pi.category = 'violation')
+            // لذلك، سنعرض جميع البيانات في جدول المخالفات.
+            // لتبسيط الأمر، سنفترض أن جميع البيانات التي تأتي من هذا الـ API هي مخالفات سيارات.
+            
+            // إذا كان هناك حاجة لـ "صور غير السيارات"، يجب أن يكون هناك API آخر أو حقل تصنيف مختلف في البيانات.
+            // حاليًا، سنركز على جدول المخالفات الرئيسي.
+
+            const displayedPlates = new Set();
+            
+            data.forEach(item => {
+                // عرض كل مخالفة على حدة
+                carViolations.push(item);
+            });
+
+            if (carViolations.length > 0) {
+                carViolations.forEach(item => {
+                    const row = reportBody.insertRow();
+                    
+                    // رقم اللوحة
+                    const plateCell = row.insertCell();
+                    plateCell.innerHTML = `<span class="plate-number">${item.plateNumber || 'غير محدد'}</span>`;
+                    
+                    // عدد تكرار المخالفة
+                    const countCell = row.insertCell();
+                    countCell.innerHTML = `<span class="violation-count">${item.violationCount || 1}</span>`;
+                    
+                    // نوع السيارة
+                    row.insertCell().textContent = item.vehicleType || 'غير محدد';
+                    
+                    // تاريخ المخالفة
+                    row.insertCell().textContent = new Date(item.processingDate).toLocaleDateString('ar-SA');
+                    
+                    // صورة مصغرة
+                    const thumbCell = row.insertCell();
+                    if (item.imageFilename) {
+                        thumbCell.innerHTML = `<img src="/processed_images/${item.imageFilename}" class="thumbnail" onclick="openModal('/processed_images/${item.imageFilename}')" />`;
+                    } else {
+                        thumbCell.textContent = 'لا توجد صورة';
+                    }
+                    
+                    // إجراءات
+                    const actionsCell = row.insertCell();
+                    actionsCell.innerHTML = `<button class="action-btn-small" onclick="takeAction(${item.id})">إجراء</button>`;
+                });
+            } else {
+                reportBody.innerHTML = `<tr><td colspan="6" class="no-results">لا توجد مخالفات مسجلة حاليًا.</td></tr>`;
+            }
+
+            // عرض صور غير السيارات (بشكل وهمي حالياً لعدم وجود API مخصص)
+            nonCarBody.innerHTML = `<tr><td colspan="3" class="no-results">لا توجد بيانات صور غير مصنفة حاليًا.</td></tr>`;
+        }
+
+        // دالة البحث
+        function searchReport() {
+            const searchTerm = plateSearchInput.value.trim().toLowerCase();
+            if (searchTerm === '') {
+                displayReport(fullReportData);
+                return;
+            }
+
+            const filteredData = fullReportData.filter(item => {
+                return item.plateNumber && item.plateNumber.toLowerCase().includes(searchTerm);
+            });
+
+            displayReport(filteredData);
+        }
+
+        // دالة تصدير CSV
+        function exportToCSV() {
+            const data = fullReportData;
+            if (data.length === 0) {
+                alert('لا توجد بيانات للتصدير.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            
+            // الرأس
+            const headers = [
+                "رقم اللوحة", 
+                "عدد تكرار المخالفة", 
+                "نوع السيارة", 
+                "لون السيارة", 
+                "تاريخ المخالفة", 
+                "اسم الساكن", 
+                "المبنى", 
+                "الوحدة", 
+                "ملاحظات"
+            ];
+            csvContent += headers.join(",") + "\n";
+
+            // البيانات
+            data.forEach(item => {
+                const row = [
+                    `"${item.plateNumber || ''}"`,
+                    item.violationCount || 1,
+                    `"${item.vehicleType || ''}"`,
+                    `"${item.vehicleColor || ''}"`,
+                    `"${new Date(item.processingDate).toLocaleDateString('ar-SA')}"`,
+                    `"${item.residentName || ''}"`,
+                    `"${item.buildingNumber || ''}"`,
+                    `"${item.unitNumber || ''}"`,
+                    `"${item.notes || ''}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "violations_report.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // دالة الإجراء (وهمية حالياً)
+        function takeAction(id) {
+            alert(`تنفيذ إجراء على المخالفة رقم: ${id}`);
+        }
+
+        // دوال عرض الصورة الكبيرة (Modal)
+        const modal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+
+        function openModal(imageSrc) {
+            modal.style.display = "block";
+            modalImage.src = imageSrc;
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+        }
+
+        // تحميل التقرير عند فتح الصفحة
+        window.onload = loadViolationReport;
+    </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+/* تنسيق عرض أرقام اللوحات السعودية */
+
+.saudi-plate {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+    border: 3px solid #000;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    direction: rtl;
+    min-width: 180px;
+    justify-content: space-between;
+}
+
+.saudi-plate-print {
+    display: inline-flex;
+    align-items: center;
+    background: white;
+    border: 2px solid #000;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: 'Courier New', monospace;
+    direction: rtl;
+    min-width: 140px;
+    justify-content: space-between;
+}
+
+.plate-letters {
+    display: flex;
+    gap: 4px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #000;
+    letter-spacing: 2px;
+}
+
+.plate-letters-print {
+    display: flex;
+    gap: 2px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #000;
+    letter-spacing: 1px;
+}
+
+.plate-numbers {
+    font-size: 20px;
+    font-weight: bold;
+    color: #000;
+    letter-spacing: 1px;
+    margin-right: 8px;
+}
+
+.plate-numbers-print {
+    font-size: 13px;
+    font-weight: bold;
+    color: #000;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+}
+
+.plate-separator {
+    width: 2px;
+    height: 24px;
+    background: #000;
+    margin: 0 6px;
+}
+
+.plate-separator-print {
+    width: 1px;
+    height: 16px;
+    background: #000;
+    margin: 0 4px;
+}
+
+/* تنسيق للطباعة */
+@media print {
+    .saudi-plate {
+        display: none !important;
+    }
+    
+    .saudi-plate-print {
+        display: inline-flex !important;
+    }
+}
+
+@media screen {
+    .saudi-plate-print {
+        display: none;
+    }
+}
+
+/* تنسيق للوحات في الجداول */
+table .saudi-plate {
+    min-width: 160px;
+    padding: 6px 10px;
+}
+
+table .plate-letters {
+    font-size: 16px;
+}
+
+table .plate-numbers {
+    font-size: 18px;
+}
+

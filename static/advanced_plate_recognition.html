@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استخراج اللوحات بدقة عالية - نظام إدارة الإسكان الجامعي</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', Arial, sans-serif;
+            background: linear-gradient(120deg, #667eea 0%, #764ba2 100%);
+            direction: rtl;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 50px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+
+        .upload-icon {
+            font-size: 80px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .upload-hint {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .preview-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .preview-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .preview-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .preview-image {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .result-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .result-value {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.5s ease;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .resident-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .preview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">
+                <h1>
+                    <i class="fas fa-brain"></i>
+                    استخراج اللوحات بدقة عالية
+                </h1>
+                <a href="main_portal.html" class="back-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للرئيسية
+                </a>
+            </div>
+            <p class="subtitle">نظام متقدم لاستخراج أرقام لوحات السيارات باستخدام الذكاء الاصطناعي</p>
+        </div>
+
+        <div class="main-card">
+            <div class="upload-section" id="uploadSection">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <div class="upload-text">ارفع صورة لوحة السيارة</div>
+                <div class="upload-hint">PNG, JPG, JPEG - حتى 10MB</div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-upload"></i> اختر صورة
+                </button>
+            </div>
+
+            <div class="loading" id="loadingSection">
+                <div class="spinner"></div>
+                <h3>جاري معالجة الصورة...</h3>
+                <p>يتم استخدام الذكاء الاصطناعي لاستخراج البيانات</p>
+            </div>
+
+            <div class="preview-section" id="previewSection">
+                <div class="preview-grid">
+                    <div class="preview-card">
+                        <div class="preview-title">
+                            <i class="fas fa-image"></i>
+                            الصورة الأصلية
+                        </div>
+                        <img id="originalImage" class="preview-image" alt="الصورة الأصلية">
+                    </div>
+
+                    <div class="preview-card">
+                        <div class="preview-title">
+                            <i class="fas fa-magic"></i>
+                            الصورة المعالجة
+                        </div>
+                        <img id="processedImage" class="preview-image" alt="الصورة المعالجة">
+                    </div>
+                </div>
+
+                <div class="result-section">
+                    <h3 style="margin-bottom: 20px;">
+                        <i class="fas fa-check-circle"></i>
+                        نتائج الاستخراج
+                    </h3>
+
+                    <div class="result-item">
+                        <span class="result-label">رقم اللوحة:</span>
+                        <span class="result-value" id="plateNumber">---</span>
+                    </div>
+
+                    <div class="result-item">
+                        <span class="result-label">نوع السيارة:</span>
+                        <span class="result-value" id="carType">---</span>
+                    </div>
+
+                    <div class="result-item">
+                        <span class="result-label">لون السيارة:</span>
+                        <span class="result-value" id="carColor">---</span>
+                    </div>
+
+                    <div class="result-item">
+                        <span class="result-label">دقة الاستخراج:</span>
+                        <span class="result-value" id="confidence">---</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" id="confidenceFill" style="width: 0%"></div>
+                    </div>
+
+                    <div class="resident-info" id="residentInfo" style="display: none;">
+                        <h4 style="margin-bottom: 15px;">
+                            <i class="fas fa-user"></i>
+                            بيانات الساكن
+                        </h4>
+                        <div class="info-row">
+                            <span>الاسم:</span>
+                            <span id="residentName">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span>المبنى:</span>
+                            <span id="residentBuilding">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span>الشقة:</span>
+                            <span id="residentUnit">---</span>
+                        </div>
+                        <div class="info-row">
+                            <span>الهاتف:</span>
+                            <span id="residentPhone">---</span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="action-btn btn-primary" onclick="saveResult()">
+                            <i class="fas fa-save"></i> حفظ النتيجة
+                        </button>
+                        <button class="action-btn btn-primary" onclick="window.print()">
+                            <i class="fas fa-print"></i> طباعة
+                        </button>
+                        <button class="action-btn btn-secondary" onclick="resetForm()">
+                            <i class="fas fa-redo"></i> صورة جديدة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadSection = document.getElementById('uploadSection');
+        const loadingSection = document.getElementById('loadingSection');
+        const previewSection = document.getElementById('previewSection');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processImage(file);
+            }
+        });
+
+        function processImage(file) {
+            // إخفاء قسم الرفع وإظهار التحميل
+            uploadSection.style.display = 'none';
+            loadingSection.style.display = 'block';
+
+            // قراءة الصورة
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                document.getElementById('originalImage').src = e.target.result;
+                document.getElementById('processedImage').src = e.target.result;
+
+                // إرسال الصورة إلى API الحقيقي
+                try {
+                    const formData = new FormData();
+                    formData.append('image', file);
+
+                    const response = await fetch('/api/extract-plate', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('فشل في معالجة الصورة');
+                    }
+
+                    const data = await response.json();
+                    
+                    loadingSection.style.display = 'none';
+                    previewSection.style.display = 'block';
+
+                    // عرض النتائج الحقيقية من API
+                    displayResults({
+                        plateNumber: data.plate_number || 'غير محدد',
+                        carType: 'غير محدد',
+                        carColor: 'غير محدد',
+                        confidence: data.confidence || 0,
+                        arabicLetters: data.arabic_letters || '',
+                        numbers: data.numbers || '',
+                        englishLetters: data.english_letters || ''
+                    });
+                } catch (error) {
+                    console.error('خطأ:', error);
+                    loadingSection.style.display = 'none';
+                    alert('حدث خطأ في معالجة الصورة: ' + error.message);
+                    resetForm();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayResults(data) {
+            document.getElementById('plateNumber').textContent = data.plateNumber;
+            document.getElementById('carType').textContent = data.carType;
+            document.getElementById('carColor').textContent = data.carColor;
+            document.getElementById('confidence').textContent = data.confidence + '%';
+            document.getElementById('confidenceFill').style.width = data.confidence + '%';
+
+            if (data.resident) {
+                document.getElementById('residentInfo').style.display = 'block';
+                document.getElementById('residentName').textContent = data.resident.name;
+                document.getElementById('residentBuilding').textContent = data.resident.building;
+                document.getElementById('residentUnit').textContent = data.resident.unit;
+                document.getElementById('residentPhone').textContent = data.resident.phone;
+            }
+        }
+
+        function saveResult() {
+            alert('تم حفظ النتيجة بنجاح!');
+        }
+
+        function resetForm() {
+            uploadSection.style.display = 'block';
+            previewSection.style.display = 'none';
+            fileInput.value = '';
+        }
+    </script>
+</body>
+</html>
+

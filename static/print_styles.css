@@ -1,0 +1,212 @@
+/* تنسيقات الطباعة الاحترافية */
+
+@media print {
+    /* إخفاء العناصر غير الضرورية */
+    nav, .no-print, button, input, select, textarea,
+    .sidebar, .header-actions, .action-buttons {
+        display: none !important;
+    }
+    
+    /* تنسيق الصفحة */
+    @page {
+        size: A4;
+        margin: 2cm 1.5cm;
+    }
+    
+    body {
+        font-family: 'Traditional Arabic', 'Arial', sans-serif;
+        font-size: 12pt;
+        line-height: 1.6;
+        color: #000;
+        background: white;
+    }
+    
+    /* ترويسة التقرير */
+    .print-header {
+        display: block !important;
+        text-align: center;
+        border-bottom: 3px solid #1e3a8a;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .print-header .logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 15px;
+    }
+    
+    .print-header h1 {
+        font-size: 18pt;
+        font-weight: bold;
+        color: #1e3a8a;
+        margin: 10px 0;
+    }
+    
+    .print-header .subtitle {
+        font-size: 14pt;
+        color: #4b5563;
+        margin: 5px 0;
+    }
+    
+    .print-header .report-info {
+        font-size: 11pt;
+        color: #6b7280;
+        margin-top: 15px;
+        text-align: right;
+    }
+    
+    /* محتوى التقرير */
+    .print-content {
+        display: block !important;
+    }
+    
+    .print-section {
+        margin-bottom: 25px;
+        page-break-inside: avoid;
+    }
+    
+    .print-section-title {
+        font-size: 14pt;
+        font-weight: bold;
+        color: #1e3a8a;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+    }
+    
+    /* الجداول */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 10pt;
+    }
+    
+    table thead {
+        background-color: #f3f4f6;
+        border-bottom: 2px solid #1e3a8a;
+    }
+    
+    table th {
+        padding: 10px 8px;
+        text-align: right;
+        font-weight: bold;
+        color: #1e3a8a;
+    }
+    
+    table td {
+        padding: 8px;
+        border-bottom: 1px solid #e5e7eb;
+        text-align: right;
+    }
+    
+    table tr:nth-child(even) {
+        background-color: #f9fafb;
+    }
+    
+    /* الإحصائيات */
+    .print-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .print-stat-box {
+        border: 1px solid #e5e7eb;
+        padding: 15px;
+        text-align: center;
+        background-color: #f9fafb;
+    }
+    
+    .print-stat-box .stat-value {
+        font-size: 20pt;
+        font-weight: bold;
+        color: #1e3a8a;
+        margin-bottom: 5px;
+    }
+    
+    .print-stat-box .stat-label {
+        font-size: 11pt;
+        color: #6b7280;
+    }
+    
+    /* التذييل */
+    .print-footer {
+        display: block !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 9pt;
+        color: #9ca3af;
+        border-top: 1px solid #e5e7eb;
+        padding-top: 10px;
+        margin-top: 30px;
+    }
+    
+    /* كسر الصفحة */
+    .page-break {
+        page-break-after: always;
+    }
+    
+    /* تنسيق خاص للبيانات */
+    .highlight {
+        background-color: #fef3c7 !important;
+        font-weight: bold;
+    }
+    
+    .status-active {
+        color: #059669;
+        font-weight: bold;
+    }
+    
+    .status-inactive {
+        color: #dc2626;
+    }
+    
+    .status-vacant {
+        color: #f59e0b;
+    }
+    
+    /* تنسيق الصور في التقرير */
+    .print-image {
+        max-width: 200px;
+        max-height: 150px;
+        margin: 10px auto;
+        display: block;
+        border: 1px solid #e5e7eb;
+    }
+    
+    /* ملاحظات */
+    .print-note {
+        background-color: #eff6ff;
+        border-right: 4px solid #3b82f6;
+        padding: 12px;
+        margin: 15px 0;
+        font-size: 10pt;
+    }
+    
+    /* التوقيع */
+    .print-signature {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .signature-line {
+        display: inline-block;
+        width: 200px;
+        border-bottom: 1px solid #000;
+        margin: 0 20px;
+    }
+}
+
+/* تنسيق عام للعرض على الشاشة */
+.print-header,
+.print-footer {
+    display: none;
+}
+

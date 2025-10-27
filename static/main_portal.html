@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البوابة الرئيسية - نظام إدارة الإسكان</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.6s ease;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.3em;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--card-color), var(--card-color-light));
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--card-color), var(--card-color-light));
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .card-features li {
+            color: #555;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .card-features li:last-child {
+            border-bottom: none;
+        }
+
+        .card-features i {
+            color: var(--card-color);
+            margin-left: 10px;
+        }
+
+        .card-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--card-color), var(--card-color-light));
+            color: white;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .card-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-badge.loading {
+            background: #ff9800;
+        }
+
+        .status-badge.error {
+            background: #f44336;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            animation: fadeIn 1s ease;
+        }
+
+        .footer p {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-row {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-building"></i> البوابة الرئيسية</h1>
+            <p>نظام إدارة الإسكان - جامعة الإمام محمد بن سعود الإسلامية</p>
+        </div>
+
+        <div class="cards-grid">
+            <!-- Interactive Dashboard Card -->
+            <a href="/interactive_dashboard.html" class="card" style="--card-color: #667eea; --card-color-light: #764ba2;">
+                <span class="status-badge" id="dashboardStatus">
+                    <i class="fas fa-spinner spinner"></i> جاري التحقق...
+                </span>
+                <div class="card-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h2>لوحة المعلومات التفاعلية</h2>
+                <p>عرض البيانات في الوقت الفعلي مع رسوم بيانية تفاعلية</p>
+                <ul class="card-features">
+                    <li><i class="fas fa-check"></i> إحصائيات مباشرة من قاعدة البيانات</li>
+                    <li><i class="fas fa-check"></i> رسوم بيانية تفاعلية (Chart.js)</li>
+                    <li><i class="fas fa-check"></i> جداول قابلة للبحث والفرز</li>
+                    <li><i class="fas fa-check"></i> عرض الملصقات والمواقف</li>
+                </ul>
+                <span class="card-button">فتح لوحة المعلومات <i class="fas fa-arrow-left"></i></span>
+            </a>
+
+            <!-- Comprehensive Reports Card -->
+            <a href="/comprehensive_reports.html" class="card" style="--card-color: #f093fb; --card-color-light: #f5576c;">
+                <span class="status-badge" id="reportsStatus">
+                    <i class="fas fa-spinner spinner"></i> جاري التحقق...
+                </span>
+                <div class="card-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h2>التقارير الشاملة</h2>
+                <p>تقارير تفصيلية عن جميع جوانب النظام</p>
+                <ul class="card-features">
+                    <li><i class="fas fa-check"></i> تقرير السكان والإشغال</li>
+                    <li><i class="fas fa-check"></i> تقرير المخالفات المرورية</li>
+                    <li><i class="fas fa-check"></i> تقرير الأمن والوقائع</li>
+                    <li><i class="fas fa-check"></i> تقرير المواقف والملصقات</li>
+                </ul>
+                <span class="card-button">عرض التقارير <i class="fas fa-arrow-left"></i></span>
+            </a>
+
+            <!-- Main System Card -->
+            <a href="/index.html" class="card" style="--card-color: #4facfe; --card-color-light: #00f2fe;">
+                <span class="status-badge" id="systemStatus">
+                    <i class="fas fa-spinner spinner"></i> جاري التحقق...
+                </span>
+                <div class="card-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                <h2>النظام الرئيسي</h2>
+                <p>نظام الإدارة الكامل لجميع العمليات</p>
+                <ul class="card-features">
+                    <li><i class="fas fa-check"></i> إدارة السكان والوحدات</li>
+                    <li><i class="fas fa-check"></i> إدارة الملصقات والمواقف</li>
+                    <li><i class="fas fa-check"></i> إدارة المخالفات والشكاوى</li>
+                    <li><i class="fas fa-check"></i> نظام البحث المتقدم</li>
+                </ul>
+                <span class="card-button">دخول النظام <i class="fas fa-arrow-left"></i></span>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p><i class="fas fa-database"></i> جميع الأنظمة متصلة بقاعدة البيانات</p>
+            <div class="stats-row" id="statsRow">
+                <div class="stat-item">
+                    <span class="stat-number"><i class="fas fa-spinner spinner"></i></span>
+                    <span class="stat-label">إجمالي السكان</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number"><i class="fas fa-spinner spinner"></i></span>
+                    <span class="stat-label">المباني النشطة</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number"><i class="fas fa-spinner spinner"></i></span>
+                    <span class="stat-label">الملصقات النشطة</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number"><i class="fas fa-spinner spinner"></i></span>
+                    <span class="stat-label">إجمالي المواقف</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check database connection and load statistics
+        async function checkDatabaseConnection() {
+            try {
+                const [residentsRes, buildingsRes, stickersRes, parkingRes] = await Promise.all([
+                    fetch('/api/residents'),
+                    fetch('/api/buildings'),
+                    fetch('/api/stickers'),
+                    fetch('/api/parking')
+                ]);
+
+                // Check if all APIs are working
+                if (residentsRes.ok && buildingsRes.ok && stickersRes.ok && parkingRes.ok) {
+                    // Update status badges
+                    updateStatusBadge('dashboardStatus', true);
+                    updateStatusBadge('reportsStatus', true);
+                    updateStatusBadge('systemStatus', true);
+
+                    // Load data
+                    const residentsData = await residentsRes.json();
+                    const buildingsData = await buildingsRes.json();
+                    const stickersData = await stickersRes.json();
+                    const parkingData = await parkingRes.json();
+
+                    const residents = residentsData.data || residentsData;
+                    const buildings = buildingsData.data || buildingsData;
+                    const stickers = stickersData.data || stickersData;
+                    const parking = parkingData.data || parkingData;
+
+                    // Update statistics
+                    const statsRow = document.getElementById('statsRow');
+                    statsRow.innerHTML = `
+                        <div class="stat-item">
+                            <span class="stat-number">${residents.length.toLocaleString('ar-SA')}</span>
+                            <span class="stat-label">إجمالي السكان</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">${buildings.length.toLocaleString('ar-SA')}</span>
+                            <span class="stat-label">المباني النشطة</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">${stickers.length.toLocaleString('ar-SA')}</span>
+                            <span class="stat-label">الملصقات النشطة</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">${parking.length.toLocaleString('ar-SA')}</span>
+                            <span class="stat-label">إجمالي المواقف</span>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('فشل الاتصال بقاعدة البيانات');
+                }
+            } catch (error) {
+                console.error('خطأ في الاتصال بقاعدة البيانات:', error);
+                updateStatusBadge('dashboardStatus', false);
+                updateStatusBadge('reportsStatus', false);
+                updateStatusBadge('systemStatus', false);
+
+                const statsRow = document.getElementById('statsRow');
+                statsRow.innerHTML = `
+                    <div class="stat-item">
+                        <span class="stat-number" style="color: #f44336;"><i class="fas fa-exclamation-triangle"></i></span>
+                        <span class="stat-label">خطأ في الاتصال بقاعدة البيانات</span>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStatusBadge(id, isConnected) {
+            const badge = document.getElementById(id);
+            if (isConnected) {
+                badge.className = 'status-badge';
+                badge.innerHTML = '<i class="fas fa-check-circle"></i> متصل';
+            } else {
+                badge.className = 'status-badge error';
+                badge.innerHTML = '<i class="fas fa-times-circle"></i> غير متصل';
+            }
+        }
+
+        // Load stats on page load
+        document.addEventListener('DOMContentLoaded', checkDatabaseConnection);
+    </script>
+</body>
+</html>
+

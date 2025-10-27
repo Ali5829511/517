@@ -1,13 +1,17 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
 import os
 from openai import OpenAI
 from PIL import Image
 import io
 import base64
 import json
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
 from database_api import get_all_residents, get_all_stickers, get_all_parking_spots, get_statistics, search_by_plate, save_processed_image, get_processed_images, search_processed_images, get_processed_images_statistics, get_violation_report, get_all_buildings
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
 
 # تكوين OpenAI
 client = OpenAI()
@@ -25,13 +29,176 @@ database = {
     'processed_images': []
 }
 
+# قاعدة بيانات المستخدمين (في الإنتاج، استخدم قاعدة بيانات حقيقية)
+users_db = {
+    'admin': {
+        'password': generate_password_hash('Admin@2025'),
+        'role': 'admin',
+        'name': 'مدير النظام'
+    }
+}
+
+# Decorator للتحقق من تسجيل الدخول
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'يجب تسجيل الدخول أولاً', 'redirect': '/login.html'}), 401
+            return redirect('/login.html')
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Decorator للتحقق من صلاحيات المدير
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return jsonify({'error': 'يجب تسجيل الدخول أولاً'}), 401
+        if session.get('role') != 'admin':
+            return jsonify({'error': 'غير مصرح لك بالوصول'}), 403
+        return f(*args, **kwargs)
+    return decorated_function
+
 @app.route('/')
+@login_required
 def index():
     return send_from_directory('static', 'index.html')
 
 @app.route('/<path:path>')
 def serve_static(path):
+    # السماح بالوصول لصفحة تسجيل الدخول بدون مصادقة
+    if path == 'login.html':
+        return send_from_directory('static', path)
+    # حماية باقي الصفحات
+    if 'user_id' not in session:
+        return redirect('/login.html')
     return send_from_directory('static', path)
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """تسجيل الدخول"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+        remember = data.get('remember', False)
+        
+        if not username or not password:
+            return jsonify({'error': 'يرجى إدخال اسم المستخدم وكلمة المرور'}), 400
+        
+        # التحقق من المستخدم
+        user = users_db.get(username)
+        if not user or not check_password_hash(user['password'], password):
+            return jsonify({'error': 'اسم المستخدم أو كلمة المرور غير صحيحة'}), 401
+        
+        # إنشاء جلسة
+        session['user_id'] = username
+        session['role'] = user['role']
+        session['name'] = user['name']
+        
+        if remember:
+            session.permanent = True
+        
+        return jsonify({
+            'success': True,
+            'message': 'تم تسجيل الدخول بنجاح',
+            'user': {
+                'username': username,
+                'name': user['name'],
+                'role': user['role']
+            },
+            'redirect': '/index.html'
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    """تسجيل الخروج"""
+    session.clear()
+    return jsonify({'success': True, 'message': 'تم تسجيل الخروج بنجاح'})
+
+@app.route('/api/current-user', methods=['GET'])
+@login_required
+def current_user():
+    """الحصول على معلومات المستخدم الحالي"""
+    return jsonify({
+        'username': session.get('user_id'),
+        'name': session.get('name'),
+        'role': session.get('role')
+    })
+
+@app.route('/api/users', methods=['GET'])
+@admin_required
+def get_users():
+    """الحصول على قائمة المستخدمين (للمدير فقط)"""
+    users_list = []
+    for username, user in users_db.items():
+        users_list.append({
+            'username': username,
+            'name': user['name'],
+            'role': user['role']
+        })
+    return jsonify(users_list)
+
+@app.route('/api/users', methods=['POST'])
+@admin_required
+def create_user():
+    """إنشاء مستخدم جديد (للمدير فقط)"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        password = data.get('password')
+        name = data.get('name')
+        role = data.get('role', 'user')
+        
+        if not username or not password or not name:
+            return jsonify({'error': 'جميع الحقول مطلوبة'}), 400
+        
+        if username in users_db:
+            return jsonify({'error': 'اسم المستخدم موجود بالفعل'}), 400
+        
+        users_db[username] = {
+            'password': generate_password_hash(password),
+            'name': name,
+            'role': role
+        }
+        
+        return jsonify({
+            'success': True,
+            'message': 'تم إنشاء المستخدم بنجاح',
+            'user': {
+                'username': username,
+                'name': name,
+                'role': role
+            }
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/users/<username>', methods=['DELETE'])
+@admin_required
+def delete_user(username):
+    """حذف مستخدم (للمدير فقط)"""
+    try:
+        if username == 'admin':
+            return jsonify({'error': 'لا يمكن حذف المدير الرئيسي'}), 400
+        
+        if username not in users_db:
+            return jsonify({'error': 'المستخدم غير موجود'}), 404
+        
+        del users_db[username]
+        
+        return jsonify({
+            'success': True,
+            'message': 'تم حذف المستخدم بنجاح'
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/extract-plate', methods=['POST'])
 def extract_plate():

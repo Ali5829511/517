@@ -1,0 +1,451 @@
+/* قالب الطباعة الرسمي - جامعة الإمام محمد بن سعود الإسلامية */
+/* Official Print Template - Imam Mohammad Ibn Saud Islamic University */
+
+@media print {
+    /* إعدادات الصفحة */
+    @page {
+        size: A4;
+        margin: 0;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* إخفاء عناصر الواجهة */
+    .no-print,
+    nav,
+    .sidebar,
+    .navbar,
+    header:not(.print-header),
+    footer:not(.print-footer),
+    button,
+    .btn,
+    .action-buttons,
+    .filters,
+    .search-box,
+    .upload-section,
+    .progress-bar,
+    .statistics,
+    .controls,
+    input[type="file"],
+    select,
+    textarea {
+        display: none !important;
+    }
+
+    /* الرأسية الرسمية */
+    .print-header {
+        display: block !important;
+        position: relative;
+        width: 100%;
+        height: 180px;
+        background: white;
+        border-bottom: 3px solid #C9A961;
+        page-break-after: avoid;
+        margin-bottom: 20px;
+    }
+
+    /* الشريط الذهبي العلوي */
+    .print-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 15px;
+        background: linear-gradient(90deg, #C9A961 0%, #E8D4A0 50%, #C9A961 100%);
+        clip-path: polygon(0 0, 100% 0, 99% 100%, 1% 100%);
+    }
+
+    /* محتوى الرأسية */
+    .print-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 25px 40px 15px;
+        direction: rtl;
+    }
+
+    /* القسم الأيمن - النصوص العربية */
+    .print-header-right {
+        text-align: right;
+        flex: 1;
+    }
+
+    .print-header-right .kingdom {
+        font-size: 16px;
+        font-weight: bold;
+        color: #1a472a;
+        margin-bottom: 5px;
+    }
+
+    .print-header-right .ministry {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 3px;
+    }
+
+    .print-header-right .university {
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 3px;
+    }
+
+    .print-header-right .department {
+        font-size: 13px;
+        font-weight: bold;
+        color: #1a472a;
+        margin-top: 5px;
+    }
+
+    /* القسم الأوسط - الشعارات */
+    .print-header-center {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        padding: 0 20px;
+    }
+
+    .print-header-center img {
+        height: 80px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    .print-logo-university {
+        height: 90px !important;
+    }
+
+    /* القسم الأيسر - النصوص الإنجليزية */
+    .print-header-left {
+        text-align: left;
+        flex: 1;
+    }
+
+    .print-header-left .kingdom-en {
+        font-size: 14px;
+        font-weight: bold;
+        color: #1a472a;
+        margin-bottom: 5px;
+    }
+
+    .print-header-left .ministry-en {
+        font-size: 12px;
+        color: #333;
+        margin-bottom: 3px;
+    }
+
+    .print-header-left .university-en {
+        font-size: 11px;
+        color: #333;
+        margin-bottom: 3px;
+    }
+
+    .print-header-left .department-en {
+        font-size: 11px;
+        font-weight: bold;
+        color: #1a472a;
+        margin-top: 5px;
+    }
+
+    /* البسملة */
+    .print-basmala {
+        text-align: center;
+        font-size: 18px;
+        color: #1a472a;
+        margin: 10px 0;
+        font-family: 'Traditional Arabic', 'Arabic Typesetting', serif;
+    }
+
+    /* منطقة المحتوى */
+    .print-content {
+        padding: 20px 40px;
+        min-height: 500px;
+        page-break-inside: avoid;
+    }
+
+    /* عنوان التقرير */
+    .print-title {
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        color: #1a472a;
+        margin: 20px 0;
+        padding: 10px;
+        border-bottom: 2px solid #C9A961;
+    }
+
+    /* معلومات التقرير */
+    .print-info {
+        display: flex;
+        justify-content: space-between;
+        margin: 15px 0;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 5px;
+        direction: rtl;
+    }
+
+    .print-info-item {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .print-info-label {
+        font-weight: bold;
+        color: #333;
+    }
+
+    /* الجداول */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        font-size: 11px;
+    }
+
+    table thead {
+        background: #1a472a;
+        color: white;
+    }
+
+    table th {
+        padding: 10px;
+        text-align: right;
+        font-weight: bold;
+        border: 1px solid #ddd;
+    }
+
+    table td {
+        padding: 8px;
+        text-align: right;
+        border: 1px solid #ddd;
+    }
+
+    table tbody tr:nth-child(even) {
+        background: #f9f9f9;
+    }
+
+    /* الصور في التقارير */
+    .print-image {
+        max-width: 300px;
+        max-height: 300px;
+        object-fit: contain;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        margin: 10px auto;
+        display: block;
+    }
+
+    /* بطاقة البيانات */
+    .print-data-card {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 15px 0;
+        background: #f9f9f9;
+        page-break-inside: avoid;
+    }
+
+    .print-data-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .print-data-row:last-child {
+        border-bottom: none;
+    }
+
+    .print-data-label {
+        font-weight: bold;
+        color: #1a472a;
+        min-width: 150px;
+    }
+
+    .print-data-value {
+        color: #333;
+        flex: 1;
+        text-align: left;
+    }
+
+    /* التذييل الرسمي */
+    .print-footer {
+        display: block !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: white;
+        border-top: 3px solid #C9A961;
+        page-break-after: avoid;
+    }
+
+    /* الشريط الذهبي السفلي */
+    .print-footer::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 15px;
+        background: linear-gradient(90deg, #C9A961 0%, #E8D4A0 50%, #C9A961 100%);
+        clip-path: polygon(1% 0, 99% 0, 100% 100%, 0 100%);
+    }
+
+    /* محتوى التذييل */
+    .print-footer-content {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 15px 40px;
+        direction: rtl;
+        gap: 20px;
+    }
+
+    .print-footer-item {
+        font-size: 10px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .print-footer-item::before {
+        content: '•';
+        color: #C9A961;
+        font-size: 14px;
+    }
+
+    .print-footer-item:first-child::before {
+        display: none;
+    }
+
+    /* الإحصائيات في التقارير */
+    .print-statistics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .print-stat-box {
+        border: 2px solid #C9A961;
+        border-radius: 5px;
+        padding: 15px;
+        text-align: center;
+        background: #f9f9f9;
+    }
+
+    .print-stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #1a472a;
+        margin-bottom: 5px;
+    }
+
+    .print-stat-label {
+        font-size: 12px;
+        color: #666;
+    }
+
+    /* فواصل الصفحات */
+    .page-break {
+        page-break-after: always;
+    }
+
+    .page-break-avoid {
+        page-break-inside: avoid;
+    }
+
+    /* تنسيق خاص للصور المتعددة */
+    .print-images-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .print-image-item {
+        text-align: center;
+        page-break-inside: avoid;
+    }
+
+    .print-image-item img {
+        max-width: 100%;
+        height: auto;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .print-image-caption {
+        font-size: 10px;
+        color: #666;
+        margin-top: 5px;
+    }
+
+    /* توقيع وختم */
+    .print-signature-section {
+        margin-top: 50px;
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 0;
+    }
+
+    .print-signature-box {
+        text-align: center;
+        min-width: 200px;
+    }
+
+    .print-signature-line {
+        border-top: 1px solid #333;
+        margin: 40px 0 10px;
+        padding-top: 10px;
+    }
+
+    .print-signature-label {
+        font-size: 12px;
+        color: #666;
+    }
+
+    /* رقم الصفحة */
+    .print-page-number {
+        position: fixed;
+        bottom: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: #999;
+    }
+
+    .print-page-number::before {
+        content: "صفحة ";
+    }
+
+    .print-page-number::after {
+        content: counter(page);
+    }
+}
+
+/* تنسيقات إضافية للشاشة */
+@media screen {
+    .print-header,
+    .print-footer {
+        display: none;
+    }
+}
+

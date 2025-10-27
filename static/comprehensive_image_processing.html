@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معالجة الصور الشاملة - نظام إدارة الإسكان الجامعي</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="plate_display.css">
+    <link rel="stylesheet" href="mobile_optimized.css">
+    <link rel="stylesheet" href="official_print_template.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', Arial, sans-serif;
+            background: linear-gradient(135deg, #D4E9F2 0%, #A8D5E2 100%);
+            direction: rtl;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #5A8CA3;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #7BA7BC 0%, #5A8CA3 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(90, 140, 163, 0.4);
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #7BA7BC 0%, #5A8CA3 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(45, 95, 63, 0.3);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .upload-section {
+            border: 3px dashed #2D5F3F;
+            border-radius: 15px;
+            padding: 50px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(45, 95, 63, 0.05) 0%, rgba(26, 58, 40, 0.05) 100%);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: linear-gradient(135deg, rgba(45, 95, 63, 0.1) 0%, rgba(26, 58, 40, 0.1) 100%);
+            border-color: #1a3a28;
+        }
+
+        .upload-icon {
+            font-size: 80px;
+            color: #2D5F3F;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .upload-hint {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #2D5F3F 0%, #1a3a28 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(45, 95, 63, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(45, 95, 63, 0.4);
+        }
+
+        .progress-section {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .progress-section h3 {
+            color: #2D5F3F;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar-container {
+            background: #e0e0e0;
+            border-radius: 25px;
+            height: 50px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #2D5F3F 0%, #1a3a28 100%);
+            height: 100%;
+            width: 0%;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            transition: width 0.3s ease;
+        }
+
+        #progressText {
+            color: #666;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .filter-section {
+            display: none;
+            margin-bottom: 30px;
+        }
+
+        .filter-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2D5F3F;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-option {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-option:hover {
+            border-color: #2D5F3F;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 95, 63, 0.2);
+        }
+
+        .filter-option.active {
+            background: linear-gradient(135deg, #2D5F3F 0%, #1a3a28 100%);
+            color: white;
+            border-color: #2D5F3F;
+        }
+
+        .filter-option i {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2D5F3F 0%, #1a3a28 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 95, 63, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .result-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .result-content {
+            padding: 20px;
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2D5F3F;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .result-details {
+            margin-bottom: 15px;
+        }
+
+        .result-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .result-detail:last-child {
+            border-bottom: none;
+        }
+
+        .result-detail span:first-child {
+            color: #666;
+            font-weight: bold;
+        }
+
+        .result-detail span:last-child {
+            color: #333;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+        }
+
+        .badge-normal {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .badge-disabled {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .badge-violation {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        .badge-other {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+        }
+
+        .resident-info {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-right: 4px solid #2D5F3F;
+        }
+
+        .resident-info-title {
+            font-weight: bold;
+            color: #2D5F3F;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* تنسيقات الطباعة الاحترافية */
+        @media print {
+            /* إخفاء جميع عناصر الواجهة */
+            body {
+                background: white !important;
+                padding: 0 !important;
+            }
+
+            .header,
+            .back-btn,
+            .subtitle,
+            .stats-grid,
+            .filter-section,
+            .action-buttons,
+            .upload-section,
+            .progress-section,
+            .main-card {
+                display: none !important;
+            }
+
+            /* إظهار قسم النتائج فقط */
+            .results-section {
+                display: block !important;
+                background: white !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+
+            /* رأسية الطباعة */
+            .print-header {
+                display: block !important;
+                text-align: center;
+                padding: 20px;
+                border-bottom: 3px solid #2D5F3F;
+                margin-bottom: 30px;
+            }
+
+            .print-header h1 {
+                font-size: 24px;
+                color: #2D5F3F;
+                margin-bottom: 10px;
+            }
+
+            .print-header .print-date {
+                font-size: 14px;
+                color: #666;
+            }
+
+            /* تنسيق البطاقات للطباعة */
+            .results-grid {
+                display: block !important;
+                grid-template-columns: none !important;
+            }
+
+            .result-card {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 40px;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                overflow: hidden;
+                box-shadow: none !important;
+            }
+
+            .result-card:hover {
+                transform: none !important;
+            }
+
+            /* الصورة في الطباعة */
+            .result-image {
+                width: 100%;
+                max-height: 300px;
+                object-fit: contain;
+                background: #f5f5f5;
+                padding: 10px;
+            }
+
+            /* المحتوى */
+            .result-content {
+                padding: 20px;
+            }
+
+            .result-title {
+                font-size: 20px;
+                color: #2D5F3F;
+                border-bottom: 2px solid #2D5F3F;
+                padding-bottom: 10px;
+                margin-bottom: 15px;
+            }
+
+            /* جدول البيانات */
+            .result-details {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .result-detail {
+                display: table-row;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .result-detail span {
+                display: table-cell;
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+
+            .result-detail span:first-child {
+                font-weight: bold;
+                color: #333;
+                width: 40%;
+                background: #f9f9f9;
+            }
+
+            .result-detail span:last-child {
+                color: #555;
+                width: 60%;
+            }
+
+            /* الشارات */
+            .category-badge {
+                padding: 6px 15px;
+                font-size: 12px;
+                border-radius: 15px;
+            }
+
+            /* معلومات الساكن */
+            .resident-info {
+                background: #f0f0f0 !important;
+                border: 1px solid #2D5F3F;
+                padding: 15px;
+                margin-top: 15px;
+            }
+
+            .resident-info-title {
+                color: #2D5F3F;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+
+            /* التذييل */
+            .print-footer {
+                display: block !important;
+                text-align: center;
+                padding: 20px;
+                border-top: 2px solid #e0e0e0;
+                margin-top: 30px;
+                font-size: 12px;
+                color: #666;
+            }
+
+            /* إخفاء الأيقونات */
+            .fa, .fas, .far {
+                display: none;
+            }
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-right: 4px solid #c62828;
+        }
+
+        /* تحسينات للجوال */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .main-card {
+                padding: 20px;
+            }
+
+            .upload-section {
+                padding: 30px 20px;
+            }
+
+            .upload-icon {
+                font-size: 60px;
+            }
+
+            .upload-text {
+                font-size: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+            }
+
+            .filter-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-title">
+                <h1>
+                    <i class="fas fa-images"></i>
+                    معالجة الصور الشاملة
+                </h1>
+                <a href="index.html" class="back-btn">
+                    <i class="fas fa-arrow-right"></i>
+                    العودة للوحة التحكم
+                </a>
+            </div>
+            <p class="subtitle">استخراج بيانات اللوحات والمركبات من الصور باستخدام الذكاء الاصطناعي</p>
+        </div>
+
+        <div class="main-card">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalImages">0</div>
+                    <div class="stat-label">إجمالي الصور</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="processedImages">0</div>
+                    <div class="stat-label">الصور المعالجة</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="normalParking">0</div>
+                    <div class="stat-label">مواقف عادية</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="disabledParking">0</div>
+                    <div class="stat-label">مواقف معاقين</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="violations">0</div>
+                    <div class="stat-label">مخالفات</div>
+                </div>
+            </div>
+
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">اسحب الصور هنا أو انقر للاختيار</div>
+                <div class="upload-hint">يمكنك رفع عدة صور في نفس الوقت (JPG, PNG)</div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-folder-open"></i>
+                    اختيار الصور
+                </button>
+            </div>
+
+            <div class="progress-section" id="progressSection">
+                <h3>
+                    <i class="fas fa-spinner fa-spin"></i>
+                    جاري معالجة الصور باستخدام الذكاء الاصطناعي...
+                </h3>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar">0%</div>
+                </div>
+                <p id="progressText">معالجة 0 من 0 صورة</p>
+            </div>
+
+            <div class="filter-section" id="filterSection">
+                <div class="filter-title">
+                    <i class="fas fa-filter"></i>
+                    تصنيف الصور
+                </div>
+                <div class="filter-grid">
+                    <div class="filter-option active" onclick="filterResults('all')">
+                        <i class="fas fa-images"></i>
+                        <div>الكل</div>
+                    </div>
+                    <div class="filter-option" onclick="filterResults('normal')">
+                        <i class="fas fa-parking"></i>
+                        <div>مواقف عادية</div>
+                    </div>
+                    <div class="filter-option" onclick="filterResults('disabled')">
+                        <i class="fas fa-wheelchair"></i>
+                        <div>مواقف معاقين</div>
+                    </div>
+                    <div class="filter-option" onclick="filterResults('violation')">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>مخالفات</div>
+                    </div>
+                    <div class="filter-option" onclick="filterResults('old_buildings')">
+                        <i class="fas fa-building"></i>
+                        <div>المباني القديمة</div>
+                    </div>
+                    <div class="filter-option" onclick="filterResults('new_buildings')">
+                        <i class="fas fa-city"></i>
+                        <div>المباني الجديدة</div>
+                    </div>
+                    <div class="filter-option" onclick="filterResults('villas')">
+                        <i class="fas fa-home"></i>
+                        <div>منطقة الفلل</div>
+                    </div>
+                    <div class="filter-option" onclick="filterResults('impounded')">
+                        <i class="fas fa-lock"></i>
+                        <div>السيارات المكبوحة</div>
+                    </div>
+                    <div class="filter-option" onclick="filterResults('tow_truck')">
+                        <i class="fas fa-truck"></i>
+                        <div>خروج ودخول سيارات على سطحة</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <!-- رأسية الطباعة (تظهر فقط عند الطباعة) -->
+                <div class="print-header" style="display: none;">
+                    <h1>تقرير معالجة الصور</h1>
+                    <p>نظام إدارة الإسكان الجامعي</p>
+                    <p class="print-date" id="printDate"></p>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="action-btn btn-success" onclick="saveToDatabase()">
+                        <i class="fas fa-save"></i> حفظ في قاعدة البيانات
+                    </button>
+                    <button class="action-btn btn-info" onclick="showSearchDialog()">
+                        <i class="fas fa-search"></i> بحث برقم اللوحة
+                    </button>
+                    <button class="action-btn btn-primary" onclick="exportResults()">
+                        <i class="fas fa-file-excel"></i> تصدير النتائج
+                    </button>
+                    <button class="action-btn btn-primary" onclick="printResults()">
+                        <i class="fas fa-print"></i> طباعة النتائج
+                    </button>
+                    <button class="action-btn btn-secondary" onclick="resetForm()">
+                        <i class="fas fa-redo"></i> معالجة جديدة
+                    </button>
+                </div>
+
+                <div class="results-grid" id="resultsGrid"></div>
+
+                <!-- تذييل الطباعة (يظهر فقط عند الطباعة) -->
+                <div class="print-footer" style="display: none;">
+                    <p>تم إنشاء هذا التقرير بواسطة نظام إدارة الإسكان الجامعي</p>
+                    <p id="printFooterText"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="plate_formatter.js"></script>
+    <script src="search_save_functions.js"></script>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        let processedResults = [];
+        let currentFilter = 'all';
+
+        fileInput.addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                processImages(files);
+            }
+        });
+
+        // دعم السحب والإفلات
+        const uploadSection = document.getElementById('uploadSection');
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#1a3a28';
+            uploadSection.style.background = 'linear-gradient(135deg, rgba(45, 95, 63, 0.15) 0%, rgba(26, 58, 40, 0.15) 100%)';
+        });
+
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#2D5F3F';
+            uploadSection.style.background = 'linear-gradient(135deg, rgba(45, 95, 63, 0.05) 0%, rgba(26, 58, 40, 0.05) 100%)';
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#2D5F3F';
+            uploadSection.style.background = 'linear-gradient(135deg, rgba(45, 95, 63, 0.05) 0%, rgba(26, 58, 40, 0.05) 100%)';
+            
+            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+            if (files.length > 0) {
+                processImages(files);
+            }
+        });
+
+        async function processImages(files) {
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('totalImages').textContent = files.length;
+
+            processedResults = [];
+            let processed = 0;
+
+            // معالجة كل صورة على حدة
+            for (const file of files) {
+                try {
+                    // تحويل الصورة إلى base64
+                    const base64Image = await fileToBase64(file);
+                    
+                    // إرسال الصورة إلى API
+                    const response = await fetch('/api/extract-plate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            image: base64Image
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('فشل في معالجة الصورة');
+                    }
+
+                    const result = await response.json();
+                    
+                    // إضافة النتيجة مع الصورة
+                    processedResults.push({
+                        id: processed + 1,
+                        image: URL.createObjectURL(file),
+                        filename: file.name,
+                        plateNumber: result.plate_number || 'غير محدد',
+                        arabicLetters: result.arabic_letters || '',
+                        englishLetters: result.english_letters || '',
+                        numbers: result.numbers || '',
+                        carType: result.vehicle_type || 'غير محدد',
+                        carColor: result.vehicle_color || 'غير محدد',
+                        category: categorizeImage(result),
+                        confidence: result.confidence || 0,
+                        residentInfo: result.resident_info || null
+                    });
+
+                } catch (error) {
+                    console.error('خطأ في معالجة الصورة:', error);
+                    // إضافة نتيجة خطأ
+                    processedResults.push({
+                        id: processed + 1,
+                        image: URL.createObjectURL(file),
+                        filename: file.name,
+                        plateNumber: 'خطأ في المعالجة',
+                        carType: 'غير محدد',
+                        carColor: 'غير محدد',
+                        category: 'other',
+                        confidence: 0,
+                        error: error.message
+                    });
+                }
+
+                // تحديث التقدم
+                processed++;
+                const progress = Math.round((processed / files.length) * 100);
+                document.getElementById('progressBar').style.width = progress + '%';
+                document.getElementById('progressBar').textContent = progress + '%';
+                document.getElementById('progressText').textContent = `معالجة ${processed} من ${files.length} صورة`;
+                document.getElementById('processedImages').textContent = processed;
+
+                updateStats();
+            }
+
+            // عرض النتائج
+            setTimeout(() => {
+                showResults();
+            }, 500);
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function categorizeImage(result) {
+            // تصنيف الصورة بناءً على النتائج
+            if (result.confidence < 50) {
+                return 'other';
+            }
+            
+            // يمكن تحسين هذا بناءً على معايير إضافية
+            // حالياً نصنف كموقف عادي إذا كانت الثقة عالية
+            return 'normal';
+        }
+
+        function updateStats() {
+            const normal = processedResults.filter(r => r.category === 'normal').length;
+            const disabled = processedResults.filter(r => r.category === 'disabled').length;
+            const violations = processedResults.filter(r => r.category === 'violation').length;
+
+            document.getElementById('normalParking').textContent = normal;
+            document.getElementById('disabledParking').textContent = disabled;
+            document.getElementById('violations').textContent = violations;
+        }
+
+        function showResults() {
+            document.getElementById('progressSection').style.display = 'none';
+            document.getElementById('filterSection').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'block';
+            displayResults();
+        }
+
+        function displayResults() {
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+
+            const filtered = currentFilter === 'all' 
+                ? processedResults 
+                : processedResults.filter(r => r.category === currentFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">لا توجد نتائج لعرضها</p>';
+                return;
+            }
+
+            filtered.forEach(result => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                
+                const badgeClass = result.category === 'normal' ? 'badge-normal' : 
+                                  result.category === 'disabled' ? 'badge-disabled' : 
+                                  result.category === 'violation' ? 'badge-violation' : 'badge-other';
+                const badgeText = result.category === 'normal' ? 'موقف عادي' : 
+                                 result.category === 'disabled' ? 'موقف معاقين' : 
+                                 result.category === 'violation' ? 'مخالفة' : 'أخرى';
+
+                let residentInfoHTML = '';
+                if (result.residentInfo && result.residentInfo.found) {
+                    const info = result.residentInfo;
+                    const resident = info.resident || {};
+                    residentInfoHTML = `
+                        <div class="resident-info">
+                            <div class="resident-info-title">
+                                <i class="fas fa-user-check"></i>
+                                معلومات الساكن
+                            </div>
+                            <div class="result-detail">
+                                <span>الاسم:</span>
+                                <span>${resident.name || 'غير محدد'}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>الوحدة:</span>
+                                <span>${resident.unit || 'غير محدد'}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>المبنى:</span>
+                                <span>${resident.building || 'غير محدد'}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>رقم الهوية:</span>
+                                <span>${resident.nationalId || 'غير محدد'}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>رقم الجوال:</span>
+                                <span>${resident.phone || 'غير محدد'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                let errorHTML = '';
+                if (result.error) {
+                    errorHTML = `
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            ${result.error}
+                        </div>
+                    `;
+                }
+
+                // تنسيق رقم اللوحة
+                const formattedPlate = formatPlateNumber(result.plateNumber);
+
+                card.innerHTML = `
+                    <img src="${result.image}" class="result-image" alt="صورة السيارة">
+                    <div class="result-content">
+                        <div class="result-title">${formattedPlate}</div>
+                        <div class="result-details">
+                            <div class="result-detail">
+                                <span>رقم اللوحة:</span>
+                                <span><strong>${result.plateNumber}</strong></span>
+                            </div>
+                            <div class="result-detail">
+                                <span>${result.arabicLetters ? 'الأحرف العربية:' : 'الأحرف الإنجليزية:'}</span>
+                                <span>${result.arabicLetters || result.englishLetters || 'غير محدد'}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>الأرقام:</span>
+                                <span>${result.numbers || 'غير محدد'}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>نوع السيارة:</span>
+                                <span>${result.carType}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>لون السيارة:</span>
+                                <span>${result.carColor}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>نسبة الدقة:</span>
+                                <span>${result.confidence}%</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>التصنيف:</span>
+                                <span><span class="category-badge ${badgeClass}">${badgeText}</span></span>
+                            </div>
+                        </div>
+                        ${residentInfoHTML}
+                        ${errorHTML}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterResults(category) {
+            currentFilter = category;
+            
+            // تحديث الأزرار
+            document.querySelectorAll('.filter-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.closest('.filter-option').classList.add('active');
+            
+            displayResults();
+        }
+
+        function exportResults() {
+            // تحويل النتائج إلى CSV
+            let csv = 'رقم اللوحة,نوع السيارة,اللون,التصنيف,الدقة,اسم الساكن,الوحدة,المبنى\n';
+            
+            processedResults.forEach(result => {
+                const resident = result.residentInfo?.resident || {};
+                const residentName = resident.name || '';
+                const unitNumber = resident.unit || '';
+                const buildingName = resident.building || '';
+                
+                csv += `"${result.plateNumber}","${result.carType}","${result.carColor}","${getCategoryText(result.category)}",${result.confidence},"${residentName}","${unitNumber}","${buildingName}"\n`;
+            });
+
+            // تنزيل الملف
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `نتائج_معالجة_الصور_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function getCategoryText(category) {
+            switch(category) {
+                case 'normal': return 'موقف عادي';
+                case 'disabled': return 'موقف معاقين';
+                case 'violation': return 'مخالفة';
+                case 'old_buildings': return 'المباني القديمة';
+                case 'new_buildings': return 'المباني الجديدة';
+                case 'villas': return 'منطقة الفلل';
+                case 'impounded': return 'السيارات المكبوحة';
+                case 'tow_truck': return 'خروج ودخول سيارات على سطحة';
+                default: return 'أخرى';
+            }
+        }
+
+        function printResults() {
+            // التحقق من وجود نتائج
+            if (!processedResults || processedResults.length === 0) {
+                alert('لا توجد نتائج للطباعة. يرجى معالجة الصور أولاً.');
+                return;
+            }
+            
+            // تحديث تاريخ ووقت الطباعة
+            const now = new Date();
+            const dateOptions = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            const formattedDate = now.toLocaleDateString('ar-SA', dateOptions);
+            
+            document.getElementById('printDate').textContent = `تاريخ الطباعة: ${formattedDate}`;
+            document.getElementById('printFooterText').textContent = `إجمالي الصور المعالجة: ${processedResults.length} صورة`;
+            
+            // إظهار رأسية وتذييل الطباعة
+            document.querySelector('.print-header').style.display = 'block';
+            document.querySelector('.print-footer').style.display = 'block';
+            
+            // طباعة الصفحة
+            window.print();
+            
+            // إخفاء رأسية وتذييل الطباعة بعد الطباعة
+            setTimeout(() => {
+                document.querySelector('.print-header').style.display = 'none';
+                document.querySelector('.print-footer').style.display = 'none';
+            }, 100);
+        }
+
+        function resetForm() {
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('filterSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('totalImages').textContent = '0';
+            document.getElementById('processedImages').textContent = '0';
+            document.getElementById('normalParking').textContent = '0';
+            document.getElementById('disabledParking').textContent = '0';
+            document.getElementById('violations').textContent = '0';
+            fileInput.value = '';
+            processedResults = [];
+            currentFilter = 'all';
+        }
+
+        // دالة تنسيق رقم اللوحة (إذا لم تكن موجودة في plate_formatter.js)
+        function formatPlateNumber(plateNumber) {
+            if (!plateNumber || plateNumber === 'غير محدد' || plateNumber === 'خطأ في المعالجة') {
+                return plateNumber;
+            }
+            
+            // تنسيق اللوحة السعودية: الأحرف على اليمين والأرقام على اليسار
+            const parts = plateNumber.trim().split(' ');
+            if (parts.length >= 2) {
+                return `<span class="plate-letters">${parts.slice(0, -1).join(' ')}</span> <span class="plate-numbers">${parts[parts.length - 1]}</span>`;
+            }
+            
+            return plateNumber;
+        }
+
+        // دعم الطباعة
+        window.addEventListener('beforeprint', () => {
+            document.querySelectorAll('.action-buttons, .filter-section, .back-btn').forEach(el => {
+                el.style.display = 'none';
+            });
+        });
+
+        window.addEventListener('afterprint', () => {
+            document.querySelectorAll('.action-buttons, .filter-section, .back-btn').forEach(el => {
+                el.style.display = '';
+            });
+        });
+    </script>
+</body>
+</html>
+
