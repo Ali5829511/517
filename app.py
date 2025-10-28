@@ -835,6 +835,198 @@ def reset_password():
         print(f"خطأ في reset_password: {str(e)}")
         return jsonify({'error': 'حدث خطأ. يرجى المحاولة لاحقاً.'}), 500
 
+# ==================== API التقارير ====================
+
+@app.route('/api/reports/<report_type>')
+def get_report(report_type):
+    """API للحصول على بيانات التقارير"""
+    try:
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        report_data = {
+            'stats': {},
+            'records': []
+        }
+        
+        if report_type == 'residents':
+            # تقرير السكان الشامل
+            cursor.execute('SELECT COUNT(*) as total FROM residents')
+            total = cursor.fetchone()['total']
+            
+            cursor.execute('SELECT COUNT(*) as occupied FROM units WHERE status="occupied"')
+            occupied = cursor.fetchone()['occupied']
+            
+            cursor.execute('SELECT COUNT(*) as vacant FROM units WHERE status="vacant"')
+            vacant = cursor.fetchone()['vacant']
+            
+            report_data['stats'] = {
+                'إجمالي السكان': total,
+                'الوحدات المشغولة': occupied,
+                'الوحدات الشاغرة': vacant,
+                'معدل الإشغال': f"{(occupied/(occupied+vacant)*100):.1f}%" if (occupied+vacant) > 0 else "0%"
+            }
+            
+            cursor.execute('''
+                SELECT r.name as "الاسم", r.national_id as "رقم الهوية", 
+                       b.name as "المبنى", u.unit_number as "رقم الوحدة",
+                       r.phone as "الهاتف", r.email as "البريد الإلكتروني"
+                FROM residents r
+                LEFT JOIN units u ON r.unit_id = u.id
+                LEFT JOIN buildings b ON u.building_id = b.id
+            ''')
+            
+        elif report_type == 'buildings':
+            # تقرير حالة المباني
+            cursor.execute('SELECT COUNT(*) as total FROM buildings')
+            total = cursor.fetchone()['total']
+            
+            cursor.execute('SELECT COUNT(*) as total_units FROM units')
+            total_units = cursor.fetchone()['total_units']
+            
+            cursor.execute('SELECT COUNT(*) as occupied FROM units WHERE status="occupied"')
+            occupied = cursor.fetchone()['occupied']
+            
+            report_data['stats'] = {
+                'إجمالي المباني': total,
+                'إجمالي الوحدات': total_units,
+                'الوحدات المشغولة': occupied,
+                'الوحدات الشاغرة': total_units - occupied
+            }
+            
+            cursor.execute('''
+                SELECT b.name as "اسم المبنى", b.location as "الموقع",
+                       COUNT(u.id) as "عدد الوحدات",
+                       SUM(CASE WHEN u.status="occupied" THEN 1 ELSE 0 END) as "المشغولة",
+                       SUM(CASE WHEN u.status="vacant" THEN 1 ELSE 0 END) as "الشاغرة"
+                FROM buildings b
+                LEFT JOIN units u ON b.id = u.building_id
+                GROUP BY b.id
+            ''')
+            
+        elif report_type == 'vehicles':
+            # تقرير السيارات الشامل
+            cursor.execute('SELECT COUNT(*) as total FROM vehicles')
+            total = cursor.fetchone()['total']
+            
+            cursor.execute('SELECT COUNT(*) as active FROM stickers WHERE status="active"')
+            active_stickers = cursor.fetchone()['active']
+            
+            cursor.execute('SELECT COUNT(*) as expired FROM stickers WHERE status="expired"')
+            expired_stickers = cursor.fetchone()['expired']
+            
+            cursor.execute('SELECT COUNT(*) as available FROM parking_spots WHERE status="available"')
+            available_parking = cursor.fetchone()['available']
+            
+            report_data['stats'] = {
+                'إجمالي السيارات': total,
+                'الملصقات الفعالة': active_stickers,
+                'الملصقات المنتهية': expired_stickers,
+                'المواقف المتاحة': available_parking
+            }
+            
+            cursor.execute('''
+                SELECT v.plate_number as "رقم اللوحة", v.make as "النوع", 
+                       v.model as "الموديل", v.color as "اللون",
+                       r.name as "المالك", s.sticker_number as "رقم الملصق",
+                       s.status as "حالة الملصق"
+                FROM vehicles v
+                LEFT JOIN residents r ON v.resident_id = r.id
+                LEFT JOIN stickers s ON v.id = s.vehicle_id
+            ''')
+            
+        elif report_type == 'security':
+            # تقرير الأمن والحوادث
+            cursor.execute('SELECT COUNT(*) as total FROM violations')
+            total = cursor.fetchone()['total']
+            
+            cursor.execute('SELECT COUNT(*) as pending FROM violations WHERE status="pending"')
+            pending = cursor.fetchone()['pending']
+            
+            cursor.execute('SELECT COUNT(*) as resolved FROM violations WHERE status="resolved"')
+            resolved = cursor.fetchone()['resolved']
+            
+            report_data['stats'] = {
+                'إجمالي المخالفات': total,
+                'المخالفات المعلقة': pending,
+                'المخالفات المحلولة': resolved
+            }
+            
+            cursor.execute('''
+                SELECT v.violation_type as "نوع المخالفة", v.description as "الوصف",
+                       v.date as "التاريخ", v.status as "الحالة",
+                       ve.plate_number as "رقم اللوحة"
+                FROM violations v
+                LEFT JOIN vehicles ve ON v.vehicle_id = ve.id
+                ORDER BY v.date DESC
+            ''')
+            
+        elif report_type == 'parking_status':
+            # تقرير حالة المواقف
+            cursor.execute('SELECT COUNT(*) as total FROM parking_spots')
+            total = cursor.fetchone()['total']
+            
+            cursor.execute('SELECT COUNT(*) as occupied FROM parking_spots WHERE status="occupied"')
+            occupied = cursor.fetchone()['occupied']
+            
+            cursor.execute('SELECT COUNT(*) as available FROM parking_spots WHERE status="available"')
+            available = cursor.fetchone()['available']
+            
+            report_data['stats'] = {
+                'إجمالي المواقف': total,
+                'المواقف المشغولة': occupied,
+                'المواقف المتاحة': available,
+                'نسبة الإشغال': f"{(occupied/total*100):.1f}%" if total > 0 else "0%"
+            }
+            
+            cursor.execute('''
+                SELECT spot_number as "رقم الموقف", location as "الموقع",
+                       type as "النوع", status as "الحالة"
+                FROM parking_spots
+                ORDER BY spot_number
+            ''')
+            
+        elif report_type == 'stickers_per_resident':
+            # تقرير الملصقات لكل ساكن
+            cursor.execute('''
+                SELECT r.name as "الاسم", 
+                       COUNT(v.id) as "عدد السيارات",
+                       COUNT(s.id) as "عدد الملصقات",
+                       SUM(CASE WHEN s.status="active" THEN 1 ELSE 0 END) as "الملصقات الفعالة"
+                FROM residents r
+                LEFT JOIN vehicles v ON r.id = v.resident_id
+                LEFT JOIN stickers s ON v.id = s.vehicle_id
+                GROUP BY r.id
+            ''')
+            
+        elif report_type == 'occupancy':
+            # تقرير إشغال المباني
+            cursor.execute('''
+                SELECT b.name as "المبنى",
+                       COUNT(u.id) as "إجمالي الوحدات",
+                       SUM(CASE WHEN u.status="occupied" THEN 1 ELSE 0 END) as "المشغولة",
+                       SUM(CASE WHEN u.status="vacant" THEN 1 ELSE 0 END) as "الشاغرة",
+                       ROUND(SUM(CASE WHEN u.status="occupied" THEN 1 ELSE 0 END) * 100.0 / COUNT(u.id), 1) || '%' as "نسبة الإشغال"
+                FROM buildings b
+                LEFT JOIN units u ON b.id = u.building_id
+                GROUP BY b.id
+            ''')
+            
+        else:
+            return jsonify({'error': 'نوع التقرير غير معروف'}), 404
+        
+        # تحويل النتائج إلى قائمة من القواميس
+        rows = cursor.fetchall()
+        report_data['records'] = [dict(row) for row in rows]
+        
+        conn.close()
+        return jsonify(report_data)
+        
+    except Exception as e:
+        print(f"خطأ في get_report: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
