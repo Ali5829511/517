@@ -77,7 +77,8 @@ def get_all_stickers():
             b.building_number,
             u.unit_type
         FROM vehicle_stickers vs
-        LEFT JOIN residents r ON vs.resident_id = r.national_id
+        -- دعم حالتين شائعتين: resident_id قد يكون إما id (INTEGER) أو national_id (TEXT)
+        LEFT JOIN residents r ON (vs.resident_id = r.id OR vs.resident_id = r.national_id)
         LEFT JOIN units u ON r.unit_id = u.id
         LEFT JOIN buildings b ON u.building_id = b.id
         ORDER BY vs.id
