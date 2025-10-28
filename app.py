@@ -260,14 +260,14 @@ def extract_plate():
             try:
                 # استخدام GPT-4 Vision لاستخراج رقم اللوحة
                 response = client.chat.completions.create(
-            model="gpt-4.1-mini",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
+                    model="gpt-4.1-mini",
+                    messages=[
                         {
-                            "type": "text",
-                            "text": """أنت خبير في قراءة لوحات السيارات السعودية. حلل هذه الصورة بدقة عالية جداً واستخرج:
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": """أنت خبير في قراءة لوحات السيارات السعودية. حلل هذه الصورة بدقة عالية جداً واستخرج:
 
 **مهم جداً:**
 - اللوحات السعودية تحتوي على 3 أحرف إنجليزية + 4 أرقام
@@ -293,52 +293,98 @@ def extract_plate():
 }
 
 إذا لم تر اللوحة بوضوح، ضع confidence أقل من 50."""
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{img_str}"
-                            }
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/png;base64,{img_str}"
+                                    }
+                                }
+                            ]
                         }
-                    ]
+                    ],
+                    max_tokens=300
+                )
+                
+                # استخراج النتيجة
+                result_text = response.choices[0].message.content.strip()
+                
+                # إزالة أي نص إضافي قبل أو بعد JSON
+                if '```json' in result_text:
+                    result_text = result_text.split('```json')[1].split('```')[0].strip()
+                elif '```' in result_text:
+                    result_text = result_text.split('```')[1].split('```')[0].strip()
+                
+                result = json.loads(result_text)
+                
+                # البحث في قاعدة البيانات عن اللوحة
+                resident_info = None
+                if result.get('plate_number') and result.get('confidence', 0) > 50:
+                    search_result = search_by_plate(result['plate_number'])
+                    if search_result.get('found'):
+                        resident_info = search_result
+                
+                # إضافة معلومات الساكن إلى النتيجة
+                result['resident_info'] = resident_info
+                
+                # حفظ في قاعدة البيانات الفعلية
+                try:
+                    save_processed_image(
+                        plate_number=result.get('plate_number', 'غير محدد'),
+                        vehicle_type=result.get('vehicle_type', 'غير محدد'),
+                        vehicle_color=result.get('vehicle_color', 'غير محدد'),
+                        confidence=result.get('confidence', 0),
+                        image_path='',  # يمكن إضافة حفظ الصورة لاحقاً
+                        notes=f"استخراج تلقائي - الأحرف: {result.get('english_letters', '')}, الأرقام: {result.get('numbers', '')}"
+                    )
+                except Exception as db_error:
+                    print(f"تحذير: فشل حفظ الصورة في قاعدة البيانات: {db_error}")
+                
+                return jsonify(result)
+                
+            except Exception as openai_error:
+                print(f"خطأ في OpenAI: {openai_error}")
+                result = None
+        
+        # إذا فشل OpenAI أو لم يكن متوفراً، استخدم OCR المحلي
+        if result is None:
+            try:
+                # تحويل base64 إلى صورة
+                img_data = base64.b64decode(img_str)
+                img = Image.open(io.BytesIO(img_data))
+                
+                # محاولة استخدام pytesseract
+                try:
+                    import pytesseract
+                    text = pytesseract.image_to_string(img, lang='eng+ara')
+                    
+                    # استخراج الأرقام والأحرف من النص
+                    import re
+                    numbers = re.findall(r'\d+', text)
+                    letters = re.findall(r'[A-Z]{3}', text)
+                    
+                    result = {
+                        'plate_number': f"{letters[0] if letters else ''} {numbers[0] if numbers else ''}".strip(),
+                        'english_letters': letters[0] if letters else '',
+                        'numbers': numbers[0] if numbers else '',
+                        'vehicle_type': 'غير محدد',
+                        'vehicle_color': 'غير محدد',
+                        'confidence': 30  # ثقة منخفضة للـ OCR المحلي
+                    }
+                except ImportError:
+                    # إذا لم يكن pytesseract متوفراً
+                    result = {
+                        'error': 'خدمة استخراج اللوحات غير متوفرة حالياً',
+                        'plate_number': 'غير محدد',
+                        'confidence': 0
+                    }
+            except Exception as ocr_error:
+                print(f"خطأ في OCR المحلي: {ocr_error}")
+                result = {
+                    'error': 'فشل في معالجة الصورة',
+                    'plate_number': 'غير محدد',
+                    'confidence': 0
                 }
-            ],
-            max_tokens=300
-        )
-        
-        # استخراج النتيجة
-        result_text = response.choices[0].message.content.strip()
-        
-        # إزالة أي نص إضافي قبل أو بعد JSON
-        if '```json' in result_text:
-            result_text = result_text.split('```json')[1].split('```')[0].strip()
-        elif '```' in result_text:
-            result_text = result_text.split('```')[1].split('```')[0].strip()
-        
-        result = json.loads(result_text)
-        
-        # البحث في قاعدة البيانات عن اللوحة
-        resident_info = None
-        if result.get('plate_number') and result.get('confidence', 0) > 50:
-            search_result = search_by_plate(result['plate_number'])
-            if search_result.get('found'):
-                resident_info = search_result
-        
-        # إضافة معلومات الساكن إلى النتيجة
-        result['resident_info'] = resident_info
-        
-        # حفظ في قاعدة البيانات الفعلية
-        try:
-            save_processed_image(
-                plate_number=result.get('plate_number', 'غير محدد'),
-                vehicle_type=result.get('vehicle_type', 'غير محدد'),
-                vehicle_color=result.get('vehicle_color', 'غير محدد'),
-                confidence=result.get('confidence', 0),
-                image_path='',  # يمكن إضافة حفظ الصورة لاحقاً
-                notes=f"استخراج تلقائي - الأحرف: {result.get('english_letters', '')}, الأرقام: {result.get('numbers', '')}"
-            )
-        except Exception as db_error:
-            print(f"تحذير: فشل حفظ الصورة في قاعدة البيانات: {db_error}")
         
         return jsonify(result)
         
