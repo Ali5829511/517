@@ -19,9 +19,15 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from database_api import get_all_residents, get_all_stickers, get_all_parking_spots, get_statistics, search_by_plate, save_processed_image, get_processed_images, search_processed_images, get_processed_images_statistics, get_violation_report, get_all_buildings
+import sqlite3
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
+
+# تكوين الجلسات الآمنة
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # تكوين التطبيق
 
@@ -38,18 +44,15 @@ database = {
     'processed_images': []
 }
 
-# قاعدة بيانات المستخدمين (في الإنتاج، استخدم قاعدة بيانات حقيقية)
-users_db = {
-    'admin': {
-        'password': generate_password_hash('Admin@2025'),
-        'role': 'admin',
-        'name': 'مدير النظام',
-        'email': 'aliayashi517@gmail.com'
-    }
-}
-
-# جدول رموز إعادة تعيين كلمة المرور
+# جدول رموز إعادة تعيين كلمة المرور (مؤقت - يجب نقله لقاعدة البيانات في الإنتاج)
 reset_tokens = {}
+
+# Database helper function
+def get_db_connection():
+    """Get database connection with row factory"""
+    conn = sqlite3.connect('housing_database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
 # Decorator للتحقق من تسجيل الدخول
 def login_required(f):
@@ -100,25 +103,41 @@ def login():
         if not username or not password:
             return jsonify({'error': 'يرجى إدخال اسم المستخدم وكلمة المرور'}), 400
         
-        # التحقق من المستخدم
-        user = users_db.get(username)
-        if not user or not check_password_hash(user['password'], password):
+        # التحقق من المستخدم من قاعدة البيانات
+        conn = get_db_connection()
+        user = conn.execute(
+            'SELECT * FROM users WHERE username = ? AND is_active = 1', 
+            (username,)
+        ).fetchone()
+        
+        if not user or not check_password_hash(user['password_hash'], password):
+            conn.close()
             return jsonify({'error': 'اسم المستخدم أو كلمة المرور غير صحيحة'}), 401
         
         # إنشاء جلسة
-        session['user_id'] = username
+        session['user_id'] = user['id']
+        session['username'] = user['username']
         session['role'] = user['role']
-        session['name'] = user['name']
+        session['name'] = user['username']  # Use username as name
+        session['email'] = user['email']
         
         if remember:
             session.permanent = True
+        
+        # تحديث آخر تسجيل دخول
+        conn.execute(
+            'UPDATE users SET last_login = ? WHERE id = ?', 
+            (datetime.now().isoformat(), user['id'])
+        )
+        conn.commit()
+        conn.close()
         
         return jsonify({
             'success': True,
             'message': 'تم تسجيل الدخول بنجاح',
             'user': {
-                'username': username,
-                'name': user['name'],
+                'username': user['username'],
+                'name': user['username'],
                 'role': user['role']
             },
             'redirect': '/index.html'
@@ -138,8 +157,8 @@ def logout():
 def current_user():
     """الحصول على معلومات المستخدم الحالي"""
     return jsonify({
-        'username': session.get('user_id'),
-        'name': session.get('name'),
+        'username': session.get('username'),
+        'name': session.get('name', session.get('username')),
         'role': session.get('role')
     })
 
@@ -147,12 +166,21 @@ def current_user():
 @admin_required
 def get_users():
     """الحصول على قائمة المستخدمين (للمدير فقط)"""
+    conn = get_db_connection()
+    users = conn.execute('SELECT id, username, email, role, created_at, last_login, is_active FROM users').fetchall()
+    conn.close()
+    
     users_list = []
-    for username, user in users_db.items():
+    for user in users:
         users_list.append({
-            'username': username,
-            'name': user['name'],
-            'role': user['role']
+            'id': user['id'],
+            'username': user['username'],
+            'email': user['email'],
+            'name': user['username'],
+            'role': user['role'],
+            'created_at': user['created_at'],
+            'last_login': user['last_login'],
+            'is_active': user['is_active']
         })
     return jsonify(users_list)
 
@@ -164,30 +192,35 @@ def create_user():
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
-        name = data.get('name')
+        email = data.get('email', f'{username}@imamu.edu.sa')
         role = data.get('role', 'user')
         
-        if not username or not password or not name:
-            return jsonify({'error': 'جميع الحقول مطلوبة'}), 400
+        if not username or not password:
+            return jsonify({'error': 'اسم المستخدم وكلمة المرور مطلوبة'}), 400
         
-        if username in users_db:
+        password_hash = generate_password_hash(password)
+        
+        conn = get_db_connection()
+        try:
+            conn.execute('''
+                INSERT INTO users (username, email, password_hash, role)
+                VALUES (?, ?, ?, ?)
+            ''', (username, email, password_hash, role))
+            conn.commit()
+            conn.close()
+            
+            return jsonify({
+                'success': True,
+                'message': 'تم إنشاء المستخدم بنجاح',
+                'user': {
+                    'username': username,
+                    'email': email,
+                    'role': role
+                }
+            })
+        except sqlite3.IntegrityError:
+            conn.close()
             return jsonify({'error': 'اسم المستخدم موجود بالفعل'}), 400
-        
-        users_db[username] = {
-            'password': generate_password_hash(password),
-            'name': name,
-            'role': role
-        }
-        
-        return jsonify({
-            'success': True,
-            'message': 'تم إنشاء المستخدم بنجاح',
-            'user': {
-                'username': username,
-                'name': name,
-                'role': role
-            }
-        })
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -200,10 +233,16 @@ def delete_user(username):
         if username == 'admin':
             return jsonify({'error': 'لا يمكن حذف المدير الرئيسي'}), 400
         
-        if username not in users_db:
+        conn = get_db_connection()
+        user = conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+        
+        if not user:
+            conn.close()
             return jsonify({'error': 'المستخدم غير موجود'}), 404
         
-        del users_db[username]
+        conn.execute('DELETE FROM users WHERE username = ?', (username,))
+        conn.commit()
+        conn.close()
         
         return jsonify({
             'success': True,
@@ -818,13 +857,19 @@ def forgot_password():
             return jsonify({'error': 'يرجى إدخال اسم المستخدم'}), 400
         
         # التحقق من وجود المستخدم
-        user = users_db.get(username)
-        if not user or 'email' not in user:
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        
+        if not user:
             # لا نكشف عن وجود المستخدم أو عدمه لأسباب أمنية
+            conn.close()
             return jsonify({
                 'success': True,
                 'message': 'إذا كان اسم المستخدم صحيحاً، ستصلك رسالة بريد إلكتروني لإعادة تعيين كلمة المرور.'
             })
+        
+        email = user['email']
+        conn.close()
         
         # إنشاء رمز إعادة تعيين
         token = secrets.token_urlsafe(32)
@@ -834,7 +879,7 @@ def forgot_password():
         }
         
         # إرسال البريد الإلكتروني
-        email_sent = send_reset_email(user['email'], token, user['name'])
+        email_sent = send_reset_email(email, token, username)
         
         return jsonify({
             'success': True,
@@ -869,7 +914,12 @@ def reset_password():
         
         # تحديث كلمة المرور
         username = token_data['username']
-        users_db[username]['password'] = generate_password_hash(new_password)
+        password_hash = generate_password_hash(new_password)
+        
+        conn = get_db_connection()
+        conn.execute('UPDATE users SET password_hash = ? WHERE username = ?', (password_hash, username))
+        conn.commit()
+        conn.close()
         
         # حذف الرمز بعد الاستخدام
         del reset_tokens[token]

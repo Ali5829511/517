@@ -718,6 +718,52 @@
                 </button>
             </div>
 
+            <!-- إعدادات الفرز والمعالجة -->
+            <div class="sorting-controls" id="sortingControls" style="display: none; margin: 20px 0; padding: 25px; background: rgba(255, 255, 255, 0.95); border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 20px; color: #2C5F7C; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-cog"></i>
+                    <span>إعدادات الفرز والمعالجة</span>
+                </h3>
+                
+                <div style="display: grid; gap: 15px;">
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: #f8f9fa; border-radius: 10px; transition: all 0.3s;">
+                        <input type="checkbox" id="autoSortCheckbox" checked onchange="toggleAutoSort(this)" style="width: 20px; height: 20px; cursor: pointer;">
+                        <div style="flex: 1;">
+                            <strong style="color: #2C5F7C;">فرز تلقائي حسب الدقة</strong>
+                            <div style="font-size: 13px; color: #666; margin-top: 4px;">الصور ذات الدقة العالية (>80%) تُفرز تلقائياً، والمنخفضة (<80%) تحتاج مراجعة يدوية</div>
+                        </div>
+                        <i class="fas fa-sort-amount-down" style="color: #5A8CA3; font-size: 24px;"></i>
+                    </label>
+                    
+                    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px; background: #fff3cd; border-radius: 10px; transition: all 0.3s;">
+                        <input type="checkbox" id="deleteAfterCheckbox" onchange="toggleDeleteAfter(this)" style="width: 20px; height: 20px; cursor: pointer;">
+                        <div style="flex: 1;">
+                            <strong style="color: #856404;">حذف الصور بعد المعالجة</strong>
+                            <div style="font-size: 13px; color: #856404; margin-top: 4px;">⚠️ سيتم حذف جميع الصور من الذاكرة بعد المعالجة (لا يمكن التراجع)</div>
+                        </div>
+                        <i class="fas fa-trash-alt" style="color: #dc3545; font-size: 24px;"></i>
+                    </label>
+                    
+                    <button onclick="sortImagesByCategory()" style="padding: 12px 24px; background: linear-gradient(135deg, #5A8CA3 0%, #4A7C93 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s;">
+                        <i class="fas fa-sort"></i>
+                        <span>فرز حسب نوع الموقف</span>
+                    </button>
+                </div>
+                
+                <div id="sortingStats" style="margin-top: 20px; display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); padding: 15px; border-radius: 10px; text-align: center; border: 2px solid #28a745;">
+                            <div style="font-size: 32px; font-weight: bold; color: #155724;" id="highConfidenceCount">0</div>
+                            <div style="font-size: 14px; color: #155724; margin-top: 5px;">دقة عالية (تلقائي)</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); padding: 15px; border-radius: 10px; text-align: center; border: 2px solid #ffc107;">
+                            <div style="font-size: 32px; font-weight: bold; color: #856404;" id="lowConfidenceCount">0</div>
+                            <div style="font-size: 14px; color: #856404; margin-top: 5px;">دقة منخفضة (يدوي)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="progress-section" id="progressSection">
                 <h3>
                     <i class="fas fa-spinner fa-spin"></i>
@@ -967,7 +1013,24 @@
             document.getElementById('progressSection').style.display = 'none';
             document.getElementById('filterSection').style.display = 'block';
             document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('sortingControls').style.display = 'block';
             displayResults();
+            
+            // Apply sorting after displaying results
+            setTimeout(() => {
+                if (autoSortEnabled && processedResults.length > 0) {
+                    applySorting();
+                }
+                
+                // Delete images if option is enabled
+                if (deleteAfterProcess && processedResults.length > 0) {
+                    setTimeout(() => {
+                        if (confirm('سيتم الآن حذف جميع الصور المعالجة. هل تريد المتابعة؟')) {
+                            deleteProcessedImages();
+                        }
+                    }, 500);
+                }
+            }, 300);
         }
 
         function displayResults() {
@@ -1371,6 +1434,119 @@
                 el.style.display = '';
             });
         });
+
+        // ========================
+        // وظائف الفرز والمعالجة
+        // ========================
+        
+        let autoSortEnabled = true;
+        let deleteAfterProcess = false;
+        const CONFIDENCE_THRESHOLD = 80;
+
+        function toggleAutoSort(checkbox) {
+            autoSortEnabled = checkbox.checked;
+            console.log('الفرز التلقائي:', autoSortEnabled ? 'مفعّل' : 'معطّل');
+        }
+
+        function toggleDeleteAfter(checkbox) {
+            deleteAfterProcess = checkbox.checked;
+            if (deleteAfterProcess) {
+                if (!confirm('⚠️ هل أنت متأكد من حذف الصور بعد المعالجة؟\n\nلن تتمكن من التراجع عن هذا الإجراء!')) {
+                    checkbox.checked = false;
+                    deleteAfterProcess = false;
+                }
+            }
+        }
+
+        // تطبيق الفرز التلقائي بعد معالجة الصور
+        function applySorting() {
+            if (!autoSortEnabled || processedResults.length === 0) {
+                return;
+            }
+
+            const highConfidence = processedResults.filter(r => (r.confidence || 0) >= CONFIDENCE_THRESHOLD);
+            const lowConfidence = processedResults.filter(r => (r.confidence || 0) < CONFIDENCE_THRESHOLD);
+            
+            document.getElementById('highConfidenceCount').textContent = highConfidence.length;
+            document.getElementById('lowConfidenceCount').textContent = lowConfidence.length;
+            document.getElementById('sortingStats').style.display = 'block';
+            
+            console.log(`✅ تم الفرز: ${highConfidence.length} دقة عالية، ${lowConfidence.length} دقة منخفضة`);
+            
+            // إظهار رسالة للمستخدم
+            if (lowConfidence.length > 0) {
+                alert(`📊 نتائج الفرز:\n\n✅ دقة عالية (>80%): ${highConfidence.length} صورة\n⚠️ دقة منخفضة (<80%): ${lowConfidence.length} صورة تحتاج مراجعة يدوية`);
+            }
+        }
+
+        function sortImagesByCategory() {
+            if (processedResults.length === 0) {
+                alert('⚠️ لا توجد صور للفرز. يرجى رفع ومعالجة الصور أولاً.');
+                return;
+            }
+
+            const categories = {
+                'normal': { name: 'مواقف عادية', count: 0, icon: '🅿️' },
+                'disabled': { name: 'مواقف معاقين', count: 0, icon: '♿' },
+                'violation': { name: 'مواقف مخالفات', count: 0, icon: '🚫' },
+                'old_buildings': { name: 'المباني القديمة', count: 0, icon: '🏢' },
+                'new_buildings': { name: 'المباني الجديدة', count: 0, icon: '🏗️' },
+                'villas': { name: 'منطقة الفلل', count: 0, icon: '🏡' },
+                'impounded': { name: 'السيارات المكبوحة', count: 0, icon: '🔒' },
+                'tow_truck': { name: 'خروج ودخول سطحة', count: 0, icon: '🚛' },
+                'other': { name: 'أخرى', count: 0, icon: '📦' }
+            };
+            
+            processedResults.forEach(result => {
+                const category = result.category || 'other';
+                if (categories[category]) {
+                    categories[category].count++;
+                }
+            });
+            
+            // بناء رسالة النتائج
+            let message = '📊 نتائج الفرز حسب الفئة:\n\n';
+            let hasResults = false;
+            
+            for (const [key, cat] of Object.entries(categories)) {
+                if (cat.count > 0) {
+                    message += `${cat.icon} ${cat.name}: ${cat.count}\n`;
+                    hasResults = true;
+                }
+            }
+            
+            if (!hasResults) {
+                message += 'لا توجد نتائج للفرز.';
+            }
+            
+            alert(message);
+            console.log('📊 تم الفرز حسب الفئة:', categories);
+        }
+
+        function deleteProcessedImages() {
+            if (processedResults.length === 0) {
+                return;
+            }
+
+            // حذف الصور من الذاكرة
+            processedResults = [];
+            
+            // مسح العرض
+            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('resultsGrid').innerHTML = '';
+            document.getElementById('filterSection').style.display = 'none';
+            document.getElementById('sortingControls').style.display = 'none';
+            document.getElementById('sortingStats').style.display = 'none';
+            
+            // إعادة تعيين input
+            fileInput.value = '';
+            
+            // إعادة إظهار قسم الرفع
+            document.getElementById('uploadSection').style.display = 'block';
+            
+            console.log('🗑️ تم حذف جميع الصور المعالجة');
+            alert('✅ تم حذف جميع الصور المعالجة من الذاكرة');
+        }
     </script>
 </body>
 </html>
