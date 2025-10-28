@@ -22,14 +22,6 @@ def test_app_has_secret_key():
     assert len(app.secret_key) > 0
 
 
-@pytest.fixture
-def client():
-    """Create a test client for the Flask app"""
-    app.config['TESTING'] = True
-    with app.test_client() as client:
-        yield client
-
-
-def test_static_folder_exists(client):
+def test_static_folder_exists():
     """Test that static folder is configured"""
     assert app.static_folder is not None
