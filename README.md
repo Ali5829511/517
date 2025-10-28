@@ -21,6 +21,9 @@ python app.py
 - 1,057 ساكن
 - 2,381 ملصق سيارة
 
+## 🌐 الموقع المباشر
+- Live demo: https://five17.onrender.com/
+
 ## 🌐 النشر على Railway
 1. سجل على https://railway.app
 2. اربط GitHub repo
