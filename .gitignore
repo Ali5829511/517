@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Flask
+instance/
+.webassets-cache
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Databases - Currently tracked for deployment
+# Note: Database files are kept in version control for easy deployment
+# Consider backing up separately if database grows large (>10MB)
+# *.db
+
+# Temporary files
+*.tmp
+*.bak
+*.old
+*.backup
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+uploads/
+processed_images/
