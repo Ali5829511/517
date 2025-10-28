@@ -42,10 +42,10 @@ venv.bak/
 
 # Logs
 *.log
-app.log
-server.log
 
-# Databases (keep tracked for now, but can be changed later)
+# Databases - Currently tracked for deployment
+# Note: Database files are kept in version control for easy deployment
+# Consider backing up separately if database grows large (>10MB)
 # *.db
 
 # Temporary files
