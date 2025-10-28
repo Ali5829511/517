@@ -449,11 +449,11 @@
                         body: formData
                     });
 
-                    if (!response.ok) {
-                        throw new Error('فشل في معالجة الصورة');
-                    }
-
                     const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'فشل في معالجة الصورة');
+                    }
                     
                     loadingSection.style.display = 'none';
                     previewSection.style.display = 'block';

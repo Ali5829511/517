@@ -875,11 +875,11 @@
                         })
                     });
 
-                    if (!response.ok) {
-                        throw new Error('فشل في معالجة الصورة');
-                    }
-
                     const result = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(result.error || 'فشل في معالجة الصورة');
+                    }
                     
                     // إضافة النتيجة مع الصورة
                     processedResults.push({
