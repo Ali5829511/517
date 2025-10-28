@@ -604,6 +604,29 @@
         </div>
     </div>
 
+    <!-- نافذة عرض مركبات الساكن -->
+    <div id="vehiclesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeVehiclesModal()">&times;</span>
+            <h2 id="vehiclesModalTitle">مركبات الساكن</h2>
+            <div id="vehiclesInfo" style="margin-bottom:16px; color:#333;"></div>
+            <table class="data-table" id="vehiclesTable">
+                <thead>
+                    <tr>
+                        <th>رقم الملصق</th>
+                        <th>رقم اللوحة</th>
+                        <th>نوع المركبة</th>
+                        <th>اللون</th>
+                        <th>تاريخ الإصدار</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="vehiclesTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <script>
         // البيانات الحقيقية من قاعدة البيانات
         let residentsData = [];
@@ -712,12 +735,55 @@
             document.getElementById('residentModal').style.display = 'none';
         }
 
-        // عرض تفاصيل الساكن
-        function viewResident(id) {
+        // عرض تفاصيل الساكن + عرض مركباته في modal
+        async function viewResident(id) {
             const resident = residentsData.find(r => r.id === id);
-            if (resident) {
-                alert(`تفاصيل الساكن:\nالاسم: ${resident.fullName}\nرقم الهوية: ${resident.nationalId}\nالمبنى: ${resident.building}\nالوحدة: ${resident.unitNumber}`);
+            if (!resident) {
+                alert('الساكن غير موجود');
+                return;
             }
+
+            // عرض معلومات مختصرة أعلى الmodal
+            document.getElementById('vehiclesModalTitle').textContent = `مركبات ${resident.fullName}`;
+            document.getElementById('vehiclesInfo').textContent = `رقم الهوية: ${resident.nationalId} — المبنى: ${resident.building} — الوحدة: ${resident.unitNumber}`;
+
+            // جلب المركبات من الـ API
+            try {
+                const res = await fetch(`/api/residents/${id}/vehicles`);
+                const data = await res.json();
+                if (!data.success) {
+                    document.getElementById('vehiclesTableBody').innerHTML = `<tr><td colspan="6">فشل جلب المركبات: ${data.error || 'خطأ غير معروف'}</td></tr>`;
+                } else {
+                    const vehicles = data.data || [];
+                    const tbody = document.getElementById('vehiclesTableBody');
+                    tbody.innerHTML = '';
+                    if (vehicles.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6">لا توجد مركبات مسجلة لهذا الساكن.</td></tr>`;
+                    } else {
+                        vehicles.forEach(v => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${v.stickerNumber || ''}</td>
+                                <td>${v.plateNumber || ''}</td>
+                                <td>${v.vehicleType || ''}</td>
+                                <td>${v.vehicleColor || ''}</td>
+                                <td>${v.issueDate || ''}</td>
+                                <td>${v.status || ''}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                }
+            } catch (err) {
+                document.getElementById('vehiclesTableBody').innerHTML = `<tr><td colspan="6">خطأ في الاتصال بالخادم: ${err.message}</td></tr>`;
+            }
+
+            // إظهار النافذة
+            document.getElementById('vehiclesModal').style.display = 'block';
+        }
+
+        function closeVehiclesModal() {
+            document.getElementById('vehiclesModal').style.display = 'none';
         }
 
         // تعديل الساكن

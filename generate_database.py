@@ -69,10 +69,11 @@ CREATE TABLE IF NOT EXISTS parking_spots (
 ''')
 
 # جدول ملصقات السيارات
+# ملاحظة: نسمح بتكرار قيمة `sticker_number` لكي يتمكن المالك من امتلاك أكثر من ملصق/سيارة.
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS vehicle_stickers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    sticker_number TEXT UNIQUE NOT NULL,
+    sticker_number TEXT NOT NULL,
     plate_number TEXT NOT NULL,
     resident_id INTEGER,
     vehicle_type TEXT,
@@ -81,6 +82,11 @@ CREATE TABLE IF NOT EXISTS vehicle_stickers (
     status TEXT DEFAULT 'فعال',
     FOREIGN KEY (resident_id) REFERENCES residents(id)
 )
+''')
+
+# فهرس لتحسين سرعة استعلامات البحث عن ملصقات حسب المالك
+cursor.execute('''
+CREATE INDEX IF NOT EXISTS idx_vehicle_stickers_resident_id ON vehicle_stickers(resident_id)
 ''')
 
 conn.commit()

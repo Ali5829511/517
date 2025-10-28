@@ -571,6 +571,18 @@ def get_buildings():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+@app.route('/api/residents/<int:resident_id>/vehicles', methods=['GET'])
+def api_get_resident_vehicles(resident_id):
+    """إرجاع جميع الملصقات/المركبات المرتبطة بالساكن المحدد"""
+    try:
+        # استيراد محلي لتجنب الاعتماد المتداخل أثناء الاستيراد
+        from database_api import get_stickers_by_resident
+        stickers = get_stickers_by_resident(resident_id)
+        return jsonify({'success': True, 'data': stickers})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 # إضافة headers لمنع الـ cache
 @app.after_request
 def add_header(response):

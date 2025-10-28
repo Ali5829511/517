@@ -6,13 +6,17 @@ API للوصول إلى قاعدة بيانات نظام إدارة الإسكا
 
 import sqlite3
 import json
-from flask import jsonify
 
 DATABASE = 'housing_database.db'
 
 def get_db_connection():
     """إنشاء اتصال بقاعدة البيانات"""
     conn = sqlite3.connect(DATABASE)
+    # تفعيل قيود المفتاح الأجنبي لضمان سلامة العلاقات عند الإدخال/التحديث
+    try:
+        conn.execute('PRAGMA foreign_keys = ON')
+    except Exception:
+        pass
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -146,61 +150,99 @@ def get_statistics():
     """الحصول على الإحصائيات العامة"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     stats = {}
-    
+
     # إحصائيات المباني
     cursor.execute("SELECT COUNT(*) as total FROM buildings")
     stats['totalBuildings'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM buildings WHERE building_type = 'عمارة'")
     stats['totalApartmentBuildings'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM buildings WHERE building_type = 'فيلا'")
     stats['totalVillas'] = cursor.fetchone()['total']
-    
+
     # إحصائيات الوحدات
     cursor.execute("SELECT COUNT(*) as total FROM units")
     stats['totalUnits'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM units WHERE status = 'مشغول'")
     stats['occupiedUnits'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM units WHERE status = 'شاغر'")
     stats['vacantUnits'] = cursor.fetchone()['total']
-    
+
     # إحصائيات السكان
     cursor.execute("SELECT COUNT(*) as total FROM residents")
     stats['totalResidents'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM residents WHERE status = 'نشط'")
     stats['activeResidents'] = cursor.fetchone()['total']
-    
+
     # إحصائيات المواقف
     cursor.execute("SELECT COUNT(*) as total FROM parking_spots")
     stats['totalParkingSpots'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM parking_spots WHERE status = 'مشغول'")
     stats['occupiedSpots'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM parking_spots WHERE status = 'متاح'")
     stats['availableSpots'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM parking_spots WHERE spot_type = 'معاقين'")
     stats['disabledSpots'] = cursor.fetchone()['total']
-    
+
     # إحصائيات الملصقات
     cursor.execute("SELECT COUNT(*) as total FROM vehicle_stickers")
     stats['totalStickers'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM vehicle_stickers WHERE status = 'فعال'")
     stats['activeStickers'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM vehicle_stickers WHERE status = 'ملغي'")
     stats['cancelledStickers'] = cursor.fetchone()['total']
-    
+
     conn.close()
     return stats
+
+
+def get_stickers_by_resident(resident_id):
+    """إرجاع جميع الملصقات المرتبطة بالساكن (يدعم resident_id المخزن كـ id أو national_id)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # بعض السجلات قد تكون مخزنة resident_id كقيمة national_id بدلاً من id.
+    # نبحث عن الملصقات حيث vs.resident_id = id أو يطابق national_id للساكن.
+    cursor.execute('''
+        SELECT
+            vs.id,
+            vs.sticker_number,
+            vs.plate_number,
+            vs.vehicle_type,
+            vs.vehicle_color,
+            vs.issue_date,
+            vs.status
+        FROM vehicle_stickers vs
+        WHERE vs.resident_id = ?
+           OR vs.resident_id = (SELECT national_id FROM residents WHERE id = ?)
+        ORDER BY vs.id
+    ''', (resident_id, resident_id))
+
+    stickers = []
+    for row in cursor.fetchall():
+        stickers.append({
+            'id': row['id'],
+            'stickerNumber': row['sticker_number'],
+            'plateNumber': row['plate_number'],
+            'vehicleType': row['vehicle_type'],
+            'vehicleColor': row['vehicle_color'],
+            'issueDate': row['issue_date'],
+            'status': row['status']
+        })
+
+    conn.close()
+    return stickers
 
 def search_by_plate(plate_number):
     """البحث عن مركبة برقم اللوحة"""
