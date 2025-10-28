@@ -575,10 +575,10 @@
 
         // Update statistics
         function updateStatistics() {
-            const available = parkingData.filter(p => p.status === 'available').length;
-            const occupied = parkingData.filter(p => p.status === 'occupied').length;
-            const disabled = parkingData.filter(p => p.type === 'disabled').length;
-            const vip = parkingData.filter(p => p.type === 'vip').length;
+            const available = parkingData.filter(p => p.status === 'متاح').length;
+            const occupied = parkingData.filter(p => p.status === 'مشغول').length;
+            const disabled = parkingData.filter(p => p.spotType === 'معاقين').length;
+            const vip = parkingData.filter(p => p.spotType === 'VIP').length;
             
             document.getElementById('availableCount').textContent = available;
             document.getElementById('occupiedCount').textContent = occupied;
@@ -598,7 +598,7 @@
                 const matchSearch = spot.spot_number.toLowerCase().includes(searchTerm) ||
                                   (spot.plate_number && spot.plate_number.toLowerCase().includes(searchTerm));
                 const matchStatus = !statusFilter || spot.status === statusFilter;
-                const matchType = !typeFilter || spot.type === typeFilter;
+                const matchType = !typeFilter || spot.spotType === typeFilter;
                 const matchBuilding = !buildingFilter || spot.building === buildingFilter;
                 
                 return matchSearch && matchStatus && matchType && matchBuilding;
@@ -621,8 +621,8 @@
                 const statusClass = spot.status === 'available' ? 'status-available' : 'status-occupied';
                 
                 let typeText = 'عادي';
-                if (spot.type === 'disabled') typeText = 'معاقين';
-                else if (spot.type === 'vip') typeText = 'VIP';
+                if (spot.spotType === 'disabled') typeText = 'معاقين';
+                else if (spot.spotType === 'vip') typeText = 'VIP';
                 
                 return `
                     <tr>
@@ -679,7 +679,7 @@
             document.getElementById('modalTitle').textContent = 'تعديل موقف';
             document.getElementById('spotNumber').value = spot.spot_number;
             document.getElementById('buildingSelect').value = spot.building;
-            document.getElementById('spotType').value = spot.type;
+            document.getElementById('spotType').value = spot.spotType;
             document.getElementById('spotStatus').value = spot.status;
             document.getElementById('plateNumber').value = spot.plate_number || '';
             
