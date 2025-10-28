@@ -253,12 +253,13 @@ def extract_plate():
         if not img_str:
             return jsonify({'error': 'فشل في معالجة الصورة'}), 400
         
-        # التحقق من توفر OpenAI
-        if not OPENAI_AVAILABLE or not client:
-            return jsonify({'error': 'خدمة استخراج اللوحات غير متوفرة حالياً'}), 503
+        # محاولة استخدام OpenAI أولاً، ثم OCR كبديل
+        result = None
         
-        # استخدام GPT-4 Vision لاستخراج رقم اللوحة
-        response = client.chat.completions.create(
+        if OPENAI_AVAILABLE and client:
+            try:
+                # استخدام GPT-4 Vision لاستخراج رقم اللوحة
+                response = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[
                 {
@@ -1026,6 +1027,136 @@ def get_report(report_type):
     except Exception as e:
         print(f"خطأ في get_report: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/resident-card')
+def get_resident_card():
+    """البطاقة الشاملة للساكن - بناءً على رقم المبنى ورقم الوحدة"""
+    try:
+        building_number = request.args.get('building')
+        unit_number = request.args.get('unit')
+        
+        if not building_number or not unit_number:
+            return jsonify({
+                'found': False,
+                'error': 'يجب إدخال رقم المبنى ورقم الوحدة'
+            }), 400
+        
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        
+        # البحث عن الوحدة والساكن
+        cursor.execute('''
+            SELECT 
+                r.id as resident_id,
+                r.name as resident_name,
+                r.national_id,
+                r.phone,
+                r.email,
+                u.id as unit_id,
+                u.unit_number,
+                u.status as unit_status,
+                b.id as building_id,
+                b.name as building_name,
+                b.location as building_location
+            FROM residents r
+            JOIN units u ON r.unit_id = u.id
+            JOIN buildings b ON u.building_id = b.id
+            WHERE b.name = ? AND u.unit_number = ?
+        ''', (building_number, unit_number))
+        
+        resident_row = cursor.fetchone()
+        
+        if not resident_row:
+            conn.close()
+            return jsonify({
+                'found': False,
+                'error': 'لم يتم العثور على ساكن في هذه الوحدة'
+            })
+        
+        resident_data = dict(resident_row)
+        
+        # السيارات والملصقات
+        cursor.execute('''
+            SELECT 
+                v.id,
+                v.plate_number,
+                v.make,
+                v.model,
+                v.color,
+                s.sticker_number,
+                s.status as sticker_status,
+                s.issue_date,
+                s.expiry_date
+            FROM vehicles v
+            LEFT JOIN stickers s ON v.id = s.vehicle_id
+            WHERE v.resident_id = ?
+        ''', (resident_data['resident_id'],))
+        
+        vehicles = [dict(row) for row in cursor.fetchall()]
+        
+        # المواقف المخصصة
+        cursor.execute('''
+            SELECT 
+                ps.spot_number,
+                ps.location,
+                ps.type,
+                ps.status
+            FROM parking_spots ps
+            WHERE ps.unit_id = ?
+        ''', (resident_data['unit_id'],))
+        
+        parking = [dict(row) for row in cursor.fetchall()]
+        
+        # المخالفات
+        vehicle_ids = [v['id'] for v in vehicles]
+        violations = []
+        
+        if vehicle_ids:
+            placeholders = ','.join('?' * len(vehicle_ids))
+            cursor.execute(f'''
+                SELECT 
+                    vio.date,
+                    vio.violation_type,
+                    vio.description,
+                    vio.status,
+                    v.plate_number
+                FROM violations vio
+                JOIN vehicles v ON vio.vehicle_id = v.id
+                WHERE vio.vehicle_id IN ({placeholders})
+                ORDER BY vio.date DESC
+            ''', vehicle_ids)
+            
+            violations = [dict(row) for row in cursor.fetchall()]
+        
+        conn.close()
+        
+        # إرجاع البيانات الشاملة
+        return jsonify({
+            'found': True,
+            'resident': {
+                'name': resident_data['resident_name'],
+                'national_id': resident_data['national_id'],
+                'phone': resident_data['phone'],
+                'email': resident_data['email']
+            },
+            'unit': {
+                'building_name': resident_data['building_name'],
+                'unit_number': resident_data['unit_number'],
+                'location': resident_data['building_location'],
+                'status': resident_data['unit_status']
+            },
+            'vehicles': vehicles,
+            'parking': parking,
+            'violations': violations
+        })
+        
+    except Exception as e:
+        print(f"خطأ في get_resident_card: {str(e)}")
+        return jsonify({
+            'found': False,
+            'error': f'حدث خطأ: {str(e)}'
+        }), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
