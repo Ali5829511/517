@@ -1,5 +1,12 @@
 from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
 import os
+try:
+    from openai import OpenAI
+    client = OpenAI()
+    OPENAI_AVAILABLE = True
+except:
+    OPENAI_AVAILABLE = False
+    client = None
 from PIL import Image
 import io
 import base64
@@ -238,6 +245,10 @@ def extract_plate():
         if not img_str:
             return jsonify({'error': 'فشل في معالجة الصورة'}), 400
         
+        # التحقق من توفر OpenAI
+        if not OPENAI_AVAILABLE or not client:
+            return jsonify({'error': 'خدمة استخراج اللوحات غير متوفرة حالياً'}), 503
+        
         # استخدام GPT-4 Vision لاستخراج رقم اللوحة
         response = client.chat.completions.create(
             model="gpt-4.1-mini",
@@ -363,6 +374,10 @@ def process_images():
         
         if not images_data:
             return jsonify({'error': 'لم يتم رفع أي صور'}), 400
+        
+        # التحقق من توفر OpenAI
+        if not OPENAI_AVAILABLE or not client:
+            return jsonify({'error': 'خدمة معالجة الصور غير متوفرة حالياً'}), 503
         
         # معالجة كل صورة
         for img_info in images_data:
@@ -579,6 +594,10 @@ def classify_parking():
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
+        
+        # التحقق من توفر OpenAI
+        if not OPENAI_AVAILABLE or not client:
+            return jsonify({'error': 'خدمة تصنيف الصور غير متوفرة حالياً'}), 503
         
         # استخدام GPT-4 Vision لتصنيف الصورة
         response = client.chat.completions.create(

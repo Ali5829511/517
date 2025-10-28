@@ -648,6 +648,10 @@
                     <i class="fas fa-print"></i>
                     طباعة التقرير
                 </button>
+                <button class="action-btn success" onclick="saveToDatabase()" style="background: #28a745;">
+                    <i class="fas fa-save"></i>
+                    حفظ في قاعدة البيانات
+                </button>
                 <button class="action-btn secondary" onclick="resetAll()">
                     <i class="fas fa-redo"></i>
                     إعادة تعيين
@@ -735,13 +739,15 @@
 
                 } catch (error) {
                     console.error('خطأ في تصنيف الصورة:', error);
+                    // إذا فشل الفرز التلقائي، تحتاج لفرز يدوي
                     uploadedImages.push({
                         file: file,
                         url: URL.createObjectURL(file),
                         filename: file.name,
                         category: 'other',
                         confidence: 0,
-                        details: {}
+                        details: {},
+                        needsManualReview: true
                     });
                 }
 
@@ -830,8 +836,10 @@
                 images.forEach((img, index) => {
                     const card = document.createElement('div');
                     card.className = 'image-card';
+                    const lowConfidence = img.confidence < 50;
                     card.innerHTML = `
-                        <div class="confidence-badge">${Math.round(img.confidence)}%</div>
+                        <div class="confidence-badge" style="background: ${lowConfidence ? '#dc3545' : (img.confidence < 70 ? '#ffc107' : '#28a745')}">${Math.round(img.confidence)}%</div>
+                        ${lowConfidence ? '<div class="manual-review-badge" style="position: absolute; top: 10px; left: 10px; background: #dc3545; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: bold;"><i class="fas fa-exclamation-triangle"></i> يحتاج مراجعة</div>' : ''}
                         <img src="${img.url}" alt="${img.filename}">
                         <div class="image-info">
                             <div class="image-filename" title="${img.filename}">${img.filename}</div>
@@ -881,21 +889,143 @@
             displayResults();
         }
 
-        function exportResults() {
-            let csv = 'اسم الملف,التصنيف,نسبة الدقة\n';
-            uploadedImages.forEach(img => {
-                csv += `"${img.filename}","${categories[img.category].name}",${Math.round(img.confidence)}%\n`;
-            });
-
-            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        async function exportResults() {
+            // تصدير بصيغة HTML مع الصور المصغرة
+            let html = `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تقرير فرز الصور</title>
+    <style>
+        body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background: #667eea; color: white; }
+        img { max-width: 100px; max-height: 100px; object-fit: cover; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .stats { display: flex; justify-content: space-around; margin: 20px 0; }
+        .stat-box { background: #f0f0f0; padding: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>تقرير فرز الصور حسب نوع الموقف</h1>
+        <p>تاريخ: ${new Date().toLocaleDateString('ar-SA')}</p>
+    </div>
+    <div class="stats">
+        <div class="stat-box">إجمالي الصور: ${uploadedImages.length}</div>
+        <div class="stat-box">مواقف عادية: ${categories.normal.count}</div>
+        <div class="stat-box">مواقف معاقين: ${categories.disabled.count}</div>
+        <div class="stat-box">مواقف خاصة: ${categories.private.count}</div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الصورة</th>
+                <th>اسم الملف</th>
+                <th>التصنيف</th>
+                <th>نسبة الدقة</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody>
+`;
+            
+            for (let i = 0; i < uploadedImages.length; i++) {
+                const img = uploadedImages[i];
+                const status = img.confidence < 50 ? 'يحتاج مراجعة' : 'تم التصنيف';
+                html += `
+            <tr>
+                <td>${i + 1}</td>
+                <td><img src="${img.url}" alt="${img.filename}"></td>
+                <td>${img.filename}</td>
+                <td>${categories[img.category].name}</td>
+                <td>${Math.round(img.confidence)}%</td>
+                <td>${status}</td>
+            </tr>
+`;
+            }
+            
+            html += `
+        </tbody>
+    </table>
+</body>
+</html>
+`;
+            
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `parking_classification_${new Date().getTime()}.csv`;
+            link.download = `parking_classification_${new Date().getTime()}.html`;
             link.click();
         }
 
         function printResults() {
             window.print();
+        }
+
+        async function saveToDatabase() {
+            if (uploadedImages.length === 0) {
+                alert('لا توجد صور لحفظها');
+                return;
+            }
+
+            const confirmed = confirm(`هل تريد حفظ ${uploadedImages.length} صورة في قاعدة البيانات؟`);
+            if (!confirmed) return;
+
+            let saved = 0;
+            let failed = 0;
+
+            for (const img of uploadedImages) {
+                try {
+                    // تحويل الصورة إلى base64
+                    const response = await fetch(img.url);
+                    const blob = await response.blob();
+                    const reader = new FileReader();
+                    
+                    await new Promise((resolve, reject) => {
+                        reader.onloadend = async () => {
+                            try {
+                                const base64data = reader.result;
+                                
+                                // حفظ في قاعدة البيانات
+                                const saveResponse = await fetch('/api/save-processed-image', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        filename: img.filename,
+                                        image_data: base64data,
+                                        category: img.category,
+                                        confidence: img.confidence,
+                                        plate_number: img.details?.plate_number || '',
+                                        vehicle_type: img.details?.vehicle_type || '',
+                                        vehicle_color: img.details?.vehicle_color || ''
+                                    })
+                                });
+
+                                if (saveResponse.ok) {
+                                    saved++;
+                                } else {
+                                    failed++;
+                                }
+                                resolve();
+                            } catch (error) {
+                                failed++;
+                                reject(error);
+                            }
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (error) {
+                    console.error('خطأ في حفظ الصورة:', error);
+                    failed++;
+                }
+            }
+
+            alert(`تم حفظ ${saved} صورة بنجاح${failed > 0 ? ` (فشل ${failed})` : ''}`);
         }
 
         function resetAll() {

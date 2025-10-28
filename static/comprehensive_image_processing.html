@@ -1093,24 +1093,89 @@
         }
 
         function exportResults() {
-            // تحويل النتائج إلى CSV
-            let csv = 'رقم اللوحة,نوع السيارة,اللون,التصنيف,الدقة,اسم الساكن,الوحدة,المبنى\n';
+            // تصدير بصيغة HTML مع الصور المصغرة
+            let html = `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تقرير معالجة الصور</title>
+    <style>
+        body { font-family: Arial, sans-serif; direction: rtl; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 12px; }
+        th { background: #667eea; color: white; }
+        img { max-width: 80px; max-height: 80px; object-fit: cover; border-radius: 5px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .stats { display: flex; justify-content: space-around; margin: 20px 0; flex-wrap: wrap; }
+        .stat-box { background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 5px; min-width: 150px; }
+        @media print { body { padding: 10px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>تقرير معالجة الصور الشامل</h1>
+        <p>تاريخ: ${new Date().toLocaleDateString('ar-SA')} - الوقت: ${new Date().toLocaleTimeString('ar-SA')}</p>
+    </div>
+    <div class="stats">
+        <div class="stat-box">إجمالي الصور: ${processedResults.length}</div>
+        <div class="stat-box">تم المعالجة: ${processedResults.length}</div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الصورة</th>
+                <th>رقم اللوحة</th>
+                <th>نوع السيارة</th>
+                <th>اللون</th>
+                <th>التصنيف</th>
+                <th>نسبة الدقة</th>
+                <th>اسم الساكن</th>
+                <th>الوحدة</th>
+                <th>المبنى</th>
+            </tr>
+        </thead>
+        <tbody>
+`;
             
-            processedResults.forEach(result => {
+            processedResults.forEach((result, index) => {
                 const resident = result.residentInfo?.resident || {};
-                const residentName = resident.name || '';
-                const unitNumber = resident.unit || '';
-                const buildingName = resident.building || '';
+                const residentName = resident.name || 'غير محدد';
+                const unitNumber = resident.unit || '-';
+                const buildingName = resident.building || '-';
                 
-                csv += `"${result.plateNumber}","${result.carType}","${result.carColor}","${getCategoryText(result.category)}",${result.confidence},"${residentName}","${unitNumber}","${buildingName}"\n`;
+                html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td><img src="${result.imageUrl}" alt="صورة ${result.plateNumber}"></td>
+                <td><strong>${result.plateNumber || 'غير محدد'}</strong></td>
+                <td>${result.carType || '-'}</td>
+                <td>${result.carColor || '-'}</td>
+                <td>${getCategoryText(result.category)}</td>
+                <td>${Math.round(result.confidence)}%</td>
+                <td>${residentName}</td>
+                <td>${unitNumber}</td>
+                <td>${buildingName}</td>
+            </tr>
+`;
             });
-
-            // تنزيل الملف
-            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            
+            html += `
+        </tbody>
+    </table>
+    <div style="margin-top: 30px; text-align: center; color: #666;">
+        <p>© 2025 جامعة الإمام محمد بن سعود الإسلامية - نظام إدارة الإسكان</p>
+    </div>
+</body>
+</html>
+`;
+            
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', `نتائج_معالجة_الصور_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute('download', `نتائج_معالجة_الصور_${new Date().toISOString().split('T')[0]}.html`);
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
