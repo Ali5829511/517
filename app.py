@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
 import os
-from openai import OpenAI
 from PIL import Image
 import io
 import base64
@@ -13,8 +12,7 @@ from database_api import get_all_residents, get_all_stickers, get_all_parking_sp
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
 
-# تكوين OpenAI
-client = OpenAI()
+# تكوين التطبيق
 
 # مجلد لحفظ الصور المعالجة
 UPLOAD_FOLDER = 'uploads'
