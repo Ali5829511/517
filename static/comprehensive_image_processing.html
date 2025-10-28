@@ -1013,7 +1013,24 @@
             document.getElementById('progressSection').style.display = 'none';
             document.getElementById('filterSection').style.display = 'block';
             document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('sortingControls').style.display = 'block';
             displayResults();
+            
+            // Apply sorting after displaying results
+            setTimeout(() => {
+                if (autoSortEnabled && processedResults.length > 0) {
+                    applySorting();
+                }
+                
+                // Delete images if option is enabled
+                if (deleteAfterProcess && processedResults.length > 0) {
+                    setTimeout(() => {
+                        if (confirm('سيتم الآن حذف جميع الصور المعالجة. هل تريد المتابعة؟')) {
+                            deleteProcessedImages();
+                        }
+                    }, 500);
+                }
+            }, 300);
         }
 
         function displayResults() {
@@ -1529,30 +1546,6 @@
             
             console.log('🗑️ تم حذف جميع الصور المعالجة');
             alert('✅ تم حذف جميع الصور المعالجة من الذاكرة');
-        }
-
-        // تعديل دالة processImages الموجودة لتطبيق الفرز والحذف
-        const originalProcessImages = processImages;
-        async function processImages(files) {
-            // إظهار عناصر التحكم بالفرز
-            document.getElementById('sortingControls').style.display = 'block';
-            
-            // استدعاء الدالة الأصلية
-            await originalProcessImages.call(this, files);
-            
-            // تطبيق الفرز بعد المعالجة
-            if (autoSortEnabled) {
-                setTimeout(() => applySorting(), 500);
-            }
-            
-            // حذف الصور إذا كان الخيار مفعلاً
-            if (deleteAfterProcess) {
-                setTimeout(() => {
-                    if (confirm('سيتم الآن حذف جميع الصور المعالجة. هل تريد المتابعة؟')) {
-                        deleteProcessedImages();
-                    }
-                }, 1000);
-            }
         }
     </script>
 </body>
