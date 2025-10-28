@@ -259,7 +259,7 @@ def extract_plate():
         
         # استخدام GPT-4 Vision لاستخراج رقم اللوحة
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "user",
@@ -394,7 +394,7 @@ def process_images():
             
             # استخدام GPT-4 Vision لتحليل الصورة
             response = client.chat.completions.create(
-                model="gpt-4.1-mini",
+                model="gpt-4o-mini",
                 messages=[
                     {
                         "role": "user",
@@ -609,7 +609,7 @@ def classify_parking():
         
         # استخدام GPT-4 Vision لتصنيف الصورة
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
