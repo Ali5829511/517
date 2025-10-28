@@ -130,7 +130,9 @@ def login():
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log the error for debugging but don't expose details to user
+        print(f"Login error: {str(e)}")
+        return jsonify({'error': 'حدث خطأ في عملية تسجيل الدخول. يرجى المحاولة لاحقاً.'}), 500
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
@@ -184,7 +186,8 @@ def create_user():
         result = auth_db.create_user(username, email, password, role, name)
         
         if not result['success']:
-            return jsonify({'error': result.get('error', 'فشل إنشاء المستخدم')}), 400
+            # Don't expose detailed error information to prevent information leakage
+            return jsonify({'error': 'فشل إنشاء المستخدم. يرجى التحقق من البيانات المدخلة.'}), 400
         
         return jsonify({
             'success': True,
@@ -198,7 +201,9 @@ def create_user():
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log the error for debugging but don't expose details to user
+        print(f"Create user error: {str(e)}")
+        return jsonify({'error': 'حدث خطأ في إنشاء المستخدم. يرجى المحاولة لاحقاً.'}), 500
 
 @app.route('/api/users/<username>', methods=['DELETE'])
 @admin_required
@@ -208,7 +213,8 @@ def delete_user(username):
         result = auth_db.delete_user(username)
         
         if not result['success']:
-            return jsonify({'error': result.get('error', 'فشل حذف المستخدم')}), 400
+            # Don't expose detailed error information
+            return jsonify({'error': 'فشل حذف المستخدم'}), 400
         
         return jsonify({
             'success': True,
@@ -216,7 +222,9 @@ def delete_user(username):
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log the error for debugging but don't expose details to user
+        print(f"Delete user error: {str(e)}")
+        return jsonify({'error': 'حدث خطأ في حذف المستخدم. يرجى المحاولة لاحقاً.'}), 500
 
 @app.route('/api/extract-plate', methods=['POST'])
 def extract_plate():

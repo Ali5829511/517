@@ -55,6 +55,16 @@ def test_user_authentication():
     
     # Test 6: Create test user
     print("\n6. Testing user creation...")
+    # First, try to clean up any existing test user
+    try:
+        import sqlite3
+        conn = sqlite3.connect('housing_database.db')
+        conn.execute("DELETE FROM users WHERE username = 'testuser'")
+        conn.commit()
+        conn.close()
+    except:
+        pass
+    
     result = auth_db.create_user(
         username='testuser',
         email='test@example.com',
@@ -66,11 +76,7 @@ def test_user_authentication():
         print("   ✓ Test user created successfully")
     else:
         print(f"   ✗ Failed to create user: {result.get('error', 'Unknown error')}")
-        # This might fail if user already exists, which is okay
-        if 'UNIQUE constraint failed' in result.get('error', ''):
-            print("   (User already exists - continuing)")
-        else:
-            return False
+        return False
     
     # Test 7: Get all users
     print("\n7. Testing get all users...")
