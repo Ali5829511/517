@@ -14,6 +14,10 @@ import json
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timedelta
 from database_api import get_all_residents, get_all_stickers, get_all_parking_spots, get_statistics, search_by_plate, save_processed_image, get_processed_images, search_processed_images, get_processed_images_statistics, get_violation_report, get_all_buildings
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
@@ -39,9 +43,13 @@ users_db = {
     'admin': {
         'password': generate_password_hash('Admin@2025'),
         'role': 'admin',
-        'name': 'مدير النظام'
+        'name': 'مدير النظام',
+        'email': 'aliayashi517@gmail.com'
     }
 }
+
+# جدول رموز إعادة تعيين كلمة المرور
+reset_tokens = {}
 
 # Decorator للتحقق من تسجيل الدخول
 def login_required(f):
@@ -680,6 +688,140 @@ def classify_parking():
             'confidence': 0,
             'error': str(e)
         }), 500
+
+# دالة إرسال البريد الإلكتروني
+def send_reset_email(email, token, username):
+    """إرسال بريد إلكتروني لإعادة تعيين كلمة المرور"""
+    try:
+        # إعدادات Gmail
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        sender_email = "aliayashi517@gmail.com"
+        sender_password = os.environ.get('EMAIL_PASSWORD', '')  # يجب تعيينها في متغيرات البيئة
+        
+        # رابط إعادة التعيين
+        reset_link = f"https://five17.onrender.com/reset-password.html?token={token}"
+        
+        # إنشاء الرسالة
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "إعادة تعيين كلمة المرور - نظام إدارة الإسكان"
+        message["From"] = sender_email
+        message["To"] = email
+        
+        # محتوى الرسالة
+        html_content = f"""
+        <html dir="rtl">
+        <body style="font-family: Arial, sans-serif; direction: rtl; text-align: right;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
+                <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h2 style="color: #667eea; margin-bottom: 20px;">إعادة تعيين كلمة المرور</h2>
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">مرحباً <strong>{username}</strong>،</p>
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">تلقينا طلباً لإعادة تعيين كلمة المرور لحسابك في نظام إدارة الإسكان.</p>
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">لإعادة تعيين كلمة المرور، يرجى الضغط على الرابط أدناه:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{reset_link}" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">إعادة تعيين كلمة المرور</a>
+                    </div>
+                    <p style="font-size: 14px; color: #666;">إذا لم تطلب إعادة تعيين كلمة المرور، يرجى تجاهل هذه الرسالة.</p>
+                    <p style="font-size: 14px; color: #666;">هذا الرابط صالح لمدة <strong>30 دقيقة</strong> فقط.</p>
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+                    <p style="font-size: 12px; color: #999; text-align: center;">&copy; 2025 جامعة الإمام محمد بن سعود الإسلامية</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        message.attach(MIMEText(html_content, "html"))
+        
+        # إرسال البريد
+        if sender_password:  # فقط إذا كانت كلمة المرور متوفرة
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(sender_email, sender_password)
+                server.send_message(message)
+            return True
+        else:
+            print("تحذير: EMAIL_PASSWORD غير معرفة في متغيرات البيئة")
+            return False
+    except Exception as e:
+        print(f"خطأ في إرسال البريد: {str(e)}")
+        return False
+
+# API endpoint لطلب إعادة تعيين كلمة المرور
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    """طلب إعادة تعيين كلمة المرور"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        
+        if not username:
+            return jsonify({'error': 'يرجى إدخال اسم المستخدم'}), 400
+        
+        # التحقق من وجود المستخدم
+        user = users_db.get(username)
+        if not user or 'email' not in user:
+            # لا نكشف عن وجود المستخدم أو عدمه لأسباب أمنية
+            return jsonify({
+                'success': True,
+                'message': 'إذا كان اسم المستخدم صحيحاً، ستصلك رسالة بريد إلكتروني لإعادة تعيين كلمة المرور.'
+            })
+        
+        # إنشاء رمز إعادة تعيين
+        token = secrets.token_urlsafe(32)
+        reset_tokens[token] = {
+            'username': username,
+            'expires': datetime.now() + timedelta(minutes=30)
+        }
+        
+        # إرسال البريد الإلكتروني
+        email_sent = send_reset_email(user['email'], token, user['name'])
+        
+        return jsonify({
+            'success': True,
+            'message': 'إذا كان اسم المستخدم صحيحاً، ستصلك رسالة بريد إلكتروني لإعادة تعيين كلمة المرور.',
+            'email_sent': email_sent
+        })
+    except Exception as e:
+        print(f"خطأ في forgot_password: {str(e)}")
+        return jsonify({'error': 'حدث خطأ. يرجى المحاولة لاحقاً.'}), 500
+
+# API endpoint لإعادة تعيين كلمة المرور
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password():
+    """إعادة تعيين كلمة المرور"""
+    try:
+        data = request.get_json()
+        token = data.get('token')
+        new_password = data.get('password')
+        
+        if not token or not new_password:
+            return jsonify({'error': 'يرجى إدخال جميع البيانات'}), 400
+        
+        # التحقق من الرمز
+        token_data = reset_tokens.get(token)
+        if not token_data:
+            return jsonify({'error': 'رمز غير صحيح أو منتهي الصلاحية'}), 400
+        
+        # التحقق من صلاحية الرمز
+        if datetime.now() > token_data['expires']:
+            del reset_tokens[token]
+            return jsonify({'error': 'انتهت صلاحية الرمز. يرجى طلب رمز جديد.'}), 400
+        
+        # تحديث كلمة المرور
+        username = token_data['username']
+        users_db[username]['password'] = generate_password_hash(new_password)
+        
+        # حذف الرمز بعد الاستخدام
+        del reset_tokens[token]
+        
+        return jsonify({
+            'success': True,
+            'message': 'تم تغيير كلمة المرور بنجاح'
+        })
+    except Exception as e:
+        print(f"خطأ في reset_password: {str(e)}")
+        return jsonify({'error': 'حدث خطأ. يرجى المحاولة لاحقاً.'}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
