@@ -1,12 +1,40 @@
 from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
 import os
+import logging
+from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Initialize OpenAI client safely
 try:
     from openai import OpenAI
-    client = OpenAI()
-    OPENAI_AVAILABLE = True
-except:
+    api_key = os.getenv('OPENAI_API_KEY')
+    if api_key:
+        client = OpenAI(api_key=api_key)
+        OPENAI_AVAILABLE = True
+        logger.info("OpenAI client initialized successfully")
+    else:
+        client = None
+        OPENAI_AVAILABLE = False
+        logger.warning("OPENAI_API_KEY not found in environment variables")
+except ImportError:
     OPENAI_AVAILABLE = False
     client = None
+    logger.warning("OpenAI library not installed")
+except Exception as e:
+    OPENAI_AVAILABLE = False
+    client = None
+    logger.error(f"Failed to initialize OpenAI client: {e}")
+
 from PIL import Image
 import io
 import base64
@@ -22,6 +50,12 @@ from database_api import get_all_residents, get_all_stickers, get_all_parking_sp
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
+
+# Secure session cookie configuration
+# SESSION_COOKIE_SECURE is only enabled in production to allow HTTP in development
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to session cookie
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
 
 # تكوين التطبيق
 
@@ -218,6 +252,7 @@ def extract_plate():
     """استخراج رقم لوحة السيارة من الصورة"""
     try:
         img_str = None
+        saved_filepath = None
         
         # دعم استقبال الصور بصيغتين: FormData أو base64
         if 'image' in request.files:
@@ -226,8 +261,13 @@ def extract_plate():
             if file.filename == '':
                 return jsonify({'error': 'لم يتم اختيار ملف'}), 400
             
-            image_bytes = file.read()
-            image = Image.open(io.BytesIO(image_bytes))
+            # حفظ الملف بشكل آمن
+            filename = secure_filename(file.filename)
+            saved_filepath = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(saved_filepath)
+            
+            # قراءة الصورة من المسار المحفوظ
+            image = Image.open(saved_filepath)
             
             buffered = io.BytesIO()
             image.save(buffered, format="PNG")
@@ -334,16 +374,16 @@ def extract_plate():
                         vehicle_type=result.get('vehicle_type', 'غير محدد'),
                         vehicle_color=result.get('vehicle_color', 'غير محدد'),
                         confidence=result.get('confidence', 0),
-                        image_path='',  # يمكن إضافة حفظ الصورة لاحقاً
+                        image_path=saved_filepath if saved_filepath else '',
                         notes=f"استخراج تلقائي - الأحرف: {result.get('english_letters', '')}, الأرقام: {result.get('numbers', '')}"
                     )
                 except Exception as db_error:
-                    print(f"تحذير: فشل حفظ الصورة في قاعدة البيانات: {db_error}")
+                    logger.warning(f"فشل حفظ الصورة في قاعدة البيانات: {db_error}")
                 
                 return jsonify(result)
                 
             except Exception as openai_error:
-                print(f"خطأ في OpenAI: {openai_error}")
+                logger.error(f"خطأ في OpenAI: {openai_error}")
                 result = None
         
         # إذا فشل OpenAI أو لم يكن متوفراً، استخدم OCR المحلي
@@ -379,7 +419,7 @@ def extract_plate():
                         'confidence': 0
                     }
             except Exception as ocr_error:
-                print(f"خطأ في OCR المحلي: {ocr_error}")
+                logger.error(f"خطأ في OCR المحلي: {ocr_error}")
                 result = {
                     'error': 'فشل في معالجة الصورة',
                     'plate_number': 'غير محدد',
@@ -389,7 +429,7 @@ def extract_plate():
         return jsonify(result)
         
     except Exception as e:
-        print(f"خطأ في استخراج اللوحة: {e}")
+        logger.error(f"خطأ في استخراج اللوحة: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/process-images', methods=['POST'])
@@ -406,12 +446,18 @@ def process_images():
             for file in files:
                 if file.filename == '':
                     continue
-                image_bytes = file.read()
-                image = Image.open(io.BytesIO(image_bytes))
+                
+                # حفظ الملف بشكل آمن
+                filename = secure_filename(file.filename)
+                saved_filepath = os.path.join(UPLOAD_FOLDER, filename)
+                file.save(saved_filepath)
+                
+                # قراءة الصورة من المسار المحفوظ
+                image = Image.open(saved_filepath)
                 buffered = io.BytesIO()
                 image.save(buffered, format="PNG")
                 img_str = base64.b64encode(buffered.getvalue()).decode()
-                images_data.append({'data': img_str, 'name': file.filename})
+                images_data.append({'data': img_str, 'name': filename, 'path': saved_filepath})
         
         elif request.is_json:
             # استقبال من JSON (base64)
@@ -422,7 +468,7 @@ def process_images():
                     img_str = image_data.split(',')[1]
                 else:
                     img_str = image_data
-                images_data.append({'data': img_str, 'name': f'image_{idx+1}.png'})
+                images_data.append({'data': img_str, 'name': f'image_{idx+1}.png', 'path': ''})
         
         else:
             return jsonify({'error': 'لم يتم إرفاق صور'}), 400
@@ -438,6 +484,7 @@ def process_images():
         for img_info in images_data:
             img_str = img_info['data']
             filename = img_info['name']
+            filepath = img_info.get('path', '')
             
             # استخدام GPT-4 Vision لتحليل الصورة
             response = client.chat.completions.create(
@@ -491,6 +538,19 @@ def process_images():
                 if search_result.get('found'):
                     result['resident_info'] = search_result
             
+            # حفظ في قاعدة البيانات الفعلية مع مسار الصورة
+            try:
+                save_processed_image(
+                    plate_number=result.get('plate_number', 'غير محدد'),
+                    vehicle_type=result.get('vehicle_type', 'غير محدد'),
+                    vehicle_color=result.get('vehicle_color', 'غير محدد'),
+                    confidence=result.get('confidence', 0),
+                    image_path=filepath,
+                    notes=f"معالجة تلقائية - التصنيف: {result.get('category', 'غير محدد')}"
+                )
+            except Exception as db_error:
+                logger.warning(f"فشل حفظ الصورة في قاعدة البيانات: {db_error}")
+            
             results.append(result)
         
         # حفظ في قاعدة البيانات
@@ -499,7 +559,7 @@ def process_images():
         return jsonify({'results': results, 'total': len(results)})
         
     except Exception as e:
-        print(f"خطأ في معالجة الصور: {e}")
+        logger.error(f"خطأ في معالجة الصور: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/processed-images-stats', methods=['GET'])
@@ -649,9 +709,13 @@ def classify_parking():
         if file.filename == '':
             return jsonify({'error': 'لم يتم اختيار ملف'}), 400
         
-        # قراءة الصورة وتحويلها إلى base64
-        image_bytes = file.read()
-        image = Image.open(io.BytesIO(image_bytes))
+        # حفظ الملف بشكل آمن
+        filename = secure_filename(file.filename)
+        saved_filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(saved_filepath)
+        
+        # قراءة الصورة من المسار المحفوظ
+        image = Image.open(saved_filepath)
         
         # تصغير الصورة إذا كانت كبيرة جداً
         max_size = (1024, 1024)
@@ -731,8 +795,8 @@ def classify_parking():
         })
         
     except json.JSONDecodeError as e:
-        print(f"خطأ في تحليل JSON: {e}")
-        print(f"النص المستلم: {result_text}")
+        logger.error(f"خطأ في تحليل JSON: {e}")
+        logger.error(f"النص المستلم: {result_text}")
         return jsonify({
             'success': False,
             'category': 'other',
@@ -740,7 +804,7 @@ def classify_parking():
             'error': 'خطأ في تحليل النتيجة'
         })
     except Exception as e:
-        print(f"خطأ في تصنيف الصورة: {str(e)}")
+        logger.error(f"خطأ في تصنيف الصورة: {str(e)}")
         return jsonify({
             'success': False,
             'category': 'other',
@@ -800,10 +864,10 @@ def send_reset_email(email, token, username):
                 server.send_message(message)
             return True
         else:
-            print("تحذير: EMAIL_PASSWORD غير معرفة في متغيرات البيئة")
+            logger.warning(" EMAIL_PASSWORD غير معرفة في متغيرات البيئة")
             return False
     except Exception as e:
-        print(f"خطأ في إرسال البريد: {str(e)}")
+        logger.error(f"خطأ في إرسال البريد: {str(e)}")
         return False
 
 # API endpoint لطلب إعادة تعيين كلمة المرور
@@ -842,7 +906,7 @@ def forgot_password():
             'email_sent': email_sent
         })
     except Exception as e:
-        print(f"خطأ في forgot_password: {str(e)}")
+        logger.error(f"خطأ في forgot_password: {str(e)}")
         return jsonify({'error': 'حدث خطأ. يرجى المحاولة لاحقاً.'}), 500
 
 # API endpoint لإعادة تعيين كلمة المرور
@@ -879,7 +943,7 @@ def reset_password():
             'message': 'تم تغيير كلمة المرور بنجاح'
         })
     except Exception as e:
-        print(f"خطأ في reset_password: {str(e)}")
+        logger.error(f"خطأ في reset_password: {str(e)}")
         return jsonify({'error': 'حدث خطأ. يرجى المحاولة لاحقاً.'}), 500
 
 # ==================== API التقارير ====================
@@ -1071,7 +1135,7 @@ def get_report(report_type):
         return jsonify(report_data)
         
     except Exception as e:
-        print(f"خطأ في get_report: {str(e)}")
+        logger.error(f"خطأ في get_report: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/resident-card')
@@ -1198,7 +1262,7 @@ def get_resident_card():
         })
         
     except Exception as e:
-        print(f"خطأ في get_resident_card: {str(e)}")
+        logger.error(f"خطأ في get_resident_card: {str(e)}")
         return jsonify({
             'found': False,
             'error': f'حدث خطأ: {str(e)}'
