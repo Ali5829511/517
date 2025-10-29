@@ -119,10 +119,9 @@ chmod 755 processed_images/
 ├── uploads/                   # مجلد الملفات المرفوعة
 ├── processed_images/          # مجلد الصور المعالجة
 ├── static/                    # ملفات HTML/CSS/JS
-└── tests/
-    ├── test_app.py
-    ├── test_security_features.py
-    └── test_secure_upload.py
+├── test_app.py                # اختبارات أساسية
+├── test_security_features.py  # اختبارات الأمان
+└── test_secure_upload.py      # اختبارات التحميل الآمن
 ```
 
 ## ملاحظات مهمة
@@ -138,7 +137,3 @@ chmod 755 processed_images/
 1. تحقق من السجلات (logs)
 2. راجع التوثيق في المستودع
 3. افتح issue في GitHub
-
----
-
-تم التطوير بواسطة GitHub Copilot Workspace 🚀
