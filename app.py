@@ -18,7 +18,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
-from database_api import get_all_residents, get_all_stickers, get_all_parking_spots, get_statistics, search_by_plate, save_processed_image, get_processed_images, search_processed_images, get_processed_images_statistics, get_violation_report, get_all_buildings
+from database_api import get_all_residents, get_all_stickers, get_all_parking_spots, get_statistics, search_by_plate, save_processed_image, get_processed_images, search_processed_images, get_processed_images_statistics, get_violation_report, get_all_buildings, add_resident, update_resident, checkout_resident, delete_resident, get_available_units
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
@@ -519,6 +519,71 @@ def api_get_residents():
     try:
         residents = get_all_residents()
         return jsonify({'success': True, 'data': residents})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/residents', methods=['POST'])
+@admin_required
+def api_add_resident():
+    """إضافة ساكن جديد"""
+    try:
+        data = request.get_json()
+        result = add_resident(data)
+        if result['success']:
+            return jsonify(result), 201
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/residents/<int:resident_id>', methods=['PUT'])
+@admin_required
+def api_update_resident(resident_id):
+    """تحديث معلومات ساكن"""
+    try:
+        data = request.get_json()
+        result = update_resident(resident_id, data)
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/residents/<int:resident_id>/checkout', methods=['POST'])
+@admin_required
+def api_checkout_resident(resident_id):
+    """إخراج/سحب ساكن"""
+    try:
+        data = request.get_json() if request.is_json else None
+        result = checkout_resident(resident_id, data)
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/residents/<int:resident_id>', methods=['DELETE'])
+@admin_required
+def api_delete_resident(resident_id):
+    """حذف ساكن"""
+    try:
+        result = delete_resident(resident_id)
+        if result['success']:
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/units/available', methods=['GET'])
+def api_get_available_units():
+    """الحصول على الوحدات الشاغرة"""
+    try:
+        building_id = request.args.get('building_id', type=int)
+        units = get_available_units(building_id)
+        return jsonify({'success': True, 'data': units})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
