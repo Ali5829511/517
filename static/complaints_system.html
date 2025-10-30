@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الشكاوى والمتابعة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin: 30px auto;
+            max-width: 1400px;
+            overflow: hidden;
+        }
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header-section h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .nav-tabs {
+            border-bottom: 3px solid #667eea;
+        }
+        .nav-tabs .nav-link {
+            color: #667eea;
+            font-weight: bold;
+            border: none;
+            border-bottom: 3px solid transparent;
+        }
+        .nav-tabs .nav-link.active {
+            color: #764ba2;
+            border-bottom: 3px solid #764ba2;
+            background: transparent;
+        }
+        .complaint-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        .complaint-card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+        }
+        .priority-high {
+            border-right: 5px solid #dc3545;
+        }
+        .priority-medium {
+            border-right: 5px solid #ffc107;
+        }
+        .priority-low {
+            border-right: 5px solid #28a745;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .status-new {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status-inprogress {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        .status-resolved {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        .status-closed {
+            background: #f5f5f5;
+            color: #616161;
+        }
+        .btn-custom {
+            border-radius: 25px;
+            padding: 10px 25px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+        }
+        .btn-submit:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .response-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .response-item {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-right: 3px solid #667eea;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .stats-card h3 {
+            font-size: 2.5rem;
+            margin: 0;
+        }
+        .stats-card p {
+            margin: 5px 0 0 0;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header-section">
+                <h1><i class="fas fa-comments"></i> نظام إدارة الشكاوى والمتابعة</h1>
+                <p class="mb-0">نحن هنا لخدمتكم والاستماع لملاحظاتكم</p>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs px-4 pt-3" id="complaintsTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="submit-tab" data-bs-toggle="tab" data-bs-target="#submit" type="button">
+                        <i class="fas fa-plus-circle"></i> تقديم شكوى
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="track-tab" data-bs-toggle="tab" data-bs-target="#track" type="button">
+                        <i class="fas fa-search"></i> متابعة شكوى
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list" type="button">
+                        <i class="fas fa-list"></i> قائمة الشكاوى
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button">
+                        <i class="fas fa-chart-bar"></i> الإحصائيات
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content p-4" id="complaintsTabContent">
+                <!-- Submit Complaint Tab -->
+                <div class="tab-pane fade show active" id="submit" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-8 mx-auto">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <h4 class="mb-4"><i class="fas fa-edit"></i> تقديم شكوى جديدة</h4>
+                                    <form id="complaintForm">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">رقم الساكن <span class="text-danger">*</span></label>
+                                                <select class="form-select" id="residentSelect" required>
+                                                    <option value="">اختر الساكن...</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label">فئة الشكوى <span class="text-danger">*</span></label>
+                                                <select class="form-select" id="categorySelect" required>
+                                                    <option value="">اختر الفئة...</option>
+                                                    <option value="صيانة">صيانة</option>
+                                                    <option value="نظافة">نظافة</option>
+                                                    <option value="أمن وسلامة">أمن وسلامة</option>
+                                                    <option value="مواقف">مواقف</option>
+                                                    <option value="ضوضاء">ضوضاء</option>
+                                                    <option value="خدمات">خدمات</option>
+                                                    <option value="أخرى">أخرى</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">الأولوية <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="prioritySelect" required>
+                                                <option value="منخفضة">منخفضة</option>
+                                                <option value="متوسطة" selected>متوسطة</option>
+                                                <option value="عالية">عالية</option>
+                                                <option value="عاجلة">عاجلة</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">موضوع الشكوى <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="subjectInput" placeholder="مثال: تسرب مياه في الحمام" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">تفاصيل الشكوى <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="descriptionInput" rows="5" placeholder="اكتب تفاصيل الشكوى بشكل واضح..." required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">إرفاق ملفات (اختياري)</label>
+                                            <input type="file" class="form-control" id="attachmentsInput" multiple accept="image/*,.pdf,.doc,.docx">
+                                            <small class="text-muted">يمكنك إرفاق صور أو مستندات</small>
+                                        </div>
+                                        <div class="d-grid">
+                                            <button type="submit" class="btn btn-submit btn-custom btn-lg">
+                                                <i class="fas fa-paper-plane"></i> تقديم الشكوى
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Track Complaint Tab -->
+                <div class="tab-pane fade" id="track" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-8 mx-auto">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-4">
+                                    <h4 class="mb-4"><i class="fas fa-search"></i> تتبع شكوى</h4>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="trackingNumber" placeholder="أدخل رقم الشكوى">
+                                        <button class="btn btn-submit" type="button" onclick="trackComplaint()">
+                                            <i class="fas fa-search"></i> بحث
+                                        </button>
+                                    </div>
+                                    <div id="trackingResult"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Complaints List Tab -->
+                <div class="tab-pane fade" id="list" role="tabpanel">
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <select class="form-select" id="filterStatus">
+                                    <option value="">جميع الحالات</option>
+                                    <option value="جديدة">جديدة</option>
+                                    <option value="قيد المعالجة">قيد المعالجة</option>
+                                    <option value="تم الحل">تم الحل</option>
+                                    <option value="مغلقة">مغلقة</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="filterCategory">
+                                    <option value="">جميع الفئات</option>
+                                    <option value="صيانة">صيانة</option>
+                                    <option value="نظافة">نظافة</option>
+                                    <option value="أمن وسلامة">أمن وسلامة</option>
+                                    <option value="مواقف">مواقف</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-submit w-100" onclick="filterComplaints()">
+                                    <i class="fas fa-filter"></i> تطبيق الفلترة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="complaintsList"></div>
+                </div>
+
+                <!-- Statistics Tab -->
+                <div class="tab-pane fade" id="stats" role="tabpanel">
+                    <div class="row" id="statsContent">
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h3 id="totalComplaints">0</h3>
+                                <p>إجمالي الشكاوى</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <h3 id="newComplaints">0</h3>
+                                <p>شكاوى جديدة</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                <h3 id="inProgressComplaints">0</h3>
+                                <p>قيد المعالجة</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                <h3 id="resolvedComplaints">0</h3>
+                                <p>تم الحل</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Complaint Details -->
+    <div class="modal fade" id="complaintModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تفاصيل الشكوى</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="complaintDetails"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load residents on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadResidents();
+            loadComplaints();
+            loadStats();
+        });
+
+        // Load residents for dropdown
+        async function loadResidents() {
+            try {
+                const response = await fetch('/api/residents');
+                const data = await response.json();
+                const select = document.getElementById('residentSelect');
+                data.forEach(resident => {
+                    const option = document.createElement('option');
+                    option.value = resident.id;
+                    option.textContent = `${resident.name} - ${resident.employee_id}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading residents:', error);
+            }
+        }
+
+        // Submit complaint form
+        document.getElementById('complaintForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                resident_id: document.getElementById('residentSelect').value,
+                category: document.getElementById('categorySelect').value,
+                priority: document.getElementById('prioritySelect').value,
+                subject: document.getElementById('subjectInput').value,
+                description: document.getElementById('descriptionInput').value
+            };
+
+            try {
+                const response = await fetch('/api/complaints', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`تم تقديم الشكوى بنجاح!\nرقم الشكوى: ${result.complaint_number}`);
+                    this.reset();
+                    loadComplaints();
+                    loadStats();
+                } else {
+                    alert('حدث خطأ في تقديم الشكوى');
+                }
+            } catch (error) {
+                console.error('Error submitting complaint:', error);
+                alert('حدث خطأ في الاتصال');
+            }
+        });
+
+        // Load complaints list
+        async function loadComplaints() {
+            try {
+                const response = await fetch('/api/complaints');
+                const complaints = await response.json();
+                displayComplaints(complaints);
+            } catch (error) {
+                console.error('Error loading complaints:', error);
+            }
+        }
+
+        // Display complaints
+        function displayComplaints(complaints) {
+            const container = document.getElementById('complaintsList');
+            container.innerHTML = '';
+            
+            if (complaints.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">لا توجد شكاوى</div>';
+                return;
+            }
+
+            complaints.forEach(complaint => {
+                const priorityClass = {
+                    'عالية': 'priority-high',
+                    'متوسطة': 'priority-medium',
+                    'منخفضة': 'priority-low'
+                }[complaint.priority] || 'priority-medium';
+
+                const statusClass = {
+                    'جديدة': 'status-new',
+                    'قيد المعالجة': 'status-inprogress',
+                    'تم الحل': 'status-resolved',
+                    'مغلقة': 'status-closed'
+                }[complaint.status] || 'status-new';
+
+                const card = `
+                    <div class="complaint-card ${priorityClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5>${complaint.subject}</h5>
+                                <p class="text-muted mb-2">${complaint.description.substring(0, 100)}...</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> ${new Date(complaint.submission_date).toLocaleDateString('ar-EG')}
+                                    <i class="fas fa-tag ms-3"></i> ${complaint.category}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <span class="status-badge ${statusClass}">${complaint.status}</span>
+                                <div class="mt-2">
+                                    <small class="text-muted">${complaint.complaint_number}</small>
+                                </div>
+                                <button class="btn btn-sm btn-submit mt-2" onclick="viewComplaint('${complaint.complaint_number}')">
+                                    <i class="fas fa-eye"></i> عرض
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        // Track complaint
+        async function trackComplaint() {
+            const number = document.getElementById('trackingNumber').value;
+            if (!number) {
+                alert('الرجاء إدخال رقم الشكوى');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/complaints/${number}`);
+                const complaint = await response.json();
+                
+                if (complaint) {
+                    displayComplaintTracking(complaint);
+                } else {
+                    document.getElementById('trackingResult').innerHTML = 
+                        '<div class="alert alert-warning">لم يتم العثور على الشكوى</div>';
+                }
+            } catch (error) {
+                console.error('Error tracking complaint:', error);
+            }
+        }
+
+        // Display complaint tracking
+        function displayComplaintTracking(complaint) {
+            const statusClass = {
+                'جديدة': 'status-new',
+                'قيد المعالجة': 'status-inprogress',
+                'تم الحل': 'status-resolved',
+                'مغلقة': 'status-closed'
+            }[complaint.status] || 'status-new';
+
+            const html = `
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>${complaint.subject}</h5>
+                            <span class="status-badge ${statusClass}">${complaint.status}</span>
+                        </div>
+                        <p><strong>الفئة:</strong> ${complaint.category}</p>
+                        <p><strong>الأولوية:</strong> ${complaint.priority}</p>
+                        <p><strong>التفاصيل:</strong> ${complaint.description}</p>
+                        <p><strong>تاريخ التقديم:</strong> ${new Date(complaint.submission_date).toLocaleString('ar-EG')}</p>
+                        ${complaint.assigned_to ? `<p><strong>المسؤول:</strong> ${complaint.assigned_to}</p>` : ''}
+                    </div>
+                </div>
+            `;
+            document.getElementById('trackingResult').innerHTML = html;
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/complaints/stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalComplaints').textContent = stats.total || 0;
+                document.getElementById('newComplaints').textContent = stats.new || 0;
+                document.getElementById('inProgressComplaints').textContent = stats.in_progress || 0;
+                document.getElementById('resolvedComplaints').textContent = stats.resolved || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // View complaint details
+        function viewComplaint(complaintNumber) {
+            trackComplaint();
+            document.getElementById('trackingNumber').value = complaintNumber;
+            const trackTab = new bootstrap.Tab(document.getElementById('track-tab'));
+            trackTab.show();
+        }
+
+        // Filter complaints
+        function filterComplaints() {
+            const status = document.getElementById('filterStatus').value;
+            const category = document.getElementById('filterCategory').value;
+            // Implement filtering logic
+            loadComplaints();
+        }
+    </script>
+</body>
+</html>
