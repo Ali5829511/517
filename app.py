@@ -47,6 +47,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from database_api import get_all_residents, get_all_stickers, get_all_parking_spots, get_statistics, search_by_plate, save_processed_image, get_processed_images, search_processed_images, get_processed_images_statistics, get_violation_report, get_all_buildings
+import auth_db
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
@@ -72,17 +73,8 @@ database = {
     'processed_images': []
 }
 
-# قاعدة بيانات المستخدمين (في الإنتاج، استخدم قاعدة بيانات حقيقية)
-users_db = {
-    'admin': {
-        'password': generate_password_hash('Admin@2025'),
-        'role': 'admin',
-        'name': 'مدير النظام',
-        'email': 'aliayashi517@gmail.com'
-    }
-}
-
-# جدول رموز إعادة تعيين كلمة المرور
+# جدول رموز إعادة تعيين كلمة المرور (temporary in-memory storage)
+# في الإنتاج، يمكن نقله إلى قاعدة البيانات أيضاً
 reset_tokens = {}
 
 # Decorator للتحقق من تسجيل الدخول
@@ -134,15 +126,28 @@ def login():
         if not username or not password:
             return jsonify({'error': 'يرجى إدخال اسم المستخدم وكلمة المرور'}), 400
         
-        # التحقق من المستخدم
-        user = users_db.get(username)
-        if not user or not check_password_hash(user['password'], password):
+        # الحصول على IP للتحقق من محاولات الدخول
+        ip_address = request.remote_addr
+        
+        # التحقق من عدد محاولات الدخول الفاشلة
+        if not auth_db.check_login_attempts(username, ip_address):
+            return jsonify({'error': 'تم تجاوز عدد محاولات تسجيل الدخول. يرجى المحاولة بعد 15 دقيقة'}), 429
+        
+        # التحقق من المستخدم من قاعدة البيانات
+        user = auth_db.get_user_by_username(username)
+        if not user or not auth_db.verify_password(user, password):
+            # تسجيل محاولة دخول فاشلة
+            auth_db.log_login_attempt(username, ip_address, False)
             return jsonify({'error': 'اسم المستخدم أو كلمة المرور غير صحيحة'}), 401
+        
+        # تسجيل محاولة دخول ناجحة
+        auth_db.log_login_attempt(username, ip_address, True)
+        auth_db.update_last_login(username)
         
         # إنشاء جلسة
         session['user_id'] = username
         session['role'] = user['role']
-        session['name'] = user['name']
+        session['name'] = user.get('name', username)
         
         if remember:
             session.permanent = True
@@ -152,14 +157,16 @@ def login():
             'message': 'تم تسجيل الدخول بنجاح',
             'user': {
                 'username': username,
-                'name': user['name'],
+                'name': user.get('name', username),
                 'role': user['role']
             },
             'redirect': '/index.html'
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log the error for debugging but don't expose details to user
+        print(f"Login error: {str(e)}")
+        return jsonify({'error': 'حدث خطأ في عملية تسجيل الدخول. يرجى المحاولة لاحقاً.'}), 500
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
@@ -181,14 +188,11 @@ def current_user():
 @admin_required
 def get_users():
     """الحصول على قائمة المستخدمين (للمدير فقط)"""
-    users_list = []
-    for username, user in users_db.items():
-        users_list.append({
-            'username': username,
-            'name': user['name'],
-            'role': user['role']
-        })
-    return jsonify(users_list)
+    users = auth_db.get_all_users()
+    # Remove sensitive data before sending
+    for user in users:
+        user.pop('password_hash', None)
+    return jsonify(users)
 
 @app.route('/api/users', methods=['POST'])
 @admin_required
@@ -198,46 +202,53 @@ def create_user():
         data = request.get_json()
         username = data.get('username')
         password = data.get('password')
+        email = data.get('email')
         name = data.get('name')
         role = data.get('role', 'user')
         
-        if not username or not password or not name:
-            return jsonify({'error': 'جميع الحقول مطلوبة'}), 400
+        if not username or not password or not email:
+            return jsonify({'error': 'اسم المستخدم والبريد الإلكتروني وكلمة المرور مطلوبة'}), 400
         
-        if username in users_db:
+        # التحقق من وجود المستخدم
+        if auth_db.user_exists(username=username):
             return jsonify({'error': 'اسم المستخدم موجود بالفعل'}), 400
         
-        users_db[username] = {
-            'password': generate_password_hash(password),
-            'name': name,
-            'role': role
-        }
+        if auth_db.user_exists(email=email):
+            return jsonify({'error': 'البريد الإلكتروني مستخدم بالفعل'}), 400
+        
+        # إنشاء المستخدم
+        result = auth_db.create_user(username, email, password, role, name)
+        
+        if not result['success']:
+            # Don't expose detailed error information to prevent information leakage
+            return jsonify({'error': 'فشل إنشاء المستخدم. يرجى التحقق من البيانات المدخلة.'}), 400
         
         return jsonify({
             'success': True,
             'message': 'تم إنشاء المستخدم بنجاح',
             'user': {
                 'username': username,
+                'email': email,
                 'name': name,
                 'role': role
             }
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log the error for debugging but don't expose details to user
+        print(f"Create user error: {str(e)}")
+        return jsonify({'error': 'حدث خطأ في إنشاء المستخدم. يرجى المحاولة لاحقاً.'}), 500
 
 @app.route('/api/users/<username>', methods=['DELETE'])
 @admin_required
 def delete_user(username):
     """حذف مستخدم (للمدير فقط)"""
     try:
-        if username == 'admin':
-            return jsonify({'error': 'لا يمكن حذف المدير الرئيسي'}), 400
+        result = auth_db.delete_user(username)
         
-        if username not in users_db:
-            return jsonify({'error': 'المستخدم غير موجود'}), 404
-        
-        del users_db[username]
+        if not result['success']:
+            # Don't expose detailed error information
+            return jsonify({'error': 'فشل حذف المستخدم'}), 400
         
         return jsonify({
             'success': True,
@@ -245,7 +256,9 @@ def delete_user(username):
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Log the error for debugging but don't expose details to user
+        print(f"Delete user error: {str(e)}")
+        return jsonify({'error': 'حدث خطأ في حذف المستخدم. يرجى المحاولة لاحقاً.'}), 500
 
 @app.route('/api/extract-plate', methods=['POST'])
 def extract_plate():
@@ -881,8 +894,8 @@ def forgot_password():
         if not username:
             return jsonify({'error': 'يرجى إدخال اسم المستخدم'}), 400
         
-        # التحقق من وجود المستخدم
-        user = users_db.get(username)
+        # التحقق من وجود المستخدم في قاعدة البيانات
+        user = auth_db.get_user_by_username(username)
         if not user or 'email' not in user:
             # لا نكشف عن وجود المستخدم أو عدمه لأسباب أمنية
             return jsonify({
@@ -898,7 +911,7 @@ def forgot_password():
         }
         
         # إرسال البريد الإلكتروني
-        email_sent = send_reset_email(user['email'], token, user['name'])
+        email_sent = send_reset_email(user['email'], token, user.get('name', username))
         
         return jsonify({
             'success': True,
@@ -931,9 +944,9 @@ def reset_password():
             del reset_tokens[token]
             return jsonify({'error': 'انتهت صلاحية الرمز. يرجى طلب رمز جديد.'}), 400
         
-        # تحديث كلمة المرور
+        # تحديث كلمة المرور في قاعدة البيانات
         username = token_data['username']
-        users_db[username]['password'] = generate_password_hash(new_password)
+        auth_db.update_user_password(username, new_password)
         
         # حذف الرمز بعد الاستخدام
         del reset_tokens[token]
