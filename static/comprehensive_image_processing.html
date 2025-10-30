@@ -1578,42 +1578,6 @@
             Object.entries(categories).forEach(([category, info]) => {
                 console.log(`${info.name_ar}: ${info.count} صورة`);
             });
-        };
-            
-            processedResults.forEach(result => {
-                const category = result.category || 'other';
-                if (categories[category]) {
-                    categories[category].push(result);
-                }
-            });
-            
-            console.log('📊 تم الفرز حسب الفئة:', categories);
-            
-            // عرض النتائج
-            let message = '📊 نتائج الفرز حسب النوع:\n\n';
-            let totalFound = 0;
-            
-            const categoryNames = {
-                'normal': 'مواقف عادية',
-                'disabled': 'مواقف معاقين',
-                'violation': 'مخالفات',
-                'old_buildings': 'المباني القديمة',
-                'new_buildings': 'المباني الجديدة',
-                'villas': 'منطقة الفلل',
-                'impounded': 'السيارات المكبوحة',
-                'tow_truck': 'سيارات على سطحة',
-                'other': 'أخرى'
-            };
-            
-            for (const [category, items] of Object.entries(categories)) {
-                if (items.length > 0) {
-                    message += `${categoryNames[category]}: ${items.length}\n`;
-                    totalFound += items.length;
-                }
-            }
-            
-            message += `\nإجمالي الصور: ${totalFound}`;
-            alert(message);
         }
 
         // حذف الصور المعالجة
