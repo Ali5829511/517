@@ -285,6 +285,135 @@ make db-backup  # Creates timestamped backup
 - Review `DEPLOYMENT_GUIDE.md` for deployment details
 - Makefile has `make help` command for available operations
 
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+- **Workflow File**: `.github/workflows/python-package-conda.yml`
+- **Trigger**: Runs on every push to any branch
+- **Python Version**: 3.10 (via Conda)
+- **Steps**:
+  1. Checkout code
+  2. Set up Python environment with Conda
+  3. Install dependencies from `environment.yml`
+  4. Run Flake8 linting (syntax errors cause failure)
+  5. Run pytest tests
+
+### CI Expectations
+- All tests must pass before merging
+- Linting must pass (E9, F63, F7, F82 errors will fail the build)
+- Code complexity should be reasonable (max-complexity=10)
+- Line length warnings at 127 characters
+
+## Git Workflow
+
+### Branching Strategy
+- **main/master**: Production-ready code
+- **feature/\***: New features (e.g., `feature/add-parking-reports`)
+- **fix/\***: Bug fixes (e.g., `fix/vehicle-sticker-validation`)
+- **copilot/\***: Automated branches created by Copilot agents
+
+### Commit Messages
+- Use clear, descriptive commit messages in English or Arabic
+- Format: `<type>: <description>`
+- Examples:
+  - `feat: Add parking spot analytics dashboard`
+  - `fix: Correct vehicle sticker validation logic`
+  - `docs: Update deployment instructions`
+  - `refactor: Improve database query performance`
+
+### Before Pushing
+1. Run `make test` - Ensure all tests pass
+2. Run `make lint` - Check code quality
+3. Run `make format` - Format code with Black
+4. Review changes with `git diff`
+5. Ensure no sensitive data (API keys, passwords) in commits
+
+## Pull Request Guidelines
+
+### Creating a PR
+1. **Title**: Clear and descriptive (e.g., "Add vehicle sticker analytics feature")
+2. **Description**: Include:
+   - What changes were made
+   - Why the changes were needed
+   - How to test the changes
+   - Any breaking changes or migration steps
+   - Screenshots for UI changes
+3. **Link Issues**: Reference related issues (e.g., "Fixes #123")
+4. **Labels**: Add appropriate labels (bug, enhancement, documentation, etc.)
+
+### PR Checklist
+- [ ] Tests added/updated and passing
+- [ ] Code follows project style guidelines
+- [ ] Documentation updated (if needed)
+- [ ] No console.log or debug code left in
+- [ ] Arabic translations provided for user-facing text
+- [ ] Security considerations reviewed
+- [ ] Database migrations included (if schema changed)
+
+### Code Review Process
+- PRs require review before merging
+- Address all review comments
+- Keep PRs focused and reasonably sized
+- Respond to feedback promptly
+
+## Issue Reporting
+
+### Bug Reports
+When reporting bugs, include:
+- **Description**: What went wrong?
+- **Steps to Reproduce**: How can we reproduce the issue?
+- **Expected Behavior**: What should happen?
+- **Actual Behavior**: What actually happens?
+- **Environment**: OS, Python version, browser (if applicable)
+- **Screenshots**: If UI-related
+- **Error Messages**: Full error text and stack traces
+
+### Feature Requests
+When requesting features, include:
+- **Use Case**: Why is this feature needed?
+- **Proposed Solution**: How should it work?
+- **Alternatives Considered**: Other approaches you've thought about
+- **Impact**: Who will benefit from this feature?
+
+## Common Pitfalls & Troubleshooting
+
+### Database Issues
+- **Problem**: Database locked errors
+  - **Solution**: Ensure only one process accesses the database at a time
+  - Close connections properly with `conn.close()`
+
+- **Problem**: Foreign key constraint failures
+  - **Solution**: Ensure `PRAGMA foreign_keys = ON` is set
+  - Verify referenced records exist before insertion
+
+### OpenAI API Issues
+- **Problem**: API key not working
+  - **Solution**: Check `.env` file or environment variables
+  - Verify `OPENAI_AVAILABLE` flag in `app.py`
+
+- **Problem**: Rate limiting
+  - **Solution**: Implement exponential backoff
+  - Use fallback OCR methods (EasyOCR, Tesseract)
+
+### Arabic Text Issues
+- **Problem**: Garbled Arabic text in database
+  - **Solution**: Ensure UTF-8 encoding everywhere
+  - Check database connection uses UTF-8
+
+- **Problem**: Arabic not displaying correctly in browser
+  - **Solution**: Verify HTML has `<meta charset="UTF-8">`
+  - Check CSS includes RTL directives where needed
+
+### Deployment Issues
+- **Problem**: App crashes on Railway/Render
+  - **Solution**: Check environment variables are set
+  - Review logs for specific errors
+  - Ensure Gunicorn configuration is correct
+
+- **Problem**: Database not found in production
+  - **Solution**: Verify `DATABASE_PATH` environment variable
+  - Ensure database file is included in deployment
+
 ## When Making Changes
 
 1. **Understand the context**: This is a production system for university housing
@@ -294,6 +423,9 @@ make db-backup  # Creates timestamped backup
 5. **Document changes**: Update relevant documentation files
 6. **Follow patterns**: Use existing code patterns for consistency
 7. **Consider scale**: System manages 1000+ residents, 165 buildings
+8. **Review CI/CD**: Ensure changes don't break the build pipeline
+9. **Update tests**: Add tests for new functionality
+10. **Check dependencies**: Run security checks before adding new packages
 
 ---
 
