@@ -62,5 +62,29 @@
             ليس لديك حساب؟ <a href="{{ url_for('auth.register') }}">إنشاء حساب جديد</a>
         </div>
     </div>
+    
+    <!-- نظام الإشعارات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="{{ url_for('static', filename='notification_system.js') }}"></script>
+    <script>
+        // عرض رسائل الخطأ كإشعارات
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                window.addEventListener('DOMContentLoaded', () => {
+                    {% for category, message in messages %}
+                        {% if category == 'danger' or category == 'error' %}
+                            notify.error('{{ message }}', 6000);
+                        {% elif category == 'warning' %}
+                            notify.warning('{{ message }}', 6000);
+                        {% elif category == 'success' %}
+                            notify.success('{{ message }}', 6000);
+                        {% else %}
+                            notify.info('{{ message }}', 6000);
+                        {% endif %}
+                    {% endfor %}
+                });
+            {% endif %}
+        {% endwith %}
+    </script>
 </body>
 </html>
