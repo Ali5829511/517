@@ -1,8 +1,27 @@
-from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
+from flask import Flask, request, jsonify, send_from_directory, session, redirect
 import os
 import logging
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
+from PIL import Image
+import io
+import base64
+import json
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timedelta
+import sqlite3
+from database_api import (
+    get_all_residents, get_all_stickers, get_all_parking_spots,
+    get_statistics, search_by_plate, save_processed_image,
+    get_processed_images, search_processed_images,
+    get_processed_images_statistics, get_violation_report, get_all_buildings,
+    DATABASE
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -34,19 +53,6 @@ except Exception as e:
     OPENAI_AVAILABLE = False
     client = None
     logger.error(f"Failed to initialize OpenAI client: {e}")
-
-from PIL import Image
-import io
-import base64
-import json
-from functools import wraps
-from werkzeug.security import generate_password_hash, check_password_hash
-import secrets
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from datetime import datetime, timedelta
-from database_api import get_all_residents, get_all_stickers, get_all_parking_spots, get_statistics, search_by_plate, save_processed_image, get_processed_images, search_processed_images, get_processed_images_statistics, get_violation_report, get_all_buildings
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
@@ -86,6 +92,8 @@ users_db = {
 reset_tokens = {}
 
 # Decorator للتحقق من تسجيل الدخول
+
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -97,6 +105,8 @@ def login_required(f):
     return decorated_function
 
 # Decorator للتحقق من صلاحيات المدير
+
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -107,10 +117,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
 @app.route('/')
 @login_required
 def index():
     return send_from_directory('static', 'index.html')
+
 
 @app.route('/<path:path>')
 def serve_static(path):
@@ -122,6 +134,7 @@ def serve_static(path):
         return redirect('/login.html')
     return send_from_directory('static', path)
 
+
 @app.route('/api/login', methods=['POST'])
 def login():
     """تسجيل الدخول"""
@@ -130,23 +143,23 @@ def login():
         username = data.get('username')
         password = data.get('password')
         remember = data.get('remember', False)
-        
+
         if not username or not password:
             return jsonify({'error': 'يرجى إدخال اسم المستخدم وكلمة المرور'}), 400
-        
+
         # التحقق من المستخدم
         user = users_db.get(username)
         if not user or not check_password_hash(user['password'], password):
             return jsonify({'error': 'اسم المستخدم أو كلمة المرور غير صحيحة'}), 401
-        
+
         # إنشاء جلسة
         session['user_id'] = username
         session['role'] = user['role']
         session['name'] = user['name']
-        
+
         if remember:
             session.permanent = True
-        
+
         return jsonify({
             'success': True,
             'message': 'تم تسجيل الدخول بنجاح',
@@ -157,15 +170,17 @@ def login():
             },
             'redirect': '/index.html'
         })
-    
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
     """تسجيل الخروج"""
     session.clear()
     return jsonify({'success': True, 'message': 'تم تسجيل الخروج بنجاح'})
+
 
 @app.route('/api/current-user', methods=['GET'])
 @login_required
@@ -176,6 +191,7 @@ def current_user():
         'name': session.get('name'),
         'role': session.get('role')
     })
+
 
 @app.route('/api/users', methods=['GET'])
 @admin_required
@@ -190,6 +206,7 @@ def get_users():
         })
     return jsonify(users_list)
 
+
 @app.route('/api/users', methods=['POST'])
 @admin_required
 def create_user():
@@ -200,19 +217,19 @@ def create_user():
         password = data.get('password')
         name = data.get('name')
         role = data.get('role', 'user')
-        
+
         if not username or not password or not name:
             return jsonify({'error': 'جميع الحقول مطلوبة'}), 400
-        
+
         if username in users_db:
             return jsonify({'error': 'اسم المستخدم موجود بالفعل'}), 400
-        
+
         users_db[username] = {
             'password': generate_password_hash(password),
             'name': name,
             'role': role
         }
-        
+
         return jsonify({
             'success': True,
             'message': 'تم إنشاء المستخدم بنجاح',
@@ -222,9 +239,10 @@ def create_user():
                 'role': role
             }
         })
-    
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/users/<username>', methods=['DELETE'])
 @admin_required
@@ -233,19 +251,20 @@ def delete_user(username):
     try:
         if username == 'admin':
             return jsonify({'error': 'لا يمكن حذف المدير الرئيسي'}), 400
-        
+
         if username not in users_db:
             return jsonify({'error': 'المستخدم غير موجود'}), 404
-        
+
         del users_db[username]
-        
+
         return jsonify({
             'success': True,
             'message': 'تم حذف المستخدم بنجاح'
         })
-    
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/extract-plate', methods=['POST'])
 def extract_plate():
@@ -253,49 +272,49 @@ def extract_plate():
     try:
         img_str = None
         saved_filepath = None
-        
+
         # دعم استقبال الصور بصيغتين: FormData أو base64
         if 'image' in request.files:
             # استقبال من FormData
             file = request.files['image']
             if file.filename == '':
                 return jsonify({'error': 'لم يتم اختيار ملف'}), 400
-            
+
             # حفظ الملف بشكل آمن
             filename = secure_filename(file.filename)
             saved_filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(saved_filepath)
-            
+
             # قراءة الصورة من المسار المحفوظ
             image = Image.open(saved_filepath)
-            
+
             buffered = io.BytesIO()
             image.save(buffered, format="PNG")
             img_str = base64.b64encode(buffered.getvalue()).decode()
-        
+
         elif request.is_json:
             # استقبال من JSON (base64)
             data = request.json
             image_data = data.get('image')
-            
+
             if not image_data:
                 return jsonify({'error': 'لم يتم إرسال صورة'}), 400
-            
+
             # إزالة البادئة من base64
             if ',' in image_data:
                 img_str = image_data.split(',')[1]
             else:
                 img_str = image_data
-        
+
         else:
             return jsonify({'error': 'لم يتم إرفاق صورة'}), 400
-        
+
         if not img_str:
             return jsonify({'error': 'فشل في معالجة الصورة'}), 400
-        
+
         # محاولة استخدام OpenAI أولاً، ثم OCR كبديل
         result = None
-        
+
         if OPENAI_AVAILABLE and client:
             try:
                 # استخدام GPT-4 Vision لاستخراج رقم اللوحة
@@ -345,28 +364,28 @@ def extract_plate():
                     ],
                     max_tokens=300
                 )
-                
+
                 # استخراج النتيجة
                 result_text = response.choices[0].message.content.strip()
-                
+
                 # إزالة أي نص إضافي قبل أو بعد JSON
                 if '```json' in result_text:
                     result_text = result_text.split('```json')[1].split('```')[0].strip()
                 elif '```' in result_text:
                     result_text = result_text.split('```')[1].split('```')[0].strip()
-                
+
                 result = json.loads(result_text)
-                
+
                 # البحث في قاعدة البيانات عن اللوحة
                 resident_info = None
                 if result.get('plate_number') and result.get('confidence', 0) > 50:
                     search_result = search_by_plate(result['plate_number'])
                     if search_result.get('found'):
                         resident_info = search_result
-                
+
                 # إضافة معلومات الساكن إلى النتيجة
                 result['resident_info'] = resident_info
-                
+
                 # حفظ في قاعدة البيانات الفعلية
                 try:
                     save_processed_image(
@@ -379,30 +398,30 @@ def extract_plate():
                     )
                 except Exception as db_error:
                     logger.warning(f"فشل حفظ الصورة في قاعدة البيانات: {db_error}")
-                
+
                 return jsonify(result)
-                
+
             except Exception as openai_error:
                 logger.error(f"خطأ في OpenAI: {openai_error}")
                 result = None
-        
+
         # إذا فشل OpenAI أو لم يكن متوفراً، استخدم OCR المحلي
         if result is None:
             try:
                 # تحويل base64 إلى صورة
                 img_data = base64.b64decode(img_str)
                 img = Image.open(io.BytesIO(img_data))
-                
+
                 # محاولة استخدام pytesseract
                 try:
                     import pytesseract
                     text = pytesseract.image_to_string(img, lang='eng+ara')
-                    
+
                     # استخراج الأرقام والأحرف من النص
                     import re
                     numbers = re.findall(r'\d+', text)
                     letters = re.findall(r'[A-Z]{3}', text)
-                    
+
                     result = {
                         'plate_number': f"{letters[0] if letters else ''} {numbers[0] if numbers else ''}".strip(),
                         'english_letters': letters[0] if letters else '',
@@ -425,12 +444,13 @@ def extract_plate():
                     'plate_number': 'غير محدد',
                     'confidence': 0
                 }
-        
+
         return jsonify(result)
-        
+
     except Exception as e:
         logger.error(f"خطأ في استخراج اللوحة: {e}")
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/process-images', methods=['POST'])
 def process_images():
@@ -438,7 +458,7 @@ def process_images():
     try:
         results = []
         images_data = []
-        
+
         # دعم استقبال الصور بصيغتين: FormData أو JSON
         if 'images' in request.files:
             # استقبال من FormData
@@ -446,19 +466,19 @@ def process_images():
             for file in files:
                 if file.filename == '':
                     continue
-                
+
                 # حفظ الملف بشكل آمن
                 filename = secure_filename(file.filename)
                 saved_filepath = os.path.join(UPLOAD_FOLDER, filename)
                 file.save(saved_filepath)
-                
+
                 # قراءة الصورة من المسار المحفوظ
                 image = Image.open(saved_filepath)
                 buffered = io.BytesIO()
                 image.save(buffered, format="PNG")
                 img_str = base64.b64encode(buffered.getvalue()).decode()
                 images_data.append({'data': img_str, 'name': filename, 'path': saved_filepath})
-        
+
         elif request.is_json:
             # استقبال من JSON (base64)
             data = request.json
@@ -468,24 +488,24 @@ def process_images():
                     img_str = image_data.split(',')[1]
                 else:
                     img_str = image_data
-                images_data.append({'data': img_str, 'name': f'image_{idx+1}.png', 'path': ''})
-        
+                images_data.append({'data': img_str, 'name': f'image_{idx + 1}.png', 'path': ''})
+
         else:
             return jsonify({'error': 'لم يتم إرفاق صور'}), 400
-        
+
         if not images_data:
             return jsonify({'error': 'لم يتم رفع أي صور'}), 400
-        
+
         # التحقق من توفر OpenAI
         if not OPENAI_AVAILABLE or not client:
             return jsonify({'error': 'خدمة معالجة الصور غير متوفرة حالياً'}), 503
-        
+
         # معالجة كل صورة
         for img_info in images_data:
             img_str = img_info['data']
             filename = img_info['name']
             filepath = img_info.get('path', '')
-            
+
             # استخدام GPT-4 Vision لتحليل الصورة
             response = client.chat.completions.create(
                 model="gpt-4.1-mini",
@@ -519,25 +539,25 @@ def process_images():
                 ],
                 max_tokens=300
             )
-            
+
             # استخراج النتيجة
             result_text = response.choices[0].message.content.strip()
-            
+
             # إزالة أي نص إضافي
             if '```json' in result_text:
                 result_text = result_text.split('```json')[1].split('```')[0].strip()
             elif '```' in result_text:
                 result_text = result_text.split('```')[1].split('```')[0].strip()
-            
+
             result = json.loads(result_text)
             result['filename'] = filename
-            
+
             # البحث في قاعدة البيانات
             if result.get('plate_number') and result.get('confidence', 0) > 50:
                 search_result = search_by_plate(result['plate_number'])
                 if search_result.get('found'):
                     result['resident_info'] = search_result
-            
+
             # حفظ في قاعدة البيانات الفعلية مع مسار الصورة
             try:
                 save_processed_image(
@@ -550,17 +570,18 @@ def process_images():
                 )
             except Exception as db_error:
                 logger.warning(f"فشل حفظ الصورة في قاعدة البيانات: {db_error}")
-            
+
             results.append(result)
-        
+
         # حفظ في قاعدة البيانات
         database['processed_images'].extend(results)
-        
+
         return jsonify({'results': results, 'total': len(results)})
-        
+
     except Exception as e:
         logger.error(f"خطأ في معالجة الصور: {e}")
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/processed-images-stats', methods=['GET'])
 def get_processed_stats():
@@ -573,6 +594,7 @@ def get_processed_stats():
         }
     })
 
+
 @app.route('/api/residents', methods=['GET'])
 def api_get_residents():
     """الحصول على جميع السكان"""
@@ -581,6 +603,7 @@ def api_get_residents():
         return jsonify({'success': True, 'data': residents})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/stickers', methods=['GET'])
 def api_get_stickers():
@@ -591,6 +614,7 @@ def api_get_stickers():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/parking', methods=['GET'])
 def api_get_parking():
     """الحصول على جميع المواقف"""
@@ -600,6 +624,7 @@ def api_get_parking():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/statistics', methods=['GET'])
 def api_get_statistics():
     """الحصول على الإحصائيات العامة"""
@@ -608,6 +633,7 @@ def api_get_statistics():
         return jsonify({'success': True, 'data': stats})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/search-plate', methods=['POST'])
 def api_search_plate():
@@ -620,6 +646,7 @@ def api_search_plate():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/save-processed-image', methods=['POST'])
 def api_save_processed_image():
     """حفظ صورة معالجة في قاعدة البيانات"""
@@ -629,6 +656,7 @@ def api_save_processed_image():
         return jsonify(result)
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/get-processed-images', methods=['GET'])
 def api_get_processed_images():
@@ -641,6 +669,7 @@ def api_get_processed_images():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/search-processed-images', methods=['POST'])
 def api_search_processed_images():
     """البحث في الصور المعالجة برقم اللوحة"""
@@ -652,6 +681,7 @@ def api_search_processed_images():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/processed-images-statistics', methods=['GET'])
 def api_processed_images_statistics():
     """الحصول على إحصائيات الصور المعالجة"""
@@ -661,6 +691,7 @@ def api_processed_images_statistics():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/violation-report', methods=['GET'])
 def api_violation_report():
     """الحصول على تقرير المخالفات مع عدد التكرار"""
@@ -669,6 +700,7 @@ def api_violation_report():
         return jsonify({'success': True, 'data': report})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/buildings', methods=['GET'])
 def get_buildings():
@@ -691,6 +723,8 @@ def api_get_resident_vehicles(resident_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # إضافة headers لمنع الـ cache
+
+
 @app.after_request
 def add_header(response):
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
@@ -698,38 +732,39 @@ def add_header(response):
     response.headers['Expires'] = '-1'
     return response
 
+
 @app.route('/api/classify_parking', methods=['POST'])
 def classify_parking():
     """تصنيف صورة الموقف باستخدام GPT-4 Vision"""
     try:
         if 'image' not in request.files:
             return jsonify({'error': 'لم يتم إرسال صورة'}), 400
-        
+
         file = request.files['image']
         if file.filename == '':
             return jsonify({'error': 'لم يتم اختيار ملف'}), 400
-        
+
         # حفظ الملف بشكل آمن
         filename = secure_filename(file.filename)
         saved_filepath = os.path.join(UPLOAD_FOLDER, filename)
         file.save(saved_filepath)
-        
+
         # قراءة الصورة من المسار المحفوظ
         image = Image.open(saved_filepath)
-        
+
         # تصغير الصورة إذا كانت كبيرة جداً
         max_size = (1024, 1024)
         image.thumbnail(max_size, Image.Resampling.LANCZOS)
-        
+
         # تحويل إلى base64
         buffered = io.BytesIO()
         image.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode()
-        
+
         # التحقق من توفر OpenAI
         if not OPENAI_AVAILABLE or not client:
             return jsonify({'error': 'خدمة تصنيف الصور غير متوفرة حالياً'}), 503
-        
+
         # استخدام GPT-4 Vision لتصنيف الصورة
         response = client.chat.completions.create(
             model="gpt-4.1-mini",
@@ -737,7 +772,7 @@ def classify_parking():
                 {
                     "role": "system",
                     "content": """أنت نظام ذكاء اصطناعي متخصص في تصنيف صور مواقف السيارات.
-                    
+
 قم بتحليل الصورة وتصنيفها إلى أحد الأنواع التالية:
 - normal: موقف سيارات عادي
 - disabled: موقف معاقين/احتياجات خاصة (يحتوي على رمز الكرسي المتحرك أو علامة معاقين)
@@ -773,19 +808,19 @@ def classify_parking():
             ],
             max_tokens=300
         )
-        
+
         # استخراج النتيجة
         result_text = response.choices[0].message.content.strip()
-        
+
         # تنظيف النص وإزالة markdown code blocks
         if result_text.startswith('```'):
             result_text = result_text.split('```')[1]
             if result_text.startswith('json'):
                 result_text = result_text[4:]
         result_text = result_text.strip()
-        
+
         result = json.loads(result_text)
-        
+
         return jsonify({
             'success': True,
             'category': result.get('category', 'other'),
@@ -793,7 +828,7 @@ def classify_parking():
             'reason': result.get('reason', ''),
             'details': result
         })
-        
+
     except json.JSONDecodeError as e:
         logger.error(f"خطأ في تحليل JSON: {e}")
         logger.error(f"النص المستلم: {result_text}")
@@ -813,6 +848,8 @@ def classify_parking():
         }), 500
 
 # دالة إرسال البريد الإلكتروني
+
+
 def send_reset_email(email, token, username):
     """إرسال بريد إلكتروني لإعادة تعيين كلمة المرور"""
     try:
@@ -821,16 +858,16 @@ def send_reset_email(email, token, username):
         smtp_port = 587
         sender_email = "aliayashi517@gmail.com"
         sender_password = os.environ.get('EMAIL_PASSWORD', '')  # يجب تعيينها في متغيرات البيئة
-        
+
         # رابط إعادة التعيين
         reset_link = f"https://five17.onrender.com/reset-password.html?token={token}"
-        
+
         # إنشاء الرسالة
         message = MIMEMultipart("alternative")
         message["Subject"] = "إعادة تعيين كلمة المرور - نظام إدارة الإسكان"
         message["From"] = sender_email
         message["To"] = email
-        
+
         # محتوى الرسالة
         html_content = f"""
         <html dir="rtl">
@@ -853,9 +890,9 @@ def send_reset_email(email, token, username):
         </body>
         </html>
         """
-        
+
         message.attach(MIMEText(html_content, "html"))
-        
+
         # إرسال البريد
         if sender_password:  # فقط إذا كانت كلمة المرور متوفرة
             with smtplib.SMTP(smtp_server, smtp_port) as server:
@@ -871,16 +908,18 @@ def send_reset_email(email, token, username):
         return False
 
 # API endpoint لطلب إعادة تعيين كلمة المرور
+
+
 @app.route('/api/forgot-password', methods=['POST'])
 def forgot_password():
     """طلب إعادة تعيين كلمة المرور"""
     try:
         data = request.get_json()
         username = data.get('username')
-        
+
         if not username:
             return jsonify({'error': 'يرجى إدخال اسم المستخدم'}), 400
-        
+
         # التحقق من وجود المستخدم
         user = users_db.get(username)
         if not user or 'email' not in user:
@@ -889,17 +928,17 @@ def forgot_password():
                 'success': True,
                 'message': 'إذا كان اسم المستخدم صحيحاً، ستصلك رسالة بريد إلكتروني لإعادة تعيين كلمة المرور.'
             })
-        
+
         # إنشاء رمز إعادة تعيين
         token = secrets.token_urlsafe(32)
         reset_tokens[token] = {
             'username': username,
             'expires': datetime.now() + timedelta(minutes=30)
         }
-        
+
         # إرسال البريد الإلكتروني
         email_sent = send_reset_email(user['email'], token, user['name'])
-        
+
         return jsonify({
             'success': True,
             'message': 'إذا كان اسم المستخدم صحيحاً، ستصلك رسالة بريد إلكتروني لإعادة تعيين كلمة المرور.',
@@ -910,6 +949,8 @@ def forgot_password():
         return jsonify({'error': 'حدث خطأ. يرجى المحاولة لاحقاً.'}), 500
 
 # API endpoint لإعادة تعيين كلمة المرور
+
+
 @app.route('/api/reset-password', methods=['POST'])
 def reset_password():
     """إعادة تعيين كلمة المرور"""
@@ -917,27 +958,27 @@ def reset_password():
         data = request.get_json()
         token = data.get('token')
         new_password = data.get('password')
-        
+
         if not token or not new_password:
             return jsonify({'error': 'يرجى إدخال جميع البيانات'}), 400
-        
+
         # التحقق من الرمز
         token_data = reset_tokens.get(token)
         if not token_data:
             return jsonify({'error': 'رمز غير صحيح أو منتهي الصلاحية'}), 400
-        
+
         # التحقق من صلاحية الرمز
         if datetime.now() > token_data['expires']:
             del reset_tokens[token]
             return jsonify({'error': 'انتهت صلاحية الرمز. يرجى طلب رمز جديد.'}), 400
-        
+
         # تحديث كلمة المرور
         username = token_data['username']
         users_db[username]['password'] = generate_password_hash(new_password)
-        
+
         # حذف الرمز بعد الاستخدام
         del reset_tokens[token]
-        
+
         return jsonify({
             'success': True,
             'message': 'تم تغيير كلمة المرور بنجاح'
@@ -948,6 +989,7 @@ def reset_password():
 
 # ==================== API التقارير ====================
 
+
 @app.route('/api/reports/<report_type>')
 def get_report(report_type):
     """API للحصول على بيانات التقارير"""
@@ -955,57 +997,57 @@ def get_report(report_type):
         conn = sqlite3.connect(DATABASE)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
+
         report_data = {
             'stats': {},
             'records': []
         }
-        
+
         if report_type == 'residents':
             # تقرير السكان الشامل
             cursor.execute('SELECT COUNT(*) as total FROM residents')
             total = cursor.fetchone()['total']
-            
+
             cursor.execute('SELECT COUNT(*) as occupied FROM units WHERE status="occupied"')
             occupied = cursor.fetchone()['occupied']
-            
+
             cursor.execute('SELECT COUNT(*) as vacant FROM units WHERE status="vacant"')
             vacant = cursor.fetchone()['vacant']
-            
+
             report_data['stats'] = {
                 'إجمالي السكان': total,
                 'الوحدات المشغولة': occupied,
                 'الوحدات الشاغرة': vacant,
-                'معدل الإشغال': f"{(occupied/(occupied+vacant)*100):.1f}%" if (occupied+vacant) > 0 else "0%"
+                'معدل الإشغال': f"{(occupied / (occupied + vacant) * 100):.1f}%" if (occupied + vacant) > 0 else "0%"
             }
-            
+
             cursor.execute('''
-                SELECT r.name as "الاسم", r.national_id as "رقم الهوية", 
+                SELECT r.name as "الاسم", r.national_id as "رقم الهوية",
                        b.name as "المبنى", u.unit_number as "رقم الوحدة",
                        r.phone as "الهاتف", r.email as "البريد الإلكتروني"
                 FROM residents r
                 LEFT JOIN units u ON r.unit_id = u.id
                 LEFT JOIN buildings b ON u.building_id = b.id
             ''')
-            
+
         elif report_type == 'buildings':
             # تقرير حالة المباني
             cursor.execute('SELECT COUNT(*) as total FROM buildings')
             total = cursor.fetchone()['total']
-            
+
             cursor.execute('SELECT COUNT(*) as total_units FROM units')
             total_units = cursor.fetchone()['total_units']
-            
+
             cursor.execute('SELECT COUNT(*) as occupied FROM units WHERE status="occupied"')
             occupied = cursor.fetchone()['occupied']
-            
+
             report_data['stats'] = {
                 'إجمالي المباني': total,
                 'إجمالي الوحدات': total_units,
                 'الوحدات المشغولة': occupied,
                 'الوحدات الشاغرة': total_units - occupied
             }
-            
+
             cursor.execute('''
                 SELECT b.name as "اسم المبنى", b.location as "الموقع",
                        COUNT(u.id) as "عدد الوحدات",
@@ -1015,30 +1057,30 @@ def get_report(report_type):
                 LEFT JOIN units u ON b.id = u.building_id
                 GROUP BY b.id
             ''')
-            
+
         elif report_type == 'vehicles':
             # تقرير السيارات الشامل
             cursor.execute('SELECT COUNT(*) as total FROM vehicles')
             total = cursor.fetchone()['total']
-            
+
             cursor.execute('SELECT COUNT(*) as active FROM stickers WHERE status="active"')
             active_stickers = cursor.fetchone()['active']
-            
+
             cursor.execute('SELECT COUNT(*) as expired FROM stickers WHERE status="expired"')
             expired_stickers = cursor.fetchone()['expired']
-            
+
             cursor.execute('SELECT COUNT(*) as available FROM parking_spots WHERE status="available"')
             available_parking = cursor.fetchone()['available']
-            
+
             report_data['stats'] = {
                 'إجمالي السيارات': total,
                 'الملصقات الفعالة': active_stickers,
                 'الملصقات المنتهية': expired_stickers,
                 'المواقف المتاحة': available_parking
             }
-            
+
             cursor.execute('''
-                SELECT v.plate_number as "رقم اللوحة", v.make as "النوع", 
+                SELECT v.plate_number as "رقم اللوحة", v.make as "النوع",
                        v.model as "الموديل", v.color as "اللون",
                        r.name as "المالك", s.sticker_number as "رقم الملصق",
                        s.status as "حالة الملصق"
@@ -1046,24 +1088,24 @@ def get_report(report_type):
                 LEFT JOIN residents r ON v.resident_id = r.id
                 LEFT JOIN stickers s ON v.id = s.vehicle_id
             ''')
-            
+
         elif report_type == 'security':
             # تقرير الأمن والحوادث
             cursor.execute('SELECT COUNT(*) as total FROM violations')
             total = cursor.fetchone()['total']
-            
+
             cursor.execute('SELECT COUNT(*) as pending FROM violations WHERE status="pending"')
             pending = cursor.fetchone()['pending']
-            
+
             cursor.execute('SELECT COUNT(*) as resolved FROM violations WHERE status="resolved"')
             resolved = cursor.fetchone()['resolved']
-            
+
             report_data['stats'] = {
                 'إجمالي المخالفات': total,
                 'المخالفات المعلقة': pending,
                 'المخالفات المحلولة': resolved
             }
-            
+
             cursor.execute('''
                 SELECT v.violation_type as "نوع المخالفة", v.description as "الوصف",
                        v.date as "التاريخ", v.status as "الحالة",
@@ -1072,36 +1114,36 @@ def get_report(report_type):
                 LEFT JOIN vehicles ve ON v.vehicle_id = ve.id
                 ORDER BY v.date DESC
             ''')
-            
+
         elif report_type == 'parking_status':
             # تقرير حالة المواقف
             cursor.execute('SELECT COUNT(*) as total FROM parking_spots')
             total = cursor.fetchone()['total']
-            
+
             cursor.execute('SELECT COUNT(*) as occupied FROM parking_spots WHERE status="occupied"')
             occupied = cursor.fetchone()['occupied']
-            
+
             cursor.execute('SELECT COUNT(*) as available FROM parking_spots WHERE status="available"')
             available = cursor.fetchone()['available']
-            
+
             report_data['stats'] = {
                 'إجمالي المواقف': total,
                 'المواقف المشغولة': occupied,
                 'المواقف المتاحة': available,
-                'نسبة الإشغال': f"{(occupied/total*100):.1f}%" if total > 0 else "0%"
+                'نسبة الإشغال': f"{(occupied / total * 100):.1f}%" if total > 0 else "0%"
             }
-            
+
             cursor.execute('''
                 SELECT spot_number as "رقم الموقف", location as "الموقع",
                        type as "النوع", status as "الحالة"
                 FROM parking_spots
                 ORDER BY spot_number
             ''')
-            
+
         elif report_type == 'stickers_per_resident':
             # تقرير الملصقات لكل ساكن
             cursor.execute('''
-                SELECT r.name as "الاسم", 
+                SELECT r.name as "الاسم",
                        COUNT(v.id) as "عدد السيارات",
                        COUNT(s.id) as "عدد الملصقات",
                        SUM(CASE WHEN s.status="active" THEN 1 ELSE 0 END) as "الملصقات الفعالة"
@@ -1110,7 +1152,7 @@ def get_report(report_type):
                 LEFT JOIN stickers s ON v.id = s.vehicle_id
                 GROUP BY r.id
             ''')
-            
+
         elif report_type == 'occupancy':
             # تقرير إشغال المباني
             cursor.execute('''
@@ -1123,20 +1165,21 @@ def get_report(report_type):
                 LEFT JOIN units u ON b.id = u.building_id
                 GROUP BY b.id
             ''')
-            
+
         else:
             return jsonify({'error': 'نوع التقرير غير معروف'}), 404
-        
+
         # تحويل النتائج إلى قائمة من القواميس
         rows = cursor.fetchall()
         report_data['records'] = [dict(row) for row in rows]
-        
+
         conn.close()
         return jsonify(report_data)
-        
+
     except Exception as e:
         logger.error(f"خطأ في get_report: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/resident-card')
 def get_resident_card():
@@ -1144,20 +1187,20 @@ def get_resident_card():
     try:
         building_number = request.args.get('building')
         unit_number = request.args.get('unit')
-        
+
         if not building_number or not unit_number:
             return jsonify({
                 'found': False,
                 'error': 'يجب إدخال رقم المبنى ورقم الوحدة'
             }), 400
-        
+
         conn = sqlite3.connect(DATABASE)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
+
         # البحث عن الوحدة والساكن
         cursor.execute('''
-            SELECT 
+            SELECT
                 r.id as resident_id,
                 r.name as resident_name,
                 r.national_id,
@@ -1174,21 +1217,21 @@ def get_resident_card():
             JOIN buildings b ON u.building_id = b.id
             WHERE b.name = ? AND u.unit_number = ?
         ''', (building_number, unit_number))
-        
+
         resident_row = cursor.fetchone()
-        
+
         if not resident_row:
             conn.close()
             return jsonify({
                 'found': False,
                 'error': 'لم يتم العثور على ساكن في هذه الوحدة'
             })
-        
+
         resident_data = dict(resident_row)
-        
+
         # السيارات والملصقات
         cursor.execute('''
-            SELECT 
+            SELECT
                 v.id,
                 v.plate_number,
                 v.make,
@@ -1202,12 +1245,12 @@ def get_resident_card():
             LEFT JOIN stickers s ON v.id = s.vehicle_id
             WHERE v.resident_id = ?
         ''', (resident_data['resident_id'],))
-        
+
         vehicles = [dict(row) for row in cursor.fetchall()]
-        
+
         # المواقف المخصصة
         cursor.execute('''
-            SELECT 
+            SELECT
                 ps.spot_number,
                 ps.location,
                 ps.type,
@@ -1215,17 +1258,17 @@ def get_resident_card():
             FROM parking_spots ps
             WHERE ps.unit_id = ?
         ''', (resident_data['unit_id'],))
-        
+
         parking = [dict(row) for row in cursor.fetchall()]
-        
+
         # المخالفات
         vehicle_ids = [v['id'] for v in vehicles]
         violations = []
-        
+
         if vehicle_ids:
             placeholders = ','.join('?' * len(vehicle_ids))
             cursor.execute(f'''
-                SELECT 
+                SELECT
                     vio.date,
                     vio.violation_type,
                     vio.description,
@@ -1236,11 +1279,11 @@ def get_resident_card():
                 WHERE vio.vehicle_id IN ({placeholders})
                 ORDER BY vio.date DESC
             ''', vehicle_ids)
-            
+
             violations = [dict(row) for row in cursor.fetchall()]
-        
+
         conn.close()
-        
+
         # إرجاع البيانات الشاملة
         return jsonify({
             'found': True,
@@ -1260,13 +1303,14 @@ def get_resident_card():
             'parking': parking,
             'violations': violations
         })
-        
+
     except Exception as e:
         logger.error(f"خطأ في get_resident_card: {str(e)}")
         return jsonify({
             'found': False,
             'error': f'حدث خطأ: {str(e)}'
         }), 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
