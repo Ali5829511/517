@@ -1409,8 +1409,10 @@
 
         // ========== دوال الفرز المتقدمة ==========
         const CONFIDENCE_THRESHOLD = 80;
+        const DELETE_COUNTDOWN_SECONDS = 5; // وقت العد التنازلي قبل الحذف
         let autoSortEnabled = true;
         let deleteAfterProcess = false;
+        let deleteCountdownInterval = null; // لتتبع العد التنازلي وإلغائه عند الحاجة
 
         // عرض إعدادات الفرز عند معالجة الصور
         fileInput.addEventListener('change', function() {
@@ -1543,14 +1545,20 @@
             
             // حذف الصور بعد المعالجة (مع تأكيد ثانٍ وإشعار)
             if (deleteAfterProcess) {
-                const countdown = 5;
-                let secondsLeft = countdown;
-                const countdownInterval = setInterval(() => {
+                // إلغاء أي عد تنازلي سابق
+                if (deleteCountdownInterval) {
+                    clearInterval(deleteCountdownInterval);
+                }
+                
+                let secondsLeft = DELETE_COUNTDOWN_SECONDS;
+                deleteCountdownInterval = setInterval(() => {
                     if (secondsLeft > 0) {
                         console.log(`⏰ سيتم حذف الصور خلال ${secondsLeft} ثانية...`);
                         secondsLeft--;
                     } else {
-                        clearInterval(countdownInterval);
+                        clearInterval(deleteCountdownInterval);
+                        deleteCountdownInterval = null;
+                        
                         if (confirm('سيتم حذف الصور الآن. هل تريد المتابعة؟')) {
                             deleteProcessedImages();
                         } else {
@@ -1562,6 +1570,14 @@
                 }, 1000);
             }
         };
+        
+        // تنظيف العد التنازلي عند مغادرة الصفحة
+        window.addEventListener('beforeunload', () => {
+            if (deleteCountdownInterval) {
+                clearInterval(deleteCountdownInterval);
+                deleteCountdownInterval = null;
+            }
+        });
     </script>
 </body>
 </html>
