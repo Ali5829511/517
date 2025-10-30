@@ -1,2 +1,2 @@
-web: gunicorn app:app
+web: apt-get update && apt-get install -y tesseract-ocr && gunicorn app:app
 
