@@ -1,1 +1,125 @@
-under_development.html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مراقبة الدخول والخروج - نظام إدارة الإسكان</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', Arial, sans-serif; background: linear-gradient(135deg, #F5F9FB 0%, #D4E9F2 100%); direction: rtl; min-height: 100vh; padding: 20px; }
+        .header { background: linear-gradient(90deg, #2C5F7A 0%, #5A8CA3 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 30px; text-align: center; }
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card i { font-size: 40px; margin-bottom: 15px; }
+        .stat-card h3 { font-size: 36px; margin-bottom: 10px; }
+        .stat-card p { color: #666; font-size: 16px; }
+        .color-green { color: #27ae60; }
+        .color-red { color: #e74c3c; }
+        .color-blue { color: #3498db; }
+        .color-orange { color: #f39c12; }
+        .content-section { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .content-section h2 { margin-bottom: 20px; color: #2C5F7A; border-bottom: 3px solid #5A8CA3; padding-bottom: 10px; }
+        .access-log { margin: 20px 0; }
+        .log-item { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #5A8CA3; }
+        .log-item.exit { border-left-color: #e74c3c; }
+        .log-item .time { color: #666; font-size: 14px; }
+        .log-item .name { font-weight: bold; margin: 5px 0; }
+        .log-item .plate { color: #5A8CA3; }
+        .controls { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .controls input, .controls select { padding: 10px; border: 2px solid #ddd; border-radius: 8px; flex: 1; min-width: 200px; }
+        .controls button { padding: 10px 20px; background: #5A8CA3; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .controls button:hover { background: #2C5F7A; }
+        .back-btn { display: inline-block; background: linear-gradient(90deg, #5A8CA3 0%, #7BA7BC 100%); color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; margin-top: 20px; transition: 0.3s; }
+        .back-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(90, 140, 163, 0.4); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-video"></i> نظام مراقبة الدخول والخروج</h1>
+            <p>مراقبة حية لحركة المركبات في المجمع السكني</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-sign-in-alt color-green"></i>
+                <h3 id="entryCount">0</h3>
+                <p>دخول اليوم</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-sign-out-alt color-red"></i>
+                <h3 id="exitCount">0</h3>
+                <p>خروج اليوم</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-car color-blue"></i>
+                <h3 id="currentCars">0</h3>
+                <p>مركبات حالياً</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-clock color-orange"></i>
+                <h3 id="avgTime">--</h3>
+                <p>متوسط وقت التواجد</p>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h2><i class="fas fa-filter"></i> الفلاتر والبحث</h2>
+            <div class="controls">
+                <input type="date" id="dateFilter" placeholder="التاريخ">
+                <select id="typeFilter">
+                    <option value="">جميع الأنواع</option>
+                    <option value="entry">دخول</option>
+                    <option value="exit">خروج</option>
+                </select>
+                <input type="text" id="searchPlate" placeholder="بحث برقم اللوحة">
+                <button onclick="applyFilters()"><i class="fas fa-search"></i> بحث</button>
+                <button onclick="exportData()"><i class="fas fa-download"></i> تصدير</button>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h2><i class="fas fa-list"></i> سجل الحركة</h2>
+            <div class="access-log" id="accessLog">
+                <div class="log-item">
+                    <div class="time"><i class="fas fa-clock"></i> اليوم 2:30 م</div>
+                    <div class="name">د. محمد أحمد</div>
+                    <div class="plate"><i class="fas fa-car"></i> أ ب ج ١٢٣</div>
+                    <div><i class="fas fa-sign-in-alt color-green"></i> دخول</div>
+                </div>
+                <div class="log-item exit">
+                    <div class="time"><i class="fas fa-clock"></i> اليوم 2:15 م</div>
+                    <div class="name">د. فاطمة علي</div>
+                    <div class="plate"><i class="fas fa-car"></i> س ص ع ٤٥٦</div>
+                    <div><i class="fas fa-sign-out-alt color-red"></i> خروج</div>
+                </div>
+            </div>
+        </div>
+
+        <a href="main_portal.html" class="back-btn">
+            <i class="fas fa-home"></i> العودة للصفحة الرئيسية
+        </a>
+    </div>
+
+    <script>
+        // Initialize stats
+        document.getElementById('entryCount').textContent = Math.floor(Math.random() * 150) + 50;
+        document.getElementById('exitCount').textContent = Math.floor(Math.random() * 140) + 45;
+        document.getElementById('currentCars').textContent = Math.floor(Math.random() * 200) + 100;
+        document.getElementById('avgTime').textContent = (Math.random() * 3 + 2).toFixed(1) + 'ساعة';
+
+        function applyFilters() {
+            alert('تطبيق الفلاتر...');
+        }
+
+        function exportData() {
+            alert('تصدير البيانات...');
+        }
+    </script>
+</body>
+</html>

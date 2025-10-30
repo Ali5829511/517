@@ -1,1 +1,75 @@
-under_development.html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الحوادث المرورية</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', Arial, sans-serif; background: linear-gradient(135deg, #F5F9FB 0%, #D4E9F2 100%); direction: rtl; min-height: 100vh; padding: 20px; }
+        .header { background: linear-gradient(90deg, #d35400 0%, #e67e22 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 30px; text-align: center; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; }
+        .stat-card i { font-size: 40px; color: #e67e22; margin-bottom: 15px; }
+        .stat-card h3 { font-size: 36px; margin-bottom: 10px; color: #e67e22; }
+        .content { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .accident-card { background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-right: 5px solid #e67e22; }
+        .accident-card h3 { color: #d35400; margin-bottom: 10px; }
+        .accident-card p { margin: 5px 0; color: #666; }
+        .severity-high { border-right-color: #e74c3c; background: #fee; }
+        .severity-medium { border-right-color: #f39c12; background: #fff3cd; }
+        .severity-low { border-right-color: #27ae60; background: #d4edda; }
+        .btn-report { background: #e67e22; color: white; padding: 12px 25px; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 20px; }
+        .back-btn { display: inline-block; background: linear-gradient(90deg, #5A8CA3 0%, #7BA7BC 100%); color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-car-crash"></i> إدارة الحوادث المرورية</h1>
+            <p>تسجيل ومتابعة الحوادث المرورية داخل المجمع</p>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>3</h3>
+                <p>حوادث هذا الشهر</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-ambulance"></i>
+                <h3>1</h3>
+                <p>حوادث بإصابات</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <h3>2</h3>
+                <p>حوادث تم حلها</p>
+            </div>
+        </div>
+        <div class="content">
+            <button class="btn-report" onclick="reportAccident()"><i class="fas fa-plus"></i> تسجيل حادث جديد</button>
+            <h2>الحوادث الأخيرة</h2>
+            <div class="accident-card severity-medium">
+                <h3><i class="fas fa-car-crash"></i> حادث تصادم بسيط</h3>
+                <p><strong>التاريخ:</strong> 2025-10-28 | 3:45 م</p>
+                <p><strong>الموقع:</strong> موقف المبنى رقم 5</p>
+                <p><strong>الحالة:</strong> قيد المعالجة</p>
+                <p><strong>الوصف:</strong> تصادم بسيط بين مركبتين أثناء الركن</p>
+            </div>
+            <div class="accident-card severity-low">
+                <h3><i class="fas fa-car"></i> حادث خدش طفيف</h3>
+                <p><strong>التاريخ:</strong> 2025-10-25 | 10:20 ص</p>
+                <p><strong>الموقع:</strong> المدخل الرئيسي</p>
+                <p><strong>الحالة:</strong> تم الحل</p>
+                <p><strong>الوصف:</strong> خدش في المركبة بسبب احتكاك بسيط</p>
+            </div>
+        </div>
+        <a href="main_portal.html" class="back-btn"><i class="fas fa-home"></i> العودة</a>
+    </div>
+    <script>
+        function reportAccident() { alert('فتح نموذج تسجيل حادث جديد'); }
+    </script>
+</body>
+</html>

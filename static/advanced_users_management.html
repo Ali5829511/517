@@ -1,1 +1,64 @@
-under_development.html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين المتقدمة</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', Arial, sans-serif; background: linear-gradient(135deg, #F5F9FB 0%, #D4E9F2 100%); direction: rtl; min-height: 100vh; padding: 20px; }
+        .header { background: linear-gradient(90deg, #2C5F7A 0%, #5A8CA3 100%); color: white; padding: 20px; border-radius: 15px; margin-bottom: 30px; text-align: center; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .content { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .user-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .user-table th, .user-table td { padding: 15px; text-align: right; border-bottom: 1px solid #ddd; }
+        .user-table th { background: #5A8CA3; color: white; }
+        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; margin: 2px; }
+        .btn-edit { background: #3498db; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .btn-add { background: #27ae60; color: white; padding: 12px 25px; margin-bottom: 20px; }
+        .back-btn { display: inline-block; background: linear-gradient(90deg, #5A8CA3 0%, #7BA7BC 100%); color: white; padding: 12px 30px; border-radius: 25px; text-decoration: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-users-cog"></i> إدارة المستخدمين المتقدمة</h1>
+            <p>إدارة شاملة لمستخدمي النظام والصلاحيات</p>
+        </div>
+        <div class="content">
+            <button class="btn btn-add" onclick="addUser()"><i class="fas fa-user-plus"></i> إضافة مستخدم جديد</button>
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>اسم المستخدم</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>الدور</th>
+                        <th>آخر دخول</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>admin</td>
+                        <td>admin@imamu.edu.sa</td>
+                        <td>مدير</td>
+                        <td>اليوم 2:30 م</td>
+                        <td><span style="color: green;">نشط</span></td>
+                        <td>
+                            <button class="btn btn-edit"><i class="fas fa-edit"></i> تعديل</button>
+                            <button class="btn btn-delete"><i class="fas fa-trash"></i> حذف</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <a href="main_portal.html" class="back-btn"><i class="fas fa-home"></i> العودة</a>
+    </div>
+    <script>
+        function addUser() { alert('فتح نافذة إضافة مستخدم'); }
+    </script>
+</body>
+</html>

@@ -51,6 +51,10 @@ from database_api import get_all_residents, get_all_stickers, get_all_parking_sp
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
 
+# Register auth blueprint
+from auth import auth_bp
+app.register_blueprint(auth_bp, url_prefix='/auth')
+
 # Secure session cookie configuration
 # SESSION_COOKIE_SECURE is only enabled in production to allow HTTP in development
 app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'

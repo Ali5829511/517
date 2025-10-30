@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب - نظام إدارة الإسكان</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #5A8CA3 0%, #2C5F7A 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; direction: rtl; padding: 20px; }
+        .register-container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 450px; }
+        .register-header { text-align: center; margin-bottom: 30px; }
+        .register-header i { font-size: 60px; color: #5A8CA3; margin-bottom: 15px; }
+        .register-header h1 { color: #333; font-size: 28px; margin-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; }
+        .form-group input { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: all 0.3s; }
+        .form-group input:focus { outline: none; border-color: #5A8CA3; }
+        .btn-register { width: 100%; padding: 14px; background: linear-gradient(135deg, #5A8CA3 0%, #2C5F7A 100%); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        .btn-register:hover { transform: translateY(-2px); }
+        .alert { padding: 12px 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .alert-danger { background: #fee; color: #c33; border: 1px solid #fcc; }
+        .alert-success { background: #efe; color: #3c3; border: 1px solid #cfc; }
+        .login-link { text-align: center; margin-top: 20px; color: #666; }
+        .login-link a { color: #5A8CA3; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <i class="fas fa-user-plus"></i>
+            <h1>إنشاء حساب جديد</h1>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('auth.register') }}">
+            <div class="form-group">
+                <label for="username">اسم المستخدم</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">البريد الإلكتروني</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">كلمة المرور (8 أحرف على الأقل)</label>
+                <input type="password" id="password" name="password" required minlength="8">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">تأكيد كلمة المرور</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
+            <button type="submit" class="btn-register">
+                <i class="fas fa-user-plus"></i> إنشاء الحساب
+            </button>
+        </form>
+        <div class="login-link">
+            لديك حساب بالفعل؟ <a href="{{ url_for('auth.login') }}">تسجيل الدخول</a>
+        </div>
+    </div>
+</body>
+</html>
