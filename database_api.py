@@ -5,9 +5,9 @@ API للوصول إلى قاعدة بيانات نظام إدارة الإسكا
 """
 
 import sqlite3
-import json
 
 DATABASE = 'housing_database.db'
+
 
 def get_db_connection():
     """إنشاء اتصال بقاعدة البيانات"""
@@ -20,13 +20,14 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def get_all_residents():
     """الحصول على جميع السكان"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute('''
-        SELECT 
+        SELECT
             r.id,
             r.name,
             r.national_id,
@@ -42,7 +43,7 @@ def get_all_residents():
         LEFT JOIN buildings b ON u.building_id = b.id
         ORDER BY r.id
     ''')
-    
+
     residents = []
     for row in cursor.fetchall():
         residents.append({
@@ -57,17 +58,18 @@ def get_all_residents():
             'moveInDate': row['move_in_date'],
             'status': row['status']
         })
-    
+
     conn.close()
     return residents
+
 
 def get_all_stickers():
     """الحصول على جميع ملصقات السيارات"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute('''
-        SELECT 
+        SELECT
             vs.id,
             vs.sticker_number,
             vs.plate_number,
@@ -87,7 +89,7 @@ def get_all_stickers():
         LEFT JOIN buildings b ON u.building_id = b.id
         ORDER BY vs.id
     ''')
-    
+
     stickers = []
     for row in cursor.fetchall():
         stickers.append({
@@ -104,17 +106,18 @@ def get_all_stickers():
             'issueDate': row['issue_date'],
             'status': row['status']
         })
-    
+
     conn.close()
     return stickers
+
 
 def get_all_parking_spots():
     """الحصول على جميع المواقف"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute('''
-        SELECT 
+        SELECT
             ps.id,
             ps.spot_number,
             ps.parking_area,
@@ -129,7 +132,7 @@ def get_all_parking_spots():
         LEFT JOIN residents r ON r.unit_id = u.id
         ORDER BY ps.id
     ''')
-    
+
     spots = []
     for row in cursor.fetchall():
         spots.append({
@@ -142,9 +145,10 @@ def get_all_parking_spots():
             'unit': row['unit_number'],
             'residentName': row['resident_name']
         })
-    
+
     conn.close()
     return spots
+
 
 def get_statistics():
     """الحصول على الإحصائيات العامة"""
@@ -244,13 +248,14 @@ def get_stickers_by_resident(resident_id):
     conn.close()
     return stickers
 
+
 def search_by_plate(plate_number):
     """البحث عن مركبة برقم اللوحة"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute('''
-        SELECT 
+        SELECT
             vs.sticker_number,
             vs.plate_number,
             vs.vehicle_type,
@@ -269,10 +274,10 @@ def search_by_plate(plate_number):
         WHERE vs.plate_number LIKE ?
         LIMIT 1
     ''', (f'%{plate_number}%',))
-    
+
     row = cursor.fetchone()
     conn.close()
-    
+
     if row:
         return {
             'found': True,
@@ -294,17 +299,16 @@ def search_by_plate(plate_number):
         return {'found': False}
 
 
-
 def save_processed_image(image_data):
     """حفظ صورة معالجة في قاعدة البيانات"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     try:
         # البحث عن الساكن والملصق
         resident_id = None
         sticker_id = None
-        
+
         if image_data.get('plateNumber'):
             cursor.execute('''
                 SELECT vs.id as sticker_id, r.id as resident_id
@@ -313,12 +317,12 @@ def save_processed_image(image_data):
                 WHERE vs.plate_number LIKE ?
                 LIMIT 1
             ''', (f'%{image_data["plateNumber"]}%',))
-            
+
             result = cursor.fetchone()
             if result:
                 sticker_id = result['sticker_id']
                 resident_id = result['resident_id']
-        
+
         # إدخال البيانات
         cursor.execute('''
             INSERT INTO processed_images (
@@ -347,17 +351,17 @@ def save_processed_image(image_data):
             sticker_id,
             image_data.get('notes', '')
         ))
-        
+
         conn.commit()
         image_id = cursor.lastrowid
         conn.close()
-        
+
         return {
             'success': True,
             'id': image_id,
             'message': 'تم حفظ الصورة بنجاح'
         }
-    
+
     except Exception as e:
         conn.close()
         return {
@@ -366,13 +370,14 @@ def save_processed_image(image_data):
             'message': 'فشل في حفظ الصورة'
         }
 
+
 def get_processed_images(limit=100, category=None):
     """الحصول على الصور المعالجة"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     query = '''
-        SELECT 
+        SELECT
             pi.id,
             pi.image_filename,
             pi.plate_number,
@@ -392,13 +397,13 @@ def get_processed_images(limit=100, category=None):
         LEFT JOIN units u ON r.unit_id = u.id
         LEFT JOIN buildings b ON u.building_id = b.id
     '''
-    
+
     if category and category != 'all':
         query += ' WHERE pi.category = ?'
         cursor.execute(query + ' ORDER BY pi.processing_date DESC LIMIT ?', (category, limit))
     else:
         cursor.execute(query + ' ORDER BY pi.processing_date DESC LIMIT ?', (limit,))
-    
+
     images = []
     for row in cursor.fetchall():
         images.append({
@@ -417,17 +422,18 @@ def get_processed_images(limit=100, category=None):
             'unitNumber': row['unit_number'],
             'buildingNumber': row['building_number']
         })
-    
+
     conn.close()
     return images
+
 
 def search_processed_images(plate_number):
     """البحث في الصور المعالجة برقم اللوحة"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute('''
-        SELECT 
+        SELECT
             pi.id,
             pi.image_filename,
             pi.plate_number,
@@ -453,7 +459,7 @@ def search_processed_images(plate_number):
         WHERE pi.plate_number LIKE ?
         ORDER BY pi.processing_date DESC
     ''', (f'%{plate_number}%',))
-    
+
     results = []
     for row in cursor.fetchall():
         results.append({
@@ -477,19 +483,20 @@ def search_processed_images(plate_number):
             },
             'stickerNumber': row['sticker_number']
         })
-    
+
     conn.close()
     return results
+
 
 def get_violation_report():
     """الحصول على تقرير المخالفات مع عدد التكرار"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     # 1. الحصول على جميع المخالفات
     # 2. حساب عدد التكرار لكل لوحة
     query = '''
-        SELECT 
+        SELECT
             pi.id,
             pi.image_filename,
             pi.plate_number,
@@ -505,8 +512,8 @@ def get_violation_report():
             u.unit_number,
             b.building_number,
             (
-                SELECT COUNT(*) 
-                FROM processed_images p2 
+                SELECT COUNT(*)
+                FROM processed_images p2
                 WHERE p2.plate_number = pi.plate_number AND p2.category = 'violation'
             ) as violation_count
         FROM processed_images pi
@@ -516,9 +523,9 @@ def get_violation_report():
         WHERE pi.category = 'violation'
         ORDER BY pi.processing_date DESC
     '''
-    
+
     cursor.execute(query)
-    
+
     report_data = []
     for row in cursor.fetchall():
         report_data.append({
@@ -536,40 +543,40 @@ def get_violation_report():
             'residentName': row['resident_name'],
             'unitNumber': row['unit_number'],
             'buildingNumber': row['building_number'],
-            'violationCount': row['violation_count'] # حقل عدد التكرار الجديد
+            'violationCount': row['violation_count']  # حقل عدد التكرار الجديد
         })
-    
+
     conn.close()
     return report_data
+
 
 def get_processed_images_statistics():
     """الحصول على إحصائيات الصور المعالجة"""
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     stats = {}
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM processed_images")
     stats['total'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM processed_images WHERE category = 'normal'")
     stats['normal'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM processed_images WHERE category = 'disabled'")
     stats['disabled'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM processed_images WHERE category = 'violation'")
     stats['violation'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT COUNT(*) as total FROM processed_images WHERE resident_id IS NOT NULL")
     stats['withResident'] = cursor.fetchone()['total']
-    
+
     cursor.execute("SELECT AVG(confidence) as avg FROM processed_images")
     stats['avgConfidence'] = cursor.fetchone()['avg'] or 0
-    
+
     conn.close()
     return stats
-
 
 
 def get_all_buildings():
@@ -577,7 +584,7 @@ def get_all_buildings():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT 
+        SELECT
             id,
             building_number as buildingNumber,
             building_type as buildingType,
@@ -590,4 +597,3 @@ def get_all_buildings():
     buildings = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return buildings
-

@@ -121,7 +121,7 @@ for i in range(1, 115):
     ''', (f'فيلا {i}', 'فيلا', 1, 1))
 
 conn.commit()
-print(f"✅ تم إنشاء 165 مبنى")
+print("✅ تم إنشاء 165 مبنى")
 
 # 2. إنشاء الوحدات السكنية (1,134 وحدة)
 print("2. إنشاء الوحدات السكنية...")
@@ -173,9 +173,9 @@ for (unit_id,) in occupied_units[:1057]:  # 1,057 ساكن
     name = f"{random.choice(first_names)} {random.choice(middle_names)} {random.choice(last_names)}"
     national_id = f"1{''.join([str(random.randint(0, 9)) for _ in range(9)])}"
     phone = f"05{random.randint(0, 9)}{random.randint(1000000, 9999999)}"
-    email = f"resident{resident_count+1}@imamu.edu.sa"
+    email = f"resident{resident_count + 1}@imamu.edu.sa"
     move_in_date = (datetime.now() - timedelta(days=random.randint(30, 1095))).strftime('%Y-%m-%d')
-    
+
     cursor.execute('''
         INSERT INTO residents (name, national_id, phone, email, unit_id, move_in_date)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -221,7 +221,7 @@ for area_name, total_spots, spot_type in parking_areas:
     for i in range(1, total_spots + 1):
         unit_id = occupied_apartments[spot_count % len(occupied_apartments)][0] if spot_count < len(occupied_apartments) else None
         status = 'مشغول' if unit_id and random.random() > 0.3 else 'متاح'
-        
+
         cursor.execute('''
             INSERT INTO parking_spots (spot_number, parking_area, spot_type, status, unit_id)
             VALUES (?, ?, ?, ?, ?)
@@ -237,7 +237,7 @@ for i in range(1, 14):
         ''', (f'P-{i}-{j}', f'G.L.P-{i}', 'عام', 'متاح'))
 
 conn.commit()
-print(f"✅ تم إنشاء 1,308 موقف")
+print("✅ تم إنشاء 1,308 موقف")
 
 # 5. إنشاء ملصقات السيارات (2,381 ملصق)
 print("5. إنشاء ملصقات السيارات...")
@@ -253,28 +253,28 @@ sticker_count = 0
 for (resident_id,) in all_residents:
     # عدد السيارات لكل ساكن (معظمهم 2-3 سيارات)
     num_vehicles = random.choices([1, 2, 3, 4, 5], weights=[20, 40, 25, 10, 5])[0]
-    
+
     for v in range(num_vehicles):
         if sticker_count >= 2381:
             break
-            
+
         sticker_number = f"S{str(sticker_count + 1).zfill(6)}"
-        
+
         # توليد رقم لوحة سعودي
         arabic_letters = ['أ', 'ب', 'ج', 'د', 'ر', 'س', 'ص', 'ط', 'ع', 'ق', 'ك', 'ل', 'م', 'ن', 'هـ', 'و', 'ي']
         plate_number = f"{random.choice(arabic_letters)} {random.choice(arabic_letters)} {random.choice(arabic_letters)} {random.randint(1000, 9999)}"
-        
+
         vehicle_type = random.choice(vehicle_types)
         vehicle_color = random.choice(vehicle_colors)
         issue_date = (datetime.now() - timedelta(days=random.randint(1, 365))).strftime('%Y-%m-%d')
         status = 'فعال' if random.random() > 0.07 else 'ملغي'
-        
+
         cursor.execute('''
             INSERT INTO vehicle_stickers (sticker_number, plate_number, resident_id, vehicle_type, vehicle_color, issue_date, status)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', (sticker_number, plate_number, resident_id, vehicle_type, vehicle_color, issue_date, status))
         sticker_count += 1
-    
+
     if sticker_count >= 2381:
         break
 
@@ -282,9 +282,9 @@ conn.commit()
 print(f"✅ تم إنشاء {sticker_count} ملصق سيارة")
 
 # طباعة الإحصائيات النهائية
-print("\n" + "="*60)
+print("\n" + "=" * 60)
 print("📊 الإحصائيات النهائية")
-print("="*60)
+print("=" * 60)
 
 cursor.execute("SELECT COUNT(*) FROM buildings")
 print(f"إجمالي المباني: {cursor.fetchone()[0]}")
@@ -301,8 +301,7 @@ print(f"إجمالي المواقف: {cursor.fetchone()[0]}")
 cursor.execute("SELECT COUNT(*) FROM vehicle_stickers")
 print(f"إجمالي ملصقات السيارات: {cursor.fetchone()[0]}")
 
-print("="*60)
+print("=" * 60)
 print("✅ تم إنشاء قاعدة البيانات بنجاح!")
 
 conn.close()
-
