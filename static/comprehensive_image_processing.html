@@ -718,6 +718,41 @@
                 </button>
             </div>
 
+            <!-- قسم إعدادات الفرز -->
+            <div class="main-card" id="sortingControls" style="display: none; margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; color: #2C5F7A;">
+                    <i class="fas fa-cog"></i> إعدادات الفرز والمعالجة
+                </h3>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: #f8f9fa; padding: 10px 15px; border-radius: 8px;">
+                        <input type="checkbox" id="autoSortCheckbox" checked style="width: 20px; height: 20px;">
+                        <span>فرز تلقائي حسب الدقة (>80% تلقائي، <80% يدوي)</span>
+                    </label>
+                    
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; background: #f8f9fa; padding: 10px 15px; border-radius: 8px;">
+                        <input type="checkbox" id="deleteAfterCheckbox" style="width: 20px; height: 20px;">
+                        <span style="color: #e74c3c;">حذف الصور بعد المعالجة</span>
+                    </label>
+                    
+                    <button onclick="sortImagesByCategory()" style="padding: 10px 20px; background: #5A8CA3; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        <i class="fas fa-sort"></i> فرز حسب نوع الموقف
+                    </button>
+                </div>
+                
+                <div id="sortingStats" style="display: none; margin-top: 15px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        <div class="stat-card">
+                            <div class="stat-number" id="highConfidenceCount">0</div>
+                            <div class="stat-label">دقة عالية (تلقائي)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="lowConfidenceCount">0</div>
+                            <div class="stat-label">دقة منخفضة (يدوي)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="progress-section" id="progressSection">
                 <h3>
                     <i class="fas fa-spinner fa-spin"></i>
@@ -1371,6 +1406,152 @@
                 el.style.display = '';
             });
         });
+
+        // ========== دوال الفرز المتقدمة ==========
+        const CONFIDENCE_THRESHOLD = 80;
+        let autoSortEnabled = true;
+        let deleteAfterProcess = false;
+
+        // عرض إعدادات الفرز عند معالجة الصور
+        fileInput.addEventListener('change', function() {
+            document.getElementById('sortingControls').style.display = 'block';
+        });
+
+        // التعامل مع خيار الفرز التلقائي
+        document.getElementById('autoSortCheckbox').addEventListener('change', function(e) {
+            autoSortEnabled = e.target.checked;
+            console.log('الفرز التلقائي:', autoSortEnabled ? 'مفعّل' : 'معطّل');
+        });
+
+        // التعامل مع خيار حذف الصور
+        document.getElementById('deleteAfterCheckbox').addEventListener('change', function(e) {
+            if (e.target.checked) {
+                if (!confirm('هل أنت متأكد من حذف الصور بعد المعالجة؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                    e.target.checked = false;
+                    deleteAfterProcess = false;
+                } else {
+                    deleteAfterProcess = true;
+                }
+            } else {
+                deleteAfterProcess = false;
+            }
+        });
+
+        // تطبيق الفرز التلقائي بعد معالجة الصور
+        function applySorting() {
+            if (!autoSortEnabled) return;
+
+            const highConfidence = processedResults.filter(r => r.confidence >= CONFIDENCE_THRESHOLD);
+            const lowConfidence = processedResults.filter(r => r.confidence < CONFIDENCE_THRESHOLD);
+            
+            document.getElementById('highConfidenceCount').textContent = highConfidence.length;
+            document.getElementById('lowConfidenceCount').textContent = lowConfidence.length;
+            document.getElementById('sortingStats').style.display = 'block';
+            
+            console.log(`✅ تم الفرز: ${highConfidence.length} دقة عالية، ${lowConfidence.length} يحتاج مراجعة يدوية`);
+            
+            // إظهار رسالة للمستخدم
+            if (lowConfidence.length > 0) {
+                alert(`تم الفرز بنجاح!\n\n✓ ${highConfidence.length} صورة بدقة عالية (جاهزة للحفظ)\n⚠ ${lowConfidence.length} صورة تحتاج مراجعة يدوية`);
+            }
+        }
+
+        // فرز الصور حسب نوع الموقف
+        function sortImagesByCategory() {
+            const categories = {
+                'normal': [],
+                'disabled': [],
+                'violation': [],
+                'old_buildings': [],
+                'new_buildings': [],
+                'villas': [],
+                'impounded': [],
+                'tow_truck': [],
+                'other': []
+            };
+            
+            processedResults.forEach(result => {
+                const category = result.category || 'other';
+                if (categories[category]) {
+                    categories[category].push(result);
+                }
+            });
+            
+            console.log('📊 تم الفرز حسب الفئة:', categories);
+            
+            // عرض النتائج
+            let message = '📊 نتائج الفرز حسب النوع:\n\n';
+            let totalFound = 0;
+            
+            const categoryNames = {
+                'normal': 'مواقف عادية',
+                'disabled': 'مواقف معاقين',
+                'violation': 'مخالفات',
+                'old_buildings': 'المباني القديمة',
+                'new_buildings': 'المباني الجديدة',
+                'villas': 'منطقة الفلل',
+                'impounded': 'السيارات المكبوحة',
+                'tow_truck': 'سيارات على سطحة',
+                'other': 'أخرى'
+            };
+            
+            for (const [category, items] of Object.entries(categories)) {
+                if (items.length > 0) {
+                    message += `${categoryNames[category]}: ${items.length}\n`;
+                    totalFound += items.length;
+                }
+            }
+            
+            message += `\nإجمالي الصور: ${totalFound}`;
+            alert(message);
+        }
+
+        // حذف الصور المعالجة
+        function deleteProcessedImages() {
+            if (!confirm('هل أنت متأكد من حذف جميع الصور المعالجة؟')) {
+                return;
+            }
+            
+            // مسح البيانات
+            processedResults = [];
+            document.getElementById('resultsGrid').innerHTML = '';
+            document.getElementById('sortingControls').style.display = 'none';
+            document.getElementById('sortingStats').style.display = 'none';
+            
+            // إعادة تعيين العدادات
+            document.getElementById('totalImages').textContent = '0';
+            document.getElementById('processedImages').textContent = '0';
+            document.getElementById('normalParking').textContent = '0';
+            document.getElementById('disabledParking').textContent = '0';
+            document.getElementById('violations').textContent = '0';
+            document.getElementById('highConfidenceCount').textContent = '0';
+            document.getElementById('lowConfidenceCount').textContent = '0';
+            
+            // إعادة عرض قسم التحميل
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('filterSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            
+            // إعادة تعيين input
+            fileInput.value = '';
+            
+            console.log('🗑️ تم حذف جميع الصور المعالجة');
+            alert('✅ تم حذف جميع الصور المعالجة بنجاح');
+        }
+
+        // تعديل دالة showResults لتطبيق الفرز
+        const originalShowResults = showResults;
+        showResults = function() {
+            originalShowResults();
+            applySorting();
+            
+            // حذف الصور إذا كان الخيار مفعلاً
+            if (deleteAfterProcess) {
+                setTimeout(() => {
+                    deleteProcessedImages();
+                }, 2000);
+            }
+        };
     </script>
 </body>
 </html>
