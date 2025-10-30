@@ -27,6 +27,7 @@ from database_api import (
     get_violation_report,
     get_all_buildings,
     get_db_connection,
+    get_comprehensive_statistics,
 )
 
 # Load environment variables from .env file
@@ -626,6 +627,17 @@ def api_get_statistics():
     except Exception as e:
         logger.error(f"Error getting statistics: {e}")
         return jsonify({"success": False, "error": "حدث خطأ أثناء جلب الإحصائيات"}), 500
+
+
+@app.route("/api/comprehensive-statistics", methods=["GET"])
+def api_comprehensive_statistics():
+    """الحصول على الإحصائيات الشاملة مع التفاصيل الكاملة"""
+    try:
+        stats = get_comprehensive_statistics()
+        return jsonify({"success": True, "data": stats})
+    except Exception as e:
+        logger.error(f"Error getting comprehensive statistics: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب الإحصائيات الشاملة"}), 500
 
 
 @app.route("/api/search-plate", methods=["POST"])

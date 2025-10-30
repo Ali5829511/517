@@ -626,3 +626,147 @@ def get_all_buildings():
     buildings = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return buildings
+
+
+def get_comprehensive_statistics():
+    """
+    الحصول على إحصائيات شاملة للنظام
+    Get comprehensive system statistics
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # إحصائيات المباني
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) as total_buildings,
+            SUM(CASE WHEN building_type = 'عمارة' THEN 1 ELSE 0 END) as apartments_count,
+            SUM(CASE WHEN building_type = 'فيلا' THEN 1 ELSE 0 END) as villas_count
+        FROM buildings
+    """
+    )
+    buildings_stats = dict(cursor.fetchone())
+
+    # إحصائيات الوحدات
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) as total_units,
+            SUM(CASE WHEN status = 'مشغول' THEN 1 ELSE 0 END) as occupied_units,
+            SUM(CASE WHEN status = 'شاغر' THEN 1 ELSE 0 END) as vacant_units
+        FROM units
+    """
+    )
+    units_stats = dict(cursor.fetchone())
+
+    # إحصائيات السكان
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) as total_residents,
+            SUM(CASE WHEN status = 'نشط' THEN 1 ELSE 0 END) as active_residents
+        FROM residents
+    """
+    )
+    residents_stats = dict(cursor.fetchone())
+
+    # إحصائيات المواقف
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) as total_parking,
+            SUM(CASE WHEN spot_type = 'خاص' THEN 1 ELSE 0 END) as private_parking,
+            SUM(CASE WHEN spot_type = 'عام' THEN 1 ELSE 0 END) as public_parking,
+            SUM(CASE WHEN spot_type = 'معاق' THEN 1 ELSE 0 END) as disabled_parking,
+            SUM(CASE WHEN status = 'مشغول' THEN 1 ELSE 0 END) as occupied_parking,
+            SUM(CASE WHEN status = 'متاح' THEN 1 ELSE 0 END) as available_parking
+        FROM parking_spots
+    """
+    )
+    parking_stats = dict(cursor.fetchone())
+
+    # إحصائيات الملصقات
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) as total_stickers,
+            SUM(CASE WHEN status = 'فعال' THEN 1 ELSE 0 END) as active_stickers,
+            SUM(CASE WHEN status = 'ملغي' THEN 1 ELSE 0 END) as cancelled_stickers
+        FROM vehicle_stickers
+    """
+    )
+    stickers_stats = dict(cursor.fetchone())
+
+    # السكان الأكثر ملصقات
+    cursor.execute(
+        """
+        SELECT
+            r.name,
+            COUNT(vs.id) as vehicle_count
+        FROM residents r
+        LEFT JOIN vehicle_stickers vs ON r.id = vs.resident_id
+        GROUP BY r.id, r.name
+        ORDER BY vehicle_count DESC
+        LIMIT 10
+    """
+    )
+    top_residents = [dict(row) for row in cursor.fetchall()]
+
+    # المباني الأكثر ملصقات
+    cursor.execute(
+        """
+        SELECT
+            b.building_number,
+            b.building_type,
+            COUNT(vs.id) as sticker_count
+        FROM buildings b
+        LEFT JOIN units u ON b.id = u.building_id
+        LEFT JOIN residents r ON u.id = r.unit_id
+        LEFT JOIN vehicle_stickers vs ON r.id = vs.resident_id
+        GROUP BY b.id, b.building_number, b.building_type
+        ORDER BY sticker_count DESC
+        LIMIT 10
+    """
+    )
+    top_buildings = [dict(row) for row in cursor.fetchall()]
+
+    conn.close()
+
+    # حساب النسب
+    occupancy_rate = (
+        (units_stats["occupied_units"] / units_stats["total_units"] * 100)
+        if units_stats["total_units"] > 0
+        else 0
+    )
+    parking_utilization = (
+        (parking_stats["occupied_parking"] / parking_stats["total_parking"] * 100)
+        if parking_stats["total_parking"] > 0
+        else 0
+    )
+    stickers_per_resident = (
+        (stickers_stats["total_stickers"] / residents_stats["total_residents"])
+        if residents_stats["total_residents"] > 0
+        else 0
+    )
+
+    return {
+        "buildings": buildings_stats,
+        "units": units_stats,
+        "residents": residents_stats,
+        "parking": parking_stats,
+        "stickers": stickers_stats,
+        "kpis": {
+            "occupancy_rate": round(occupancy_rate, 1),
+            "parking_utilization": round(parking_utilization, 1),
+            "stickers_per_resident": round(stickers_per_resident, 2),
+            "active_sticker_rate": round(
+                (stickers_stats["active_stickers"] / stickers_stats["total_stickers"] * 100)
+                if stickers_stats["total_stickers"] > 0
+                else 0,
+                1,
+            ),
+        },
+        "top_residents": top_residents,
+        "top_buildings": top_buildings,
+    }
