@@ -172,7 +172,8 @@ def login():
         )
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Login error: {e}")
+        return jsonify({"error": "حدث خطأ أثناء تسجيل الدخول"}), 500
 
 
 @app.route("/api/logout", methods=["POST"])
@@ -237,7 +238,8 @@ def create_user():
         )
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Create user error: {e}")
+        return jsonify({"error": "حدث خطأ أثناء إنشاء المستخدم"}), 500
 
 
 @app.route("/api/users/<username>", methods=["DELETE"])
@@ -256,7 +258,8 @@ def delete_user(username):
         return jsonify({"success": True, "message": "تم حذف المستخدم بنجاح"})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Delete user error: {e}")
+        return jsonify({"error": "حدث خطأ أثناء حذف المستخدم"}), 500
 
 
 @app.route("/api/extract-plate", methods=["POST"])
@@ -442,7 +445,7 @@ def extract_plate():
 
     except Exception as e:
         logger.error(f"خطأ في استخراج اللوحة: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "حدث خطأ أثناء معالجة الصورة"}), 500
 
 
 @app.route("/api/process-images", methods=["POST"])
@@ -571,7 +574,7 @@ def process_images():
 
     except Exception as e:
         logger.error(f"خطأ في معالجة الصور: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "حدث خطأ أثناء معالجة الصور"}), 500
 
 
 @app.route("/api/processed-images-stats", methods=["GET"])
@@ -588,7 +591,8 @@ def api_get_residents():
         residents = get_all_residents()
         return jsonify({"success": True, "data": residents})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting residents: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب بيانات السكان"}), 500
 
 
 @app.route("/api/stickers", methods=["GET"])
@@ -598,7 +602,8 @@ def api_get_stickers():
         stickers = get_all_stickers()
         return jsonify({"success": True, "data": stickers})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting stickers: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب بيانات الملصقات"}), 500
 
 
 @app.route("/api/parking", methods=["GET"])
@@ -608,7 +613,8 @@ def api_get_parking():
         spots = get_all_parking_spots()
         return jsonify({"success": True, "data": spots})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting parking spots: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب بيانات المواقف"}), 500
 
 
 @app.route("/api/statistics", methods=["GET"])
@@ -618,7 +624,8 @@ def api_get_statistics():
         stats = get_statistics()
         return jsonify({"success": True, "data": stats})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting statistics: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب الإحصائيات"}), 500
 
 
 @app.route("/api/search-plate", methods=["POST"])
@@ -630,7 +637,8 @@ def api_search_plate():
         result = search_by_plate(plate_number)
         return jsonify({"success": True, "data": result})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error searching plate: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء البحث عن اللوحة"}), 500
 
 
 @app.route("/api/save-processed-image", methods=["POST"])
@@ -641,7 +649,8 @@ def api_save_processed_image():
         result = save_processed_image(data)
         return jsonify(result)
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error saving processed image: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء حفظ الصورة المعالجة"}), 500
 
 
 @app.route("/api/get-processed-images", methods=["GET"])
@@ -653,7 +662,8 @@ def api_get_processed_images():
         images = get_processed_images(limit, category)
         return jsonify({"success": True, "data": images})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting processed images: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب الصور المعالجة"}), 500
 
 
 @app.route("/api/search-processed-images", methods=["POST"])
@@ -665,7 +675,8 @@ def api_search_processed_images():
         results = search_processed_images(plate_number)
         return jsonify({"success": True, "data": results, "count": len(results)})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error searching processed images: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء البحث في الصور"}), 500
 
 
 @app.route("/api/processed-images-statistics", methods=["GET"])
@@ -675,7 +686,8 @@ def api_processed_images_statistics():
         stats = get_processed_images_statistics()
         return jsonify({"success": True, "data": stats})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting processed images statistics: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب إحصائيات الصور"}), 500
 
 
 @app.route("/api/violation-report", methods=["GET"])
@@ -685,7 +697,8 @@ def api_violation_report():
         report = get_violation_report()
         return jsonify({"success": True, "data": report})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting violation report: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب تقرير المخالفات"}), 500
 
 
 @app.route("/api/buildings", methods=["GET"])
@@ -694,7 +707,8 @@ def get_buildings():
         buildings = get_all_buildings()
         return jsonify({"success": True, "data": buildings})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting buildings: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب بيانات المباني"}), 500
 
 
 @app.route("/api/residents/<int:resident_id>/vehicles", methods=["GET"])
@@ -707,7 +721,8 @@ def api_get_resident_vehicles(resident_id):
         stickers = get_stickers_by_resident(resident_id)
         return jsonify({"success": True, "data": stickers})
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        logger.error(f"Error getting resident vehicles: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب بيانات مركبات الساكن"}), 500
 
 
 # إضافة headers لمنع الـ cache
@@ -828,7 +843,14 @@ def classify_parking():
     except Exception as e:
         logger.error(f"خطأ في تصنيف الصورة: {str(e)}")
         return (
-            jsonify({"success": False, "category": "other", "confidence": 0, "error": str(e)}),
+            jsonify(
+                {
+                    "success": False,
+                    "category": "other",
+                    "confidence": 0,
+                    "error": "حدث خطأ أثناء تصنيف الصورة",
+                }
+            ),
             500,
         )
 
@@ -1180,7 +1202,7 @@ def get_report(report_type):
 
     except Exception as e:
         logger.error(f"خطأ في get_report: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "حدث خطأ أثناء إنشاء التقرير"}), 500
 
 
 @app.route("/api/resident-card")
@@ -1315,7 +1337,7 @@ def get_resident_card():
 
     except Exception as e:
         logger.error(f"خطأ في get_resident_card: {str(e)}")
-        return jsonify({"found": False, "error": f"حدث خطأ: {str(e)}"}), 500
+        return jsonify({"found": False, "error": "حدث خطأ أثناء جلب بيانات الساكن"}), 500
 
 
 if __name__ == "__main__":
