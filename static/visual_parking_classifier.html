@@ -566,6 +566,11 @@
                 <div class="number" id="basementCount">0</div>
                 <div class="label">مواقف قبو</div>
             </div>
+            <div class="stat-card">
+                <div class="icon">🔧</div>
+                <div class="number" id="wheelClampCount">0</div>
+                <div class="label">سيارات مكبوحة</div>
+            </div>
         </div>
 
         <!-- قسم الرفع -->
@@ -632,6 +637,11 @@
                     <span>QR Code</span>
                     <span class="count" id="filterQrCount">0</span>
                 </div>
+                <div class="filter-btn" data-category="wheel_clamp" onclick="filterByCategory('wheel_clamp')">
+                    <span class="icon">🔧</span>
+                    <span>سيارات مكبوحة</span>
+                    <span class="count" id="filterWheelClampCount">0</span>
+                </div>
                 <div class="filter-btn" data-category="violation" onclick="filterByCategory('violation')">
                     <span class="icon">⚠️</span>
                     <span>مخالفات</span>
@@ -675,6 +685,7 @@
             basement: { name: 'مواقف قبو', icon: '🏗️', count: 0 },
             license: { name: 'تراخيص', icon: '📋', count: 0 },
             qr: { name: 'QR Code', icon: '📱', count: 0 },
+            wheel_clamp: { name: 'سيارات مكبوحة', icon: '🔧', count: 0 },
             violation: { name: 'مخالفات', icon: '⚠️', count: 0 },
             other: { name: 'أخرى', icon: '📷', count: 0 }
         };
@@ -793,6 +804,7 @@
             document.getElementById('disabledCount').textContent = categories.disabled.count;
             document.getElementById('privateCount').textContent = categories.private.count;
             document.getElementById('basementCount').textContent = categories.basement.count;
+            document.getElementById('wheelClampCount').textContent = categories.wheel_clamp.count;
 
             // تحديث الفلاتر
             document.getElementById('filterAllCount').textContent = uploadedImages.length;
@@ -802,6 +814,7 @@
             document.getElementById('filterBasementCount').textContent = categories.basement.count;
             document.getElementById('filterLicenseCount').textContent = categories.license.count;
             document.getElementById('filterQrCount').textContent = categories.qr.count;
+            document.getElementById('filterWheelClampCount').textContent = categories.wheel_clamp.count;
             document.getElementById('filterViolationCount').textContent = categories.violation.count;
         }
 
