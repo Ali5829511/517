@@ -1308,7 +1308,7 @@ def classify_single_image():
         
     except Exception as e:
         logger.error(f"خطأ في تصنيف الصورة: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'فشل في تصنيف الصورة'}), 500
 
 @app.route('/api/classify-images-batch', methods=['POST'])
 def classify_multiple_images():
@@ -1342,7 +1342,7 @@ def classify_multiple_images():
         
     except Exception as e:
         logger.error(f"خطأ في تصنيف الصور: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'فشل في تصنيف الصور'}), 500
 
 @app.route('/api/image-categories', methods=['GET'])
 def get_image_categories():
@@ -1365,5 +1365,5 @@ def get_image_categories():
         
     except Exception as e:
         logger.error(f"خطأ في جلب الفئات: {e}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'فشل في جلب الفئات'}), 500
 
