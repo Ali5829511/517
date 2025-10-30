@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نظام إدارة الإسكان</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #5A8CA3 0%, #2C5F7A 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center; direction: rtl;
+        }
+        .login-container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 400px; }
+        .login-header { text-align: center; margin-bottom: 30px; }
+        .login-header i { font-size: 60px; color: #5A8CA3; margin-bottom: 15px; }
+        .login-header h1 { color: #333; font-size: 28px; margin-bottom: 10px; }
+        .login-header p { color: #666; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; }
+        .form-group input { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: all 0.3s; }
+        .form-group input:focus { outline: none; border-color: #5A8CA3; }
+        .btn-login { width: 100%; padding: 14px; background: linear-gradient(135deg, #5A8CA3 0%, #2C5F7A 100%); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
+        .btn-login:hover { transform: translateY(-2px); }
+        .alert { padding: 12px 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .alert-danger { background: #fee; color: #c33; border: 1px solid #fcc; }
+        .alert-success { background: #efe; color: #3c3; border: 1px solid #cfc; }
+        .alert-warning { background: #ffc; color: #c93; border: 1px solid #ffb; }
+        .register-link { text-align: center; margin-top: 20px; color: #666; }
+        .register-link a { color: #5A8CA3; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <i class="fas fa-user-shield"></i>
+            <h1>تسجيل الدخول</h1>
+            <p>نظام إدارة الإسكان الجامعي</p>
+        </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="form-group">
+                <label for="username">اسم المستخدم</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn-login">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            </button>
+        </form>
+        <div class="register-link">
+            ليس لديك حساب؟ <a href="{{ url_for('auth.register') }}">إنشاء حساب جديد</a>
+        </div>
+    </div>
+    
+    <!-- نظام الإشعارات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="{{ url_for('static', filename='notification_system.js') }}"></script>
+    <script>
+        // عرض رسائل الخطأ كإشعارات
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                window.addEventListener('DOMContentLoaded', () => {
+                    {% for category, message in messages %}
+                        {% if category == 'danger' or category == 'error' %}
+                            notify.error('{{ message }}', 6000);
+                        {% elif category == 'warning' %}
+                            notify.warning('{{ message }}', 6000);
+                        {% elif category == 'success' %}
+                            notify.success('{{ message }}', 6000);
+                        {% else %}
+                            notify.info('{{ message }}', 6000);
+                        {% endif %}
+                    {% endfor %}
+                });
+            {% endif %}
+        {% endwith %}
+    </script>
+</body>
+</html>

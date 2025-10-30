@@ -51,6 +51,10 @@ from database_api import get_all_residents, get_all_stickers, get_all_parking_sp
 app = Flask(__name__, static_folder='static', template_folder='templates')
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
 
+# Register auth blueprint
+from auth import auth_bp
+app.register_blueprint(auth_bp, url_prefix='/auth')
+
 # Secure session cookie configuration
 # SESSION_COOKIE_SECURE is only enabled in production to allow HTTP in development
 app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'
@@ -1271,3 +1275,95 @@ def get_resident_card():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
+# ============ نظام التصنيف الذكي للصور ============
+from image_classifier import (
+    classify_image_with_ai, 
+    classify_images_batch, 
+    group_similar_images,
+    get_category_statistics,
+    IMAGE_CATEGORIES
+)
+
+@app.route('/api/classify-image', methods=['POST'])
+def classify_single_image():
+    """تصنيف صورة واحدة باستخدام الذكاء الاصطناعي"""
+    try:
+        data = request.json
+        image_base64 = data.get('image')
+        
+        if not image_base64:
+            return jsonify({'error': 'لم يتم إرفاق صورة'}), 400
+        
+        # استخدام OpenAI إذا كان متاحاً
+        openai_client_param = client if OPENAI_AVAILABLE else None
+        
+        # تصنيف الصورة
+        classification = classify_image_with_ai(image_base64, openai_client_param)
+        
+        return jsonify({
+            'success': True,
+            'classification': classification
+        })
+        
+    except Exception as e:
+        logger.error(f"خطأ في تصنيف الصورة: {e}")
+        return jsonify({'error': 'فشل في تصنيف الصورة'}), 500
+
+@app.route('/api/classify-images-batch', methods=['POST'])
+def classify_multiple_images():
+    """تصنيف مجموعة من الصور وتجميع المتشابهة"""
+    try:
+        data = request.json
+        images = data.get('images', [])
+        
+        if not images:
+            return jsonify({'error': 'لم يتم إرفاق صور'}), 400
+        
+        # استخدام OpenAI إذا كان متاحاً
+        openai_client_param = client if OPENAI_AVAILABLE else None
+        
+        # تصنيف جميع الصور
+        classifications = classify_images_batch(images, openai_client_param)
+        
+        # تجميع الصور المتشابهة
+        groups = group_similar_images(classifications)
+        
+        # حساب الإحصائيات
+        statistics = get_category_statistics(classifications)
+        
+        return jsonify({
+            'success': True,
+            'total_images': len(images),
+            'classifications': classifications,
+            'groups': groups,
+            'statistics': statistics
+        })
+        
+    except Exception as e:
+        logger.error(f"خطأ في تصنيف الصور: {e}")
+        return jsonify({'error': 'فشل في تصنيف الصور'}), 500
+
+@app.route('/api/image-categories', methods=['GET'])
+def get_image_categories():
+    """الحصول على قائمة فئات التصنيف المتاحة"""
+    try:
+        categories_list = []
+        for key, info in IMAGE_CATEGORIES.items():
+            categories_list.append({
+                'key': key,
+                'name_ar': info['name_ar'],
+                'name_en': info['name_en'],
+                'description': info['description']
+            })
+        
+        return jsonify({
+            'success': True,
+            'categories': categories_list,
+            'total': len(categories_list)
+        })
+        
+    except Exception as e:
+        logger.error(f"خطأ في جلب الفئات: {e}")
+        return jsonify({'error': 'فشل في جلب الفئات'}), 500
+
