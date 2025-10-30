@@ -286,6 +286,53 @@
             transition: all 0.3s ease;
         }
 
+        .action-buttons-row .action-btn {
+            flex: 1;
+            min-width: auto;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+
+        .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(33, 150, 243, 0.3);
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(244, 67, 54, 0.3);
+        }
+
+        .view-btn {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+        }
+
+        .view-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+        }
+
+        .export-single-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+        }
+
+        .export-single-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+        }
+
         .btn-primary {
             background: linear-gradient(135deg, #2D5F3F 0%, #1a3a28 100%);
             color: white;
@@ -323,6 +370,16 @@
 
         .btn-secondary:hover {
             background: #e0e0e0;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
         }
 
         .results-grid {
@@ -790,7 +847,10 @@
                         <i class="fas fa-search"></i> بحث برقم اللوحة
                     </button>
                     <button class="action-btn btn-primary" onclick="exportResults()">
-                        <i class="fas fa-file-excel"></i> تصدير النتائج
+                        <i class="fas fa-file-excel"></i> تصدير النتائج HTML
+                    </button>
+                    <button class="action-btn btn-success" onclick="exportAllImages()">
+                        <i class="fas fa-download"></i> تصدير جميع الصور JSON
                     </button>
                     <button class="action-btn btn-primary" onclick="printResults()">
                         <i class="fas fa-print"></i> طباعة النتائج
@@ -1066,9 +1126,18 @@
                                 <span>لون السيارة:</span>
                                 <span>${result.carColor}</span>
                             </div>
+                            ${result.plateNumber !== 'لم يتم التعرف' ? `
                             <div class="result-detail">
                                 <span>نسبة الدقة:</span>
                                 <span>${result.confidence}%</span>
+                            </div>` : ''}
+                            <div class="result-detail">
+                                <span>تاريخ الرفع:</span>
+                                <span>${new Date().toLocaleDateString('ar-SA')}</span>
+                            </div>
+                            <div class="result-detail">
+                                <span>وقت الرفع:</span>
+                                <span>${new Date().toLocaleTimeString('ar-SA')}</span>
                             </div>
                             <div class="result-detail">
                                 <span>التصنيف:</span>
@@ -1077,6 +1146,20 @@
                         </div>
                         ${residentInfoHTML}
                         ${errorHTML}
+                        <div class="action-buttons-row" style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="action-btn edit-btn" onclick="editImage(${index})" title="تعديل">
+                                <i class="fas fa-edit"></i> تعديل
+                            </button>
+                            <button class="action-btn delete-btn" onclick="deleteImage(${index})" title="حذف">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                            <button class="action-btn view-btn" onclick="viewImageDetails(${index})" title="عرض التفاصيل">
+                                <i class="fas fa-eye"></i> تفاصيل
+                            </button>
+                            <button class="action-btn export-single-btn" onclick="exportSingleImage(${index})" title="تصدير">
+                                <i class="fas fa-download"></i> تصدير
+                            </button>
+                        </div>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -1357,6 +1440,198 @@
             }
             
             return plateNumber;
+        }
+
+        // وظائف الإجراءات اليدوية
+        function editImage(index) {
+            const result = processedResults[index];
+            if (!result) {
+                alert('لم يتم العثور على الصورة');
+                return;
+            }
+
+            const newPlateNumber = prompt('تعديل رقم اللوحة:', result.plateNumber);
+            if (newPlateNumber && newPlateNumber !== result.plateNumber) {
+                processedResults[index].plateNumber = newPlateNumber;
+                displayResults();
+                alert('تم تحديث رقم اللوحة بنجاح!');
+            }
+        }
+
+        function deleteImage(index) {
+            if (confirm('هل أنت متأكد من حذف هذه الصورة؟')) {
+                processedResults.splice(index, 1);
+                updateStats();
+                displayResults();
+                alert('تم حذف الصورة بنجاح!');
+            }
+        }
+
+        function viewImageDetails(index) {
+            const result = processedResults[index];
+            if (!result) {
+                alert('لم يتم العثور على الصورة');
+                return;
+            }
+
+            const resident = result.residentInfo?.resident || {};
+            const detailsHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;" onclick="this.remove()">
+                    <div style="background: white; border-radius: 20px; padding: 40px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h2 style="color: #5A8CA3; font-size: 28px;">
+                                <i class="fas fa-info-circle"></i> تفاصيل الصورة
+                            </h2>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                            <div>
+                                <img src="${result.image}" style="width: 100%; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);">
+                            </div>
+                            <div>
+                                <h3 style="color: #5A8CA3; margin-bottom: 20px;">المعلومات الأساسية</h3>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">رقم اللوحة:</td>
+                                        <td style="padding: 12px;">${result.plateNumber}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">نوع السيارة:</td>
+                                        <td style="padding: 12px;">${result.carType}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">لون السيارة:</td>
+                                        <td style="padding: 12px;">${result.carColor}</td>
+                                    </tr>
+                                    ${result.plateNumber !== 'لم يتم التعرف' ? `
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">نسبة الدقة:</td>
+                                        <td style="padding: 12px;">${result.confidence}%</td>
+                                    </tr>` : ''}
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">تاريخ الرفع:</td>
+                                        <td style="padding: 12px;">${new Date().toLocaleDateString('ar-SA')}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">وقت الرفع:</td>
+                                        <td style="padding: 12px;">${new Date().toLocaleTimeString('ar-SA')}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 12px; font-weight: bold;">التصنيف:</td>
+                                        <td style="padding: 12px;">${getCategoryText(result.category)}</td>
+                                    </tr>
+                                </table>
+                                ${resident.name ? `
+                                <h3 style="color: #5A8CA3; margin: 30px 0 20px;">معلومات الساكن</h3>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">الاسم:</td>
+                                        <td style="padding: 12px;">${resident.name || 'غير محدد'}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">الوحدة:</td>
+                                        <td style="padding: 12px;">${resident.unit || 'غير محدد'}</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                                        <td style="padding: 12px; font-weight: bold;">المبنى:</td>
+                                        <td style="padding: 12px;">${resident.building || 'غير محدد'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 12px; font-weight: bold;">رقم الجوال:</td>
+                                        <td style="padding: 12px;">${resident.phone || 'غير محدد'}</td>
+                                    </tr>
+                                </table>
+                                ` : ''}
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 30px;">
+                            <button onclick="this.closest('div').parentElement.remove()" style="background: linear-gradient(135deg, #5A8CA3 0%, #7BA7BC 100%); color: white; border: none; padding: 12px 40px; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                                <i class="fas fa-times"></i> إغلاق
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', detailsHTML);
+        }
+
+        function exportSingleImage(index) {
+            const result = processedResults[index];
+            if (!result) {
+                alert('لم يتم العثور على الصورة');
+                return;
+            }
+
+            const resident = result.residentInfo?.resident || {};
+            const exportData = {
+                plateNumber: result.plateNumber,
+                carType: result.carType,
+                carColor: result.carColor,
+                confidence: result.confidence,
+                category: getCategoryText(result.category),
+                uploadDate: new Date().toLocaleDateString('ar-SA'),
+                uploadTime: new Date().toLocaleTimeString('ar-SA'),
+                resident: {
+                    name: resident.name || 'غير محدد',
+                    unit: resident.unit || 'غير محدد',
+                    building: resident.building || 'غير محدد',
+                    phone: resident.phone || 'غير محدد'
+                }
+            };
+
+            // تصدير كـ JSON
+            const jsonStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `صورة_${result.plateNumber}_${new Date().toISOString().split('T')[0]}.json`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            alert('تم تصدير بيانات الصورة بنجاح!');
+        }
+
+        function exportAllImages() {
+            if (!processedResults || processedResults.length === 0) {
+                alert('لا توجد صور للتصدير');
+                return;
+            }
+
+            const allData = processedResults.map((result, index) => {
+                const resident = result.residentInfo?.resident || {};
+                return {
+                    index: index + 1,
+                    plateNumber: result.plateNumber,
+                    carType: result.carType,
+                    carColor: result.carColor,
+                    confidence: result.confidence,
+                    category: getCategoryText(result.category),
+                    uploadDate: new Date().toLocaleDateString('ar-SA'),
+                    uploadTime: new Date().toLocaleTimeString('ar-SA'),
+                    resident: {
+                        name: resident.name || 'غير محدد',
+                        unit: resident.unit || 'غير محدد',
+                        building: resident.building || 'غير محدد',
+                        phone: resident.phone || 'غير محدد'
+                    }
+                };
+            });
+
+            // تصدير كـ JSON
+            const jsonStr = JSON.stringify(allData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `جميع_الصور_${new Date().toISOString().split('T')[0]}.json`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            alert(`تم تصدير بيانات ${processedResults.length} صورة بنجاح!`);
         }
 
         // دعم الطباعة

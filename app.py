@@ -298,41 +298,43 @@ def extract_plate():
         
         if OPENAI_AVAILABLE and client:
             try:
-                # استخدام GPT-4 Vision لاستخراج رقم اللوحة
+                # استخدام GPT-4 Vision لاستخراج رقم اللوحة بدقة عالية
                 response = client.chat.completions.create(
-                    model="gpt-4.1-mini",
+                    model="gpt-4o",
                     messages=[
                         {
                             "role": "user",
                             "content": [
                                 {
                                     "type": "text",
-                                    "text": """أنت خبير في قراءة لوحات السيارات السعودية. حلل هذه الصورة بدقة عالية جداً واستخرج:
+                                    "text": """أنت خبير متخصص في قراءة لوحات السيارات السعودية بدقة عالية جداً. حلل هذه الصورة بتركيز شديد واستخرج المعلومات التالية:
 
-**مهم جداً:**
-- اللوحات السعودية تحتوي على 3 أحرف إنجليزية + 4 أرقام
-- الأحرف الإنجليزية تكون على اليمين والأرقام على اليسار
-- اقرأ اللوحة بدقة تامة من الصورة الفعلية
-- استخرج الأحرف بالإنجليزية مباشرة (مثل: ABC, XYZ)
-- لا تخترع أرقام أو أحرف، اقرأ ما هو موجود فقط
+**تعليمات مهمة للغاية - اتبعها بدقة:**
+1. اللوحات السعودية تحتوي على 3 أحرف إنجليزية + 4 أرقام
+2. الأحرف الإنجليزية تكون على اليمين (Right) والأرقام على اليسار (Left)
+3. اقرأ كل حرف ورقم بدقة تامة من الصورة الفعلية - لا تخمن أبداً
+4. استخرج الأحرف بالإنجليزية الكبيرة مباشرة (Capital Letters: ABC, XYZ, KSA)
+5. إذا كانت الصورة غير واضحة، أخبرني بذلك واجعل confidence منخفض
+6. انتبه للأحرف المتشابهة: O vs 0, I vs 1, S vs 5, B vs 8
+7. تأكد من قراءة الأرقام بالترتيب الصحيح من اليسار لليمين
 
-استخرج:
-1. الأحرف الإنجليزية الثلاثة (مثل: ABC, XYZ)
-2. الأرقام الأربعة (مثل: 5687)
-3. نوع السيارة (الماركة مثل: Toyota, Ford, Honda)
-4. لون السيارة
+**المعلومات المطلوبة:**
+1. الأحرف الإنجليزية الثلاثة بالضبط (مثل: ABC, XYZ, KSA)
+2. الأرقام الأربعة بالضبط (مثل: 5687, 1234)
+3. نوع/ماركة السيارة إن كان واضحاً (مثل: Toyota, Hyundai, Ford)
+4. لون السيارة إن كان واضحاً
 
-أرجع JSON فقط:
+**صيغة الإرجاع - JSON فقط بدون أي نص إضافي:**
 {
-    "plate_number": "ABC 5687" (الأحرف بالإنجليزية + الأرقام),
-    "english_letters": "ABC" (الأحرف الإنجليزية فقط),
-    "numbers": "5687" (الأرقام فقط),
-    "vehicle_type": "نوع السيارة",
-    "vehicle_color": "اللون",
-    "confidence": رقم من 0-100
+    "plate_number": "ABC 5687",
+    "english_letters": "ABC",
+    "numbers": "5687",
+    "vehicle_type": "نوع السيارة أو غير محدد",
+    "vehicle_color": "اللون أو غير محدد",
+    "confidence": رقم من 0-100 (استخدم 90-100 إذا كانت واضحة جداً، 70-89 إذا كانت واضحة، 50-69 إذا كانت متوسطة، أقل من 50 إذا كانت غير واضحة)
 }
 
-إذا لم تر اللوحة بوضوح، ضع confidence أقل من 50."""
+**ملاحظة مهمة:** إذا لم تستطع قراءة اللوحة بوضوح، ضع confidence أقل من 50 واكتب "غير واضح" في المعلومات غير المحددة."""
                                 },
                                 {
                                     "type": "image_url",
@@ -486,9 +488,9 @@ def process_images():
             filename = img_info['name']
             filepath = img_info.get('path', '')
             
-            # استخدام GPT-4 Vision لتحليل الصورة
+            # استخدام GPT-4 Vision لتحليل الصورة بدقة عالية
             response = client.chat.completions.create(
-                model="gpt-4.1-mini",
+                model="gpt-4o",
                 messages=[
                     {
                         "role": "user",
@@ -599,6 +601,107 @@ def api_get_parking():
         return jsonify({'success': True, 'data': spots})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/duplicate-plates', methods=['GET'])
+def api_get_duplicate_plates():
+    """الحصول على اللوحات المتكررة والمتشابهة"""
+    try:
+        stickers = get_all_stickers()
+        
+        # تجميع اللوحات وتحليلها
+        plate_map = {}
+        for sticker in stickers:
+            plate = (sticker.get('plate_number', '') or '').strip().upper()
+            if not plate or plate in ['غير محدد', 'NULL', '']:
+                continue
+            
+            if plate not in plate_map:
+                plate_map[plate] = []
+            plate_map[plate].append(sticker)
+        
+        # البحث عن التكرارات
+        duplicates = []
+        similar = []
+        
+        plates_list = list(plate_map.keys())
+        
+        for i, plate in enumerate(plates_list):
+            items = plate_map[plate]
+            
+            # لوحات مكررة تماماً
+            if len(items) > 1:
+                duplicates.append({
+                    'type': 'exact',
+                    'plate': plate,
+                    'count': len(items),
+                    'items': items,
+                    'similarity': 100
+                })
+            
+            # البحث عن لوحات متشابهة
+            for j in range(i + 1, len(plates_list)):
+                other_plate = plates_list[j]
+                similarity = calculate_plate_similarity(plate, other_plate)
+                
+                if 70 <= similarity < 100:
+                    similar.append({
+                        'type': 'similar',
+                        'plate': plate,
+                        'similar_to': other_plate,
+                        'count': len(items),
+                        'items': items,
+                        'similarity': similarity
+                    })
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'duplicates': duplicates,
+                'similar': similar,
+                'total_exact': len(duplicates),
+                'total_similar': len(similar),
+                'total_unique': len(plate_map)
+            }
+        })
+    except Exception as e:
+        logger.error(f"Error in duplicate plates API: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+def calculate_plate_similarity(plate1, plate2):
+    """حساب نسبة التشابه بين لوحتين"""
+    p1 = plate1.replace(' ', '')
+    p2 = plate2.replace(' ', '')
+    
+    if p1 == p2:
+        return 100
+    
+    # حساب التشابه بناءً على الأحرف المتطابقة
+    matches = 0
+    max_len = max(len(p1), len(p2))
+    
+    for i in range(min(len(p1), len(p2))):
+        if p1[i] == p2[i]:
+            matches += 1
+        elif check_similar_chars(p1[i], p2[i]):
+            matches += 0.5
+    
+    return round((matches / max_len) * 100)
+
+
+def check_similar_chars(char1, char2):
+    """فحص الأحرف المتشابهة بصرياً"""
+    similar_pairs = {
+        ('O', '0'), ('0', 'O'),
+        ('I', '1'), ('1', 'I'),
+        ('S', '5'), ('5', 'S'),
+        ('B', '8'), ('8', 'B'),
+        ('Z', '2'), ('2', 'Z'),
+        ('G', '6'), ('6', 'G')
+    }
+    return (char1, char2) in similar_pairs
+
 
 @app.route('/api/statistics', methods=['GET'])
 def api_get_statistics():
@@ -730,29 +833,78 @@ def classify_parking():
         if not OPENAI_AVAILABLE or not client:
             return jsonify({'error': 'خدمة تصنيف الصور غير متوفرة حالياً'}), 503
         
-        # استخدام GPT-4 Vision لتصنيف الصورة
+        # استخدام GPT-4 Vision لتصنيف الصورة بدقة عالية
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "system",
-                    "content": """أنت نظام ذكاء اصطناعي متخصص في تصنيف صور مواقف السيارات.
-                    
-قم بتحليل الصورة وتصنيفها إلى أحد الأنواع التالية:
-- normal: موقف سيارات عادي
-- disabled: موقف معاقين/احتياجات خاصة (يحتوي على رمز الكرسي المتحرك أو علامة معاقين)
-- private: موقف خاص (يحتوي على لافتة "خاص" أو "Private" أو اسم شخص/شركة)
-- basement: موقف قبو/تحت الأرض (يظهر أنه في قبو أو موقف سفلي)
-- license: صورة ترخيص أو تصريح (ورقة رسمية)
-- qr: صورة تحتوي على QR Code
-- violation: صورة مخالفة (سيارة متوقفة بشكل خاطئ أو في مكان ممنوع)
-- other: أي شيء آخر
+                    "content": """أنت نظام ذكاء اصطناعي متطور متخصص في تصنيف صور مواقف السيارات بدقة عالية جداً باستخدام التحليل البصري المتقدم.
 
-أرجع النتيجة بصيغة JSON فقط بدون أي نص إضافي:
+**مهمتك:** تحليل الصورة بدقة فائقة وتصنيفها إلى الفئة الأنسب بناءً على الخصائص البصرية.
+
+**فئات التصنيف المتاحة:**
+
+1. **normal** - موقف سيارات عادي:
+   - موقف سيارات عام/عادي بدون علامات خاصة
+   - خطوط بيضاء أو صفراء عادية
+   - لا يوجد لافتات أو رموز خاصة
+
+2. **disabled** - موقف معاقين/احتياجات خاصة:
+   - يحتوي على رمز الكرسي المتحرك ♿
+   - لون أزرق عادةً
+   - علامة معاقين واضحة
+   - أوسع من المواقف العادية
+
+3. **private** - موقف خاص:
+   - يحتوي على لافتة "خاص" أو "Private" أو "Reserved"
+   - اسم شخص أو شركة محدد
+   - رقم محدد أو تخصيص خاص
+
+4. **basement** - موقف قبو/تحت الأرض:
+   - يظهر في قبو أو موقف سفلي/تحت الأرض
+   - إضاءة صناعية واضحة
+   - أعمدة خرسانية وسقف منخفض
+   - جدران خرسانية
+
+5. **license** - صورة ترخيص أو تصريح:
+   - ورقة رسمية أو بطاقة
+   - شعار جامعة أو جهة حكومية
+   - نص رسمي وأختام
+
+6. **qr** - صورة تحتوي على QR Code:
+   - يظهر رمز QR بوضوح
+   - باركود ثنائي الأبعاد
+   - مربع أسود وأبيض مميز
+
+7. **wheel_clamp** - صورة كبح عجلة سيارة (مكبوح):
+   - جهاز معدني أصفر أو أحمر على العجلة
+   - يمنع السيارة من الحركة
+   - قفل أمني على الإطار
+   - عادةً يكون بلون أصفر فاقع أو برتقالي
+   - كتابة "Wheel Clamp" أو "Boot" أو "مكبوح"
+   - سيارة معطلة أو تحت المراقبة
+
+8. **violation** - صورة مخالفة:
+   - سيارة متوقفة بشكل خاطئ
+   - في مكان ممنوع أو على خط أصفر
+   - تسد الطريق أو مخرج
+
+9. **other** - أي شيء آخر:
+   - لا يتطابق مع أي فئة أعلاه
+   - صورة غير واضحة
+
+**معايير التصنيف الدقيق:**
+- افحص جميع التفاصيل البصرية بدقة (الألوان، الأشكال، النصوص، الرموز)
+- استخدم confidence عالي (85-100) فقط إذا كانت الصورة واضحة جداً والتصنيف مؤكد
+- استخدم confidence متوسط (60-84) إذا كان التصنيف محتمل لكن به بعض الشك
+- استخدم confidence منخفض (<60) إذا كانت الصورة غير واضحة
+
+**صيغة الإرجاع - JSON فقط بدون أي نص إضافي:**
 {
-    "category": "نوع التصنيف",
+    "category": "نوع التصنيف من القائمة أعلاه",
     "confidence": رقم من 0 إلى 100,
-    "reason": "سبب التصنيف بالعربية"
+    "reason": "سبب واضح ومحدد للتصنيف بالعربية مع ذكر التفاصيل البصرية التي أدت لهذا القرار"
 }"""
                 },
                 {
@@ -1189,18 +1341,16 @@ def get_resident_card():
         # السيارات والملصقات
         cursor.execute('''
             SELECT 
-                v.id,
-                v.plate_number,
-                v.make,
-                v.model,
-                v.color,
-                s.sticker_number,
-                s.status as sticker_status,
-                s.issue_date,
-                s.expiry_date
-            FROM vehicles v
-            LEFT JOIN stickers s ON v.id = s.vehicle_id
-            WHERE v.resident_id = ?
+                vs.id,
+                vs.sticker_number,
+                vs.plate_number,
+                vs.vehicle_type,
+                vs.vehicle_color,
+                vs.issue_date,
+                vs.status
+            FROM vehicle_stickers vs
+            WHERE vs.resident_id = ?
+            ORDER BY vs.issue_date DESC
         ''', (resident_data['resident_id'],))
         
         vehicles = [dict(row) for row in cursor.fetchall()]
@@ -1209,8 +1359,8 @@ def get_resident_card():
         cursor.execute('''
             SELECT 
                 ps.spot_number,
-                ps.location,
-                ps.type,
+                ps.parking_area,
+                ps.spot_type,
                 ps.status
             FROM parking_spots ps
             WHERE ps.unit_id = ?
@@ -1218,26 +1368,27 @@ def get_resident_card():
         
         parking = [dict(row) for row in cursor.fetchall()]
         
-        # المخالفات
-        vehicle_ids = [v['id'] for v in vehicles]
-        violations = []
-        
-        if vehicle_ids:
-            placeholders = ','.join('?' * len(vehicle_ids))
-            cursor.execute(f'''
-                SELECT 
-                    vio.date,
-                    vio.violation_type,
-                    vio.description,
-                    vio.status,
-                    v.plate_number
-                FROM violations vio
-                JOIN vehicles v ON vio.vehicle_id = v.id
-                WHERE vio.vehicle_id IN ({placeholders})
-                ORDER BY vio.date DESC
-            ''', vehicle_ids)
-            
-            violations = [dict(row) for row in cursor.fetchall()]
+        # جلب الصور المعالجة للوحات السيارات إن وجدت
+        plate_images = []
+        if vehicles:
+            for vehicle in vehicles:
+                if vehicle['plate_number']:
+                    cursor.execute('''
+                        SELECT 
+                            pi.id,
+                            pi.original_image_path,
+                            pi.plate_number,
+                            pi.confidence_score,
+                            pi.processing_date
+                        FROM processed_images pi
+                        WHERE pi.plate_number = ?
+                        ORDER BY pi.processing_date DESC
+                        LIMIT 1
+                    ''', (vehicle['plate_number'],))
+                    
+                    img = cursor.fetchone()
+                    if img:
+                        plate_images.append(dict(img))
         
         conn.close()
         
@@ -1258,7 +1409,7 @@ def get_resident_card():
             },
             'vehicles': vehicles,
             'parking': parking,
-            'violations': violations
+            'plate_images': plate_images
         })
         
     except Exception as e:

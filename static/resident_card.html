@@ -620,7 +620,7 @@
                 document.getElementById('parkingInfo').innerHTML = data.parking.map(p => `
                     <div class="info-item">
                         <span class="info-label">موقف رقم ${p.spot_number}</span>
-                        <span class="info-value">${p.type} - ${p.location}</span>
+                        <span class="info-value">${p.spot_type} - ${p.parking_area}</span>
                     </div>
                 `).join('');
             } else {
@@ -635,24 +635,28 @@
                             <div class="vehicle-icon">
                                 <i class="fas fa-car"></i>
                             </div>
-                            <div class="vehicle-plate">${v.plate_number}</div>
+                            <div class="vehicle-plate">${v.plate_number || 'غير محدد'}</div>
                         </div>
                         <div class="info-item">
                             <span class="info-label">النوع</span>
-                            <span class="info-value">${v.make} ${v.model}</span>
+                            <span class="info-value">${v.vehicle_type || 'غير محدد'}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">اللون</span>
-                            <span class="info-value">${v.color}</span>
+                            <span class="info-value">${v.vehicle_color || 'غير محدد'}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">رقم الملصق</span>
                             <span class="info-value">${v.sticker_number || 'غير محدد'}</span>
                         </div>
                         <div class="info-item">
-                            <span class="info-label">حالة الملصق</span>
-                            <span class="info-value" style="color: ${v.sticker_status === 'active' ? '#48bb78' : '#f56565'}">
-                                ${v.sticker_status === 'active' ? 'فعال' : 'منتهي'}
+                            <span class="info-label">تاريخ الإصدار</span>
+                            <span class="info-value">${v.issue_date || 'غير محدد'}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">الحالة</span>
+                            <span class="info-value" style="color: ${v.status === 'فعال' ? '#48bb78' : '#f56565'}">
+                                ${v.status || 'غير محدد'}
                             </span>
                         </div>
                     </div>
@@ -661,8 +665,56 @@
                 document.getElementById('vehiclesGrid').innerHTML = '<div class="no-data"><i class="fas fa-inbox"></i><p>لا توجد سيارات مسجلة</p></div>';
             }
             
-            // المخالفات
-            if (data.violations && data.violations.length > 0) {
+            // صور اللوحات المعالجة
+            if (data.plate_images && data.plate_images.length > 0) {
+                document.getElementById('violationsTable').innerHTML = `
+                    <div class="plate-images-section">
+                        <h4>صور اللوحات المعالجة بالذكاء الاصطناعي</h4>
+                        ${data.plate_images.map(img => `
+                            <div class="plate-image-card">
+                                <div class="info-item">
+                                    <span class="info-label">رقم اللوحة</span>
+                                    <span class="info-value">${img.plate_number}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">دقة التعرف</span>
+                                    <span class="info-value">${img.confidence_score}%</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">تاريخ المعالجة</span>
+                                    <span class="info-value">${img.processing_date}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                document.getElementById('violationsTable').innerHTML = '<div class="no-data"><i class="fas fa-inbox"></i><p>لا توجد صور معالجة للوحات</p></div>';
+            }
+        }
+
+        // تحديث عنوان قسم المخالفات ليكون صور اللوحات
+        function updateViolationsTitle() {
+            const violationsSection = document.querySelector('.info-section h3');
+            if (violationsSection && violationsSection.textContent.includes('المخالفات')) {
+                violationsSection.innerHTML = '<i class="fas fa-images"></i> صور اللوحات المعالجة';
+            }
+        }
+
+        // استدعاء التحديث عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            // تحديث عنوان القسم
+            const sections = document.querySelectorAll('.info-section h3');
+            sections.forEach(section => {
+                if (section.textContent.includes('المخالفات')) {
+                    section.innerHTML = '<i class="fas fa-images"></i> صور اللوحات المعالجة';
+                }
+            });
+        });
+
+        function oldViolationsCode() {
+            // الكود القديم للمخالفات - تم الاستبدال
+            if (false && data.violations && data.violations.length > 0) {
                 document.getElementById('violationsTable').innerHTML = `
                     <div class="violations-table">
                         <table>
