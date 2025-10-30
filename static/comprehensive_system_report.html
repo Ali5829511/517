@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقرير الشامل للنظام - نظام إدارة الإسكان الجامعي</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 0 30px;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .nav-tab.active {
+            background: white;
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .kpi-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .kpi-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .stats-table th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .print-btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5em;
+            color: #667eea;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .nav-tabs,
+            .print-btn {
+                display: none;
+            }
+
+            .tab-content {
+                display: block !important;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 التقرير الشامل للنظام</h1>
+            <p>نظام إدارة إسكان أعضاء هيئة التدريس - جامعة الإمام محمد بن سعود الإسلامية</p>
+            <p id="report-date"></p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('overview')">نظرة عامة</button>
+            <button class="nav-tab" onclick="showTab('buildings')">المباني</button>
+            <button class="nav-tab" onclick="showTab('units')">الوحدات</button>
+            <button class="nav-tab" onclick="showTab('residents')">السكان</button>
+            <button class="nav-tab" onclick="showTab('parking')">المواقف</button>
+            <button class="nav-tab" onclick="showTab('stickers')">الملصقات</button>
+        </div>
+
+        <div class="content">
+            <div id="loading" class="loading">
+                جاري تحميل البيانات...
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <!-- نظرة عامة -->
+            <div id="overview" class="tab-content active">
+                <h2 style="color: #667eea; margin-bottom: 20px;">📈 مؤشرات الأداء الرئيسية (KPIs)</h2>
+                <div class="kpi-grid" id="kpi-grid"></div>
+
+                <div class="chart-container">
+                    <div class="chart-title">توزيع الموارد الرئيسية</div>
+                    <canvas id="overviewChart"></canvas>
+                </div>
+            </div>
+
+            <!-- المباني -->
+            <div id="buildings" class="tab-content">
+                <h2 style="color: #667eea; margin-bottom: 20px;">🏢 تقرير المباني التفصيلي</h2>
+                <div class="chart-container">
+                    <div class="chart-title">توزيع المباني حسب النوع</div>
+                    <canvas id="buildingsChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">أكثر 10 مباني من حيث عدد الملصقات</div>
+                    <canvas id="topBuildingsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- الوحدات -->
+            <div id="units" class="tab-content">
+                <h2 style="color: #667eea; margin-bottom: 20px;">🏠 تقرير الوحدات السكنية</h2>
+                <div class="chart-container">
+                    <div class="chart-title">حالة إشغال الوحدات</div>
+                    <canvas id="unitsChart"></canvas>
+                </div>
+                <div id="units-stats"></div>
+            </div>
+
+            <!-- السكان -->
+            <div id="residents" class="tab-content">
+                <h2 style="color: #667eea; margin-bottom: 20px;">👥 تقرير السكان</h2>
+                <div class="chart-container">
+                    <div class="chart-title">أكثر 10 سكان من حيث عدد المركبات</div>
+                    <canvas id="topResidentsChart"></canvas>
+                </div>
+                <div id="residents-table"></div>
+            </div>
+
+            <!-- المواقف -->
+            <div id="parking" class="tab-content">
+                <h2 style="color: #667eea; margin-bottom: 20px;">🅿️ تقرير المواقف</h2>
+                <div class="chart-container">
+                    <div class="chart-title">توزيع المواقف حسب النوع</div>
+                    <canvas id="parkingTypeChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">حالة استخدام المواقف</div>
+                    <canvas id="parkingStatusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- الملصقات -->
+            <div id="stickers" class="tab-content">
+                <h2 style="color: #667eea; margin-bottom: 20px;">🚗 تقرير ملصقات السيارات</h2>
+                <div class="chart-container">
+                    <div class="chart-title">حالة الملصقات</div>
+                    <canvas id="stickersChart"></canvas>
+                </div>
+                <div id="stickers-stats"></div>
+            </div>
+
+            <button class="print-btn" onclick="window.print()">🖨️ طباعة التقرير</button>
+        </div>
+    </div>
+
+    <script>
+        let statsData = null;
+
+        // تحميل البيانات
+        async function loadData() {
+            try {
+                const response = await fetch('/api/comprehensive-statistics');
+                const result = await response.json();
+                
+                if (result.success) {
+                    statsData = result.data;
+                    document.getElementById('loading').style.display = 'none';
+                    renderAllCharts();
+                } else {
+                    showError('فشل في تحميل البيانات: ' + result.error);
+                }
+            } catch (error) {
+                showError('حدث خطأ أثناء تحميل البيانات: ' + error.message);
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+
+        function showTab(tabName) {
+            // إخفاء جميع التبويبات
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // إظهار التبويب المحدد
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function renderAllCharts() {
+            if (!statsData) return;
+
+            // تاريخ التقرير
+            const now = new Date();
+            document.getElementById('report-date').textContent = 
+                `تاريخ التقرير: ${now.toLocaleDateString('ar-SA')} - ${now.toLocaleTimeString('ar-SA')}`;
+
+            // مؤشرات الأداء
+            renderKPIs();
+
+            // الرسوم البيانية
+            renderOverviewChart();
+            renderBuildingsChart();
+            renderTopBuildingsChart();
+            renderUnitsChart();
+            renderTopResidentsChart();
+            renderParkingCharts();
+            renderStickersChart();
+
+            // الجداول
+            renderTables();
+        }
+
+        function renderKPIs() {
+            const kpis = [
+                { label: 'إجمالي المباني', value: statsData.buildings.total_buildings, icon: '🏢' },
+                { label: 'إجمالي الوحدات', value: statsData.units.total_units, icon: '🏠' },
+                { label: 'إجمالي السكان', value: statsData.residents.total_residents, icon: '👥' },
+                { label: 'إجمالي المواقف', value: statsData.parking.total_parking, icon: '🅿️' },
+                { label: 'إجمالي الملصقات', value: statsData.stickers.total_stickers, icon: '🚗' },
+                { label: 'معدل الإشغال', value: statsData.kpis.occupancy_rate + '%', icon: '📊' },
+                { label: 'معدل استخدام المواقف', value: statsData.kpis.parking_utilization + '%', icon: '📈' },
+                { label: 'معدل الملصقات/ساكن', value: statsData.kpis.stickers_per_resident, icon: '🎯' }
+            ];
+
+            const grid = document.getElementById('kpi-grid');
+            grid.innerHTML = kpis.map(kpi => `
+                <div class="kpi-card">
+                    <div style="font-size: 3em;">${kpi.icon}</div>
+                    <div class="kpi-value">${kpi.value.toLocaleString('ar-SA')}</div>
+                    <div class="kpi-label">${kpi.label}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderOverviewChart() {
+            const ctx = document.getElementById('overviewChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['المباني', 'الوحدات', 'السكان', 'المواقف', 'الملصقات'],
+                    datasets: [{
+                        label: 'الإجمالي',
+                        data: [
+                            statsData.buildings.total_buildings,
+                            statsData.units.total_units,
+                            statsData.residents.total_residents,
+                            statsData.parking.total_parking,
+                            statsData.stickers.total_stickers
+                        ],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)',
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderBuildingsChart() {
+            const ctx = document.getElementById('buildingsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['العمارات', 'الفلل'],
+                    datasets: [{
+                        data: [
+                            statsData.buildings.apartments_count,
+                            statsData.buildings.villas_count
+                        ],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(118, 75, 162, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        function renderTopBuildingsChart() {
+            if (!statsData.top_buildings || statsData.top_buildings.length === 0) return;
+            
+            const ctx = document.getElementById('topBuildingsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: statsData.top_buildings.map(b => b.building_number),
+                    datasets: [{
+                        label: 'عدد الملصقات',
+                        data: statsData.top_buildings.map(b => b.sticker_count),
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderUnitsChart() {
+            const ctx = document.getElementById('unitsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['مشغولة', 'شاغرة'],
+                    datasets: [{
+                        data: [
+                            statsData.units.occupied_units,
+                            statsData.units.vacant_units
+                        ],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // إحصائيات إضافية
+            document.getElementById('units-stats').innerHTML = `
+                <div class="chart-container">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">إحصائيات الوحدات</h3>
+                    <table class="stats-table">
+                        <tr>
+                            <th>المؤشر</th>
+                            <th>العدد</th>
+                            <th>النسبة</th>
+                        </tr>
+                        <tr>
+                            <td>إجمالي الوحدات</td>
+                            <td>${statsData.units.total_units}</td>
+                            <td>100%</td>
+                        </tr>
+                        <tr>
+                            <td>الوحدات المشغولة</td>
+                            <td>${statsData.units.occupied_units}</td>
+                            <td>${statsData.kpis.occupancy_rate}%</td>
+                        </tr>
+                        <tr>
+                            <td>الوحدات الشاغرة</td>
+                            <td>${statsData.units.vacant_units}</td>
+                            <td>${(100 - statsData.kpis.occupancy_rate).toFixed(1)}%</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderTopResidentsChart() {
+            if (!statsData.top_residents || statsData.top_residents.length === 0) return;
+            
+            const ctx = document.getElementById('topResidentsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: statsData.top_residents.map(r => r.name),
+                    datasets: [{
+                        label: 'عدد المركبات',
+                        data: statsData.top_residents.map(r => r.vehicle_count),
+                        backgroundColor: 'rgba(255, 99, 132, 0.8)'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderParkingCharts() {
+            // نوع المواقف
+            const ctx1 = document.getElementById('parkingTypeChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['خاص', 'عام', 'معاق'],
+                    datasets: [{
+                        data: [
+                            statsData.parking.private_parking,
+                            statsData.parking.public_parking,
+                            statsData.parking.disabled_parking
+                        ],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // حالة المواقف
+            const ctx2 = document.getElementById('parkingStatusChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['مشغول', 'متاح'],
+                    datasets: [{
+                        label: 'عدد المواقف',
+                        data: [
+                            statsData.parking.occupied_parking,
+                            statsData.parking.available_parking
+                        ],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(40, 167, 69, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderStickersChart() {
+            const ctx = document.getElementById('stickersChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['فعال', 'ملغي'],
+                    datasets: [{
+                        data: [
+                            statsData.stickers.active_stickers,
+                            statsData.stickers.cancelled_stickers
+                        ],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(220, 53, 69, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            // إحصائيات إضافية
+            document.getElementById('stickers-stats').innerHTML = `
+                <div class="chart-container">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">إحصائيات الملصقات</h3>
+                    <table class="stats-table">
+                        <tr>
+                            <th>المؤشر</th>
+                            <th>العدد</th>
+                            <th>النسبة</th>
+                        </tr>
+                        <tr>
+                            <td>إجمالي الملصقات</td>
+                            <td>${statsData.stickers.total_stickers}</td>
+                            <td>100%</td>
+                        </tr>
+                        <tr>
+                            <td>الملصقات الفعالة</td>
+                            <td>${statsData.stickers.active_stickers}</td>
+                            <td>${statsData.kpis.active_sticker_rate}%</td>
+                        </tr>
+                        <tr>
+                            <td>الملصقات الملغية</td>
+                            <td>${statsData.stickers.cancelled_stickers}</td>
+                            <td>${(100 - statsData.kpis.active_sticker_rate).toFixed(1)}%</td>
+                        </tr>
+                        <tr>
+                            <td>معدل الملصقات لكل ساكن</td>
+                            <td colspan="2">${statsData.kpis.stickers_per_resident}</td>
+                        </tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderTables() {
+            // جدول أكثر السكان مركبات
+            if (statsData.top_residents && statsData.top_residents.length > 0) {
+                document.getElementById('residents-table').innerHTML = `
+                    <div class="chart-container">
+                        <h3 style="color: #667eea; margin-bottom: 15px;">أكثر 10 سكان من حيث عدد المركبات</h3>
+                        <table class="stats-table">
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الساكن</th>
+                                <th>عدد المركبات</th>
+                            </tr>
+                            ${statsData.top_residents.map((r, i) => `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td>${r.name}</td>
+                                    <td>${r.vehicle_count}</td>
+                                </tr>
+                            `).join('')}
+                        </table>
+                    </div>
+                `;
+            }
+        }
+
+        // تحميل البيانات عند تحميل الصفحة
+        window.addEventListener('load', loadData);
+    </script>
+</body>
+</html>
