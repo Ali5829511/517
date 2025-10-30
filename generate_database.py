@@ -142,7 +142,7 @@ for i in range(1, 115):
     )
 
 conn.commit()
-print(f"✅ تم إنشاء 165 مبنى")
+print("✅ تم إنشاء 165 مبنى")
 
 # 2. إنشاء الوحدات السكنية (1,134 وحدة)
 print("2. إنشاء الوحدات السكنية...")
@@ -251,7 +251,7 @@ for (unit_id,) in occupied_units[:1057]:  # 1,057 ساكن
     name = f"{random.choice(first_names)} {random.choice(middle_names)} {random.choice(last_names)}"
     national_id = f"1{''.join([str(random.randint(0, 9)) for _ in range(9)])}"
     phone = f"05{random.randint(0, 9)}{random.randint(1000000, 9999999)}"
-    email = f"resident{resident_count+1}@imamu.edu.sa"
+    email = f"resident{resident_count + 1}@imamu.edu.sa"
     move_in_date = (datetime.now() - timedelta(days=random.randint(30, 1095))).strftime("%Y-%m-%d")
 
     cursor.execute(
@@ -331,7 +331,7 @@ for i in range(1, 14):
         )
 
 conn.commit()
-print(f"✅ تم إنشاء 1,308 موقف")
+print("✅ تم إنشاء 1,308 موقف")
 
 # 5. إنشاء ملصقات السيارات (2,381 ملصق)
 print("5. إنشاء ملصقات السيارات...")

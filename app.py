@@ -1,8 +1,33 @@
-from flask import Flask, request, jsonify, send_from_directory, session, redirect, url_for
+from flask import Flask, request, jsonify, send_from_directory, session, redirect
 import os
 import logging
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
+from PIL import Image
+import io
+import base64
+import json
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timedelta
+from database_api import (
+    get_all_residents,
+    get_all_stickers,
+    get_all_parking_spots,
+    get_statistics,
+    search_by_plate,
+    save_processed_image,
+    get_processed_images,
+    search_processed_images,
+    get_processed_images_statistics,
+    get_violation_report,
+    get_all_buildings,
+    get_db_connection,
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -34,31 +59,6 @@ except Exception as e:
     OPENAI_AVAILABLE = False
     client = None
     logger.error(f"Failed to initialize OpenAI client: {e}")
-
-from PIL import Image
-import io
-import base64
-import json
-from functools import wraps
-from werkzeug.security import generate_password_hash, check_password_hash
-import secrets
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from datetime import datetime, timedelta
-from database_api import (
-    get_all_residents,
-    get_all_stickers,
-    get_all_parking_spots,
-    get_statistics,
-    search_by_plate,
-    save_processed_image,
-    get_processed_images,
-    search_processed_images,
-    get_processed_images_statistics,
-    get_violation_report,
-    get_all_buildings,
-)
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
@@ -481,7 +481,7 @@ def process_images():
                     img_str = image_data.split(",")[1]
                 else:
                     img_str = image_data
-                images_data.append({"data": img_str, "name": f"image_{idx+1}.png", "path": ""})
+                images_data.append({"data": img_str, "name": f"image_{idx + 1}.png", "path": ""})
 
         else:
             return jsonify({"error": "لم يتم إرفاق صور"}), 400
@@ -760,7 +760,7 @@ def classify_parking():
                 {
                     "role": "system",
                     "content": """أنت نظام ذكاء اصطناعي متخصص في تصنيف صور مواقف السيارات.
-                    
+
 قم بتحليل الصورة وتصنيفها إلى أحد الأنواع التالية:
 - normal: موقف سيارات عادي
 - disabled: موقف معاقين/احتياجات خاصة (يحتوي على رمز الكرسي المتحرك أو علامة معاقين)
@@ -978,8 +978,7 @@ def reset_password():
 def get_report(report_type):
     """API للحصول على بيانات التقارير"""
     try:
-        conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         report_data = {"stats": {}, "records": []}
@@ -1000,13 +999,15 @@ def get_report(report_type):
                 "الوحدات المشغولة": occupied,
                 "الوحدات الشاغرة": vacant,
                 "معدل الإشغال": (
-                    f"{(occupied/(occupied+vacant)*100):.1f}%" if (occupied + vacant) > 0 else "0%"
+                    f"{(occupied / (occupied + vacant) * 100):.1f}%"
+                    if (occupied + vacant) > 0
+                    else "0%"
                 ),
             }
 
             cursor.execute(
                 """
-                SELECT r.name as "الاسم", r.national_id as "رقم الهوية", 
+                SELECT r.name as "الاسم", r.national_id as "رقم الهوية",
                        b.name as "المبنى", u.unit_number as "رقم الوحدة",
                        r.phone as "الهاتف", r.email as "البريد الإلكتروني"
                 FROM residents r
@@ -1070,7 +1071,7 @@ def get_report(report_type):
 
             cursor.execute(
                 """
-                SELECT v.plate_number as "رقم اللوحة", v.make as "النوع", 
+                SELECT v.plate_number as "رقم اللوحة", v.make as "النوع",
                        v.model as "الموديل", v.color as "اللون",
                        r.name as "المالك", s.sticker_number as "رقم الملصق",
                        s.status as "حالة الملصق"
@@ -1125,7 +1126,7 @@ def get_report(report_type):
                 "إجمالي المواقف": total,
                 "المواقف المشغولة": occupied,
                 "المواقف المتاحة": available,
-                "نسبة الإشغال": f"{(occupied/total*100):.1f}%" if total > 0 else "0%",
+                "نسبة الإشغال": f"{(occupied / total * 100):.1f}%" if total > 0 else "0%",
             }
 
             cursor.execute(
@@ -1141,7 +1142,7 @@ def get_report(report_type):
             # تقرير الملصقات لكل ساكن
             cursor.execute(
                 """
-                SELECT r.name as "الاسم", 
+                SELECT r.name as "الاسم",
                        COUNT(v.id) as "عدد السيارات",
                        COUNT(s.id) as "عدد الملصقات",
                        SUM(CASE WHEN s.status="active" THEN 1 ELSE 0 END) as "الملصقات الفعالة"
@@ -1192,14 +1193,13 @@ def get_resident_card():
         if not building_number or not unit_number:
             return jsonify({"found": False, "error": "يجب إدخال رقم المبنى ورقم الوحدة"}), 400
 
-        conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row
+        conn = get_db_connection()
         cursor = conn.cursor()
 
         # البحث عن الوحدة والساكن
         cursor.execute(
             """
-            SELECT 
+            SELECT
                 r.id as resident_id,
                 r.name as resident_name,
                 r.national_id,
@@ -1230,7 +1230,7 @@ def get_resident_card():
         # السيارات والملصقات
         cursor.execute(
             """
-            SELECT 
+            SELECT
                 v.id,
                 v.plate_number,
                 v.make,
@@ -1252,7 +1252,7 @@ def get_resident_card():
         # المواقف المخصصة
         cursor.execute(
             """
-            SELECT 
+            SELECT
                 ps.spot_number,
                 ps.location,
                 ps.type,
@@ -1273,7 +1273,7 @@ def get_resident_card():
             placeholders = ",".join("?" * len(vehicle_ids))
             cursor.execute(
                 f"""
-                SELECT 
+                SELECT
                     vio.date,
                     vio.violation_type,
                     vio.description,

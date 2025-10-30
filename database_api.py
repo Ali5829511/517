@@ -5,7 +5,6 @@ API للوصول إلى قاعدة بيانات نظام إدارة الإسكا
 """
 
 import sqlite3
-import json
 
 DATABASE = "housing_database.db"
 
@@ -29,7 +28,7 @@ def get_all_residents():
 
     cursor.execute(
         """
-        SELECT 
+        SELECT
             r.id,
             r.name,
             r.national_id,
@@ -75,7 +74,7 @@ def get_all_stickers():
 
     cursor.execute(
         """
-        SELECT 
+        SELECT
             vs.id,
             vs.sticker_number,
             vs.plate_number,
@@ -127,7 +126,7 @@ def get_all_parking_spots():
 
     cursor.execute(
         """
-        SELECT 
+        SELECT
             ps.id,
             ps.spot_number,
             ps.parking_area,
@@ -274,7 +273,7 @@ def search_by_plate(plate_number):
 
     cursor.execute(
         """
-        SELECT 
+        SELECT
             vs.sticker_number,
             vs.plate_number,
             vs.vehicle_type,
@@ -396,7 +395,7 @@ def get_processed_images(limit=100, category=None):
     cursor = conn.cursor()
 
     query = """
-        SELECT 
+        SELECT
             pi.id,
             pi.image_filename,
             pi.plate_number,
@@ -455,7 +454,7 @@ def search_processed_images(plate_number):
 
     cursor.execute(
         """
-        SELECT 
+        SELECT
             pi.id,
             pi.image_filename,
             pi.plate_number,
@@ -522,7 +521,7 @@ def get_violation_report():
     # 1. الحصول على جميع المخالفات
     # 2. حساب عدد التكرار لكل لوحة
     query = """
-        SELECT 
+        SELECT
             pi.id,
             pi.image_filename,
             pi.plate_number,
@@ -538,8 +537,8 @@ def get_violation_report():
             u.unit_number,
             b.building_number,
             (
-                SELECT COUNT(*) 
-                FROM processed_images p2 
+                SELECT COUNT(*)
+                FROM processed_images p2
                 WHERE p2.plate_number = pi.plate_number AND p2.category = 'violation'
             ) as violation_count
         FROM processed_images pi
@@ -613,7 +612,7 @@ def get_all_buildings():
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT 
+        SELECT
             id,
             building_number as buildingNumber,
             building_type as buildingType,

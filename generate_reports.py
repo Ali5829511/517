@@ -131,7 +131,7 @@ def add_sheet_data(ws, title, headers, data):
     ws["A1"].font = Font(size=18, bold=True, color="FFFFFF")
     ws["A1"].fill = PatternFill(start_color="667EEA", end_color="667EEA", fill_type="solid")
     ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
-    ws.merge_cells(f"A1:{chr(64+len(headers))}2")
+    ws.merge_cells(f"A1:{chr(64 + len(headers))}2")
 
     # الرؤوس
     for col, header in enumerate(headers, start=1):
