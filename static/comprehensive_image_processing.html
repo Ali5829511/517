@@ -1425,16 +1425,10 @@
 
         // التعامل مع خيار حذف الصور
         document.getElementById('deleteAfterCheckbox').addEventListener('change', function(e) {
-            if (e.target.checked) {
-                if (!confirm('هل أنت متأكد من حذف الصور بعد المعالجة؟ لا يمكن التراجع عن هذا الإجراء.')) {
-                    e.target.checked = false;
-                    deleteAfterProcess = false;
-                } else {
-                    deleteAfterProcess = true;
-                }
-            } else {
-                deleteAfterProcess = false;
+            if (e.target.checked && !confirm('هل أنت متأكد من حذف الصور بعد المعالجة؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                e.target.checked = false;
             }
+            deleteAfterProcess = e.target.checked;
         });
 
         // تطبيق الفرز التلقائي بعد معالجة الصور
@@ -1539,17 +1533,33 @@
             alert('✅ تم حذف جميع الصور المعالجة بنجاح');
         }
 
-        // تعديل دالة showResults لتطبيق الفرز
+        // حفظ المرجع الأصلي وإضافة تحسينات بعد عرض النتائج
         const originalShowResults = showResults;
         showResults = function() {
             originalShowResults();
+            
+            // تطبيق الفرز التلقائي
             applySorting();
             
-            // حذف الصور إذا كان الخيار مفعلاً
+            // حذف الصور بعد المعالجة (مع تأكيد ثانٍ وإشعار)
             if (deleteAfterProcess) {
-                setTimeout(() => {
-                    deleteProcessedImages();
-                }, 2000);
+                const countdown = 5;
+                let secondsLeft = countdown;
+                const countdownInterval = setInterval(() => {
+                    if (secondsLeft > 0) {
+                        console.log(`⏰ سيتم حذف الصور خلال ${secondsLeft} ثانية...`);
+                        secondsLeft--;
+                    } else {
+                        clearInterval(countdownInterval);
+                        if (confirm('سيتم حذف الصور الآن. هل تريد المتابعة؟')) {
+                            deleteProcessedImages();
+                        } else {
+                            console.log('❌ تم إلغاء حذف الصور');
+                            document.getElementById('deleteAfterCheckbox').checked = false;
+                            deleteAfterProcess = false;
+                        }
+                    }
+                }, 1000);
             }
         };
     </script>
