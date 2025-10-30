@@ -602,6 +602,107 @@ def api_get_parking():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
+@app.route('/api/duplicate-plates', methods=['GET'])
+def api_get_duplicate_plates():
+    """الحصول على اللوحات المتكررة والمتشابهة"""
+    try:
+        stickers = get_all_stickers()
+        
+        # تجميع اللوحات وتحليلها
+        plate_map = {}
+        for sticker in stickers:
+            plate = (sticker.get('plate_number', '') or '').strip().upper()
+            if not plate or plate in ['غير محدد', 'NULL', '']:
+                continue
+            
+            if plate not in plate_map:
+                plate_map[plate] = []
+            plate_map[plate].append(sticker)
+        
+        # البحث عن التكرارات
+        duplicates = []
+        similar = []
+        
+        plates_list = list(plate_map.keys())
+        
+        for i, plate in enumerate(plates_list):
+            items = plate_map[plate]
+            
+            # لوحات مكررة تماماً
+            if len(items) > 1:
+                duplicates.append({
+                    'type': 'exact',
+                    'plate': plate,
+                    'count': len(items),
+                    'items': items,
+                    'similarity': 100
+                })
+            
+            # البحث عن لوحات متشابهة
+            for j in range(i + 1, len(plates_list)):
+                other_plate = plates_list[j]
+                similarity = calculate_plate_similarity(plate, other_plate)
+                
+                if 70 <= similarity < 100:
+                    similar.append({
+                        'type': 'similar',
+                        'plate': plate,
+                        'similar_to': other_plate,
+                        'count': len(items),
+                        'items': items,
+                        'similarity': similarity
+                    })
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'duplicates': duplicates,
+                'similar': similar,
+                'total_exact': len(duplicates),
+                'total_similar': len(similar),
+                'total_unique': len(plate_map)
+            }
+        })
+    except Exception as e:
+        logger.error(f"Error in duplicate plates API: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+def calculate_plate_similarity(plate1, plate2):
+    """حساب نسبة التشابه بين لوحتين"""
+    p1 = plate1.replace(' ', '')
+    p2 = plate2.replace(' ', '')
+    
+    if p1 == p2:
+        return 100
+    
+    # حساب التشابه بناءً على الأحرف المتطابقة
+    matches = 0
+    max_len = max(len(p1), len(p2))
+    
+    for i in range(min(len(p1), len(p2))):
+        if p1[i] == p2[i]:
+            matches += 1
+        elif check_similar_chars(p1[i], p2[i]):
+            matches += 0.5
+    
+    return round((matches / max_len) * 100)
+
+
+def check_similar_chars(char1, char2):
+    """فحص الأحرف المتشابهة بصرياً"""
+    similar_pairs = {
+        ('O', '0'), ('0', 'O'),
+        ('I', '1'), ('1', 'I'),
+        ('S', '5'), ('5', 'S'),
+        ('B', '8'), ('8', 'B'),
+        ('Z', '2'), ('2', 'Z'),
+        ('G', '6'), ('6', 'G')
+    }
+    return (char1, char2) in similar_pairs
+
+
 @app.route('/api/statistics', methods=['GET'])
 def api_get_statistics():
     """الحصول على الإحصائيات العامة"""

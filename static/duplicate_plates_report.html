@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير السيارات المتكررة والمتشابهة - نظام إدارة الإسكان</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            direction: rtl;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .main-card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-section label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .filter-section input,
+        .filter-section select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .duplicate-badge {
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .similar-badge {
+            background: #ffc107;
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .exact-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .plate-display {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 8px 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: inline-block;
+            min-width: 150px;
+        }
+
+        .highlight-duplicate {
+            background: #ffe6e6 !important;
+        }
+
+        .highlight-similar {
+            background: #fff8e6 !important;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading i {
+            font-size: 48px;
+            color: #667eea;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .back-btn, .action-buttons, .filter-section {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="main_portal.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i>
+                العودة للصفحة الرئيسية
+            </a>
+            <h1>
+                <i class="fas fa-clone"></i>
+                تقرير السيارات المتكررة والمتشابهة
+            </h1>
+            <p>كشف وتحليل اللوحات المكررة والمتشابهة في النظام</p>
+        </div>
+
+        <!-- الإحصائيات -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">📊</div>
+                <div class="number" id="totalPlates">0</div>
+                <div class="label">إجمالي اللوحات</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🔴</div>
+                <div class="number" id="exactDuplicates">0</div>
+                <div class="label">مكررة تماماً</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">🟡</div>
+                <div class="number" id="similarPlates">0</div>
+                <div class="label">متشابهة</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">✅</div>
+                <div class="number" id="uniquePlates">0</div>
+                <div class="label">فريدة</div>
+            </div>
+        </div>
+
+        <!-- أزرار الإجراءات -->
+        <div class="main-card">
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="scanForDuplicates()">
+                    <i class="fas fa-search"></i>
+                    فحص اللوحات المتكررة
+                </button>
+                <button class="btn btn-success" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i>
+                    تصدير Excel
+                </button>
+                <button class="btn btn-info" onclick="window.print()">
+                    <i class="fas fa-print"></i>
+                    طباعة التقرير
+                </button>
+                <button class="btn btn-warning" onclick="generateDetailedReport()">
+                    <i class="fas fa-file-alt"></i>
+                    تقرير تفصيلي
+                </button>
+            </div>
+
+            <!-- الفلاتر -->
+            <div class="filter-section">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div>
+                        <label><i class="fas fa-filter"></i> نوع التكرار:</label>
+                        <select id="filterType" onchange="filterResults()">
+                            <option value="all">الكل</option>
+                            <option value="exact">مكررة تماماً</option>
+                            <option value="similar">متشابهة</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label><i class="fas fa-search"></i> بحث في اللوحات:</label>
+                        <input type="text" id="searchPlate" placeholder="ابحث برقم أو أحرف اللوحة..." oninput="filterResults()">
+                    </div>
+                    <div>
+                        <label><i class="fas fa-sort-amount-down"></i> الحد الأدنى للتكرار:</label>
+                        <input type="number" id="minOccurrences" value="2" min="2" onchange="filterResults()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول النتائج -->
+        <div class="main-card">
+            <h2><i class="fas fa-table"></i> نتائج الفحص</h2>
+            <div id="resultsContainer">
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <h3>اضغط على "فحص اللوحات المتكررة" لبدء التحليل</h3>
+                    <p>سيتم فحص جميع اللوحات في النظام والبحث عن التكرارات والتشابهات</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allResults = [];
+        let filteredResults = [];
+
+        async function scanForDuplicates() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>جاري فحص اللوحات...</p></div>';
+
+            try {
+                // جلب البيانات من API
+                const response = await fetch('/api/stickers');
+                const data = await response.json();
+                const stickers = data.data || [];
+
+                // تحليل اللوحات
+                const plateGroups = analyzePlates(stickers);
+                allResults = plateGroups;
+                filteredResults = [...allResults];
+
+                // عرض النتائج
+                updateStatistics();
+                displayResults();
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+                        <h3>حدث خطأ أثناء الفحص</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function analyzePlates(stickers) {
+            const plateMap = new Map();
+            const results = [];
+
+            // تجميع اللوحات
+            stickers.forEach(sticker => {
+                const plate = (sticker.plate_number || '').trim().toUpperCase();
+                if (!plate || plate === 'غير محدد' || plate === 'NULL') return;
+
+                if (!plateMap.has(plate)) {
+                    plateMap.set(plate, []);
+                }
+                plateMap.get(plate).push(sticker);
+            });
+
+            // البحث عن التكرارات والتشابهات
+            const plates = Array.from(plateMap.keys());
+            
+            plates.forEach((plate, i) => {
+                const occurrences = plateMap.get(plate);
+                
+                // لوحات مكررة تماماً
+                if (occurrences.length > 1) {
+                    results.push({
+                        type: 'exact',
+                        plate: plate,
+                        count: occurrences.length,
+                        items: occurrences,
+                        similarity: 100
+                    });
+                }
+
+                // البحث عن لوحات متشابهة
+                for (let j = i + 1; j < plates.length; j++) {
+                    const otherPlate = plates[j];
+                    const similarity = calculateSimilarity(plate, otherPlate);
+                    
+                    if (similarity >= 70 && similarity < 100) {
+                        results.push({
+                            type: 'similar',
+                            plate: plate,
+                            similarTo: otherPlate,
+                            count: occurrences.length,
+                            items: occurrences,
+                            similarity: similarity
+                        });
+                    }
+                }
+            });
+
+            // ترتيب حسب الأهمية
+            results.sort((a, b) => {
+                if (a.type === 'exact' && b.type === 'similar') return -1;
+                if (a.type === 'similar' && b.type === 'exact') return 1;
+                return b.count - a.count;
+            });
+
+            return results;
+        }
+
+        function calculateSimilarity(plate1, plate2) {
+            const p1 = plate1.replace(/\s/g, '');
+            const p2 = plate2.replace(/\s/g, '');
+
+            if (p1 === p2) return 100;
+
+            // حساب التشابه بناءً على الأحرف والأرقام
+            let matches = 0;
+            const maxLen = Math.max(p1.length, p2.length);
+
+            for (let i = 0; i < Math.min(p1.length, p2.length); i++) {
+                if (p1[i] === p2[i]) matches++;
+            }
+
+            // تشابه الأحرف المتشابهة (O vs 0, I vs 1, etc.)
+            const similar = checkSimilarCharacters(p1, p2);
+            
+            return Math.round(((matches + similar) / maxLen) * 100);
+        }
+
+        function checkSimilarCharacters(str1, str2) {
+            const similarPairs = {
+                'O': '0', '0': 'O',
+                'I': '1', '1': 'I',
+                'S': '5', '5': 'S',
+                'B': '8', '8': 'B',
+                'Z': '2', '2': 'Z'
+            };
+
+            let similarCount = 0;
+            for (let i = 0; i < Math.min(str1.length, str2.length); i++) {
+                if (similarPairs[str1[i]] === str2[i]) {
+                    similarCount += 0.5;
+                }
+            }
+            return similarCount;
+        }
+
+        function updateStatistics() {
+            const exactDups = allResults.filter(r => r.type === 'exact').length;
+            const similarPlates = allResults.filter(r => r.type === 'similar').length;
+            const totalUnique = new Set(allResults.map(r => r.plate)).size;
+
+            document.getElementById('totalPlates').textContent = allResults.length;
+            document.getElementById('exactDuplicates').textContent = exactDups;
+            document.getElementById('similarPlates').textContent = similarPlates;
+            document.getElementById('uniquePlates').textContent = totalUnique;
+        }
+
+        function displayResults() {
+            const container = document.getElementById('resultsContainer');
+
+            if (filteredResults.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                        <h3>لا توجد لوحات مكررة أو متشابهة</h3>
+                        <p>جميع اللوحات في النظام فريدة</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>رقم اللوحة</th>
+                                <th>النوع</th>
+                                <th>عدد التكرار</th>
+                                <th>نسبة التشابه</th>
+                                <th>متشابه مع</th>
+                                <th>التفاصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            filteredResults.forEach((result, index) => {
+                const badgeClass = result.type === 'exact' ? 'duplicate-badge' : 'similar-badge';
+                const badgeText = result.type === 'exact' ? 'مكررة' : 'متشابهة';
+                const rowClass = result.type === 'exact' ? 'highlight-duplicate' : 'highlight-similar';
+
+                html += `
+                    <tr class="${rowClass}">
+                        <td>${index + 1}</td>
+                        <td><span class="plate-display">${result.plate}</span></td>
+                        <td><span class="${badgeClass}">${badgeText}</span></td>
+                        <td><strong>${result.count}</strong></td>
+                        <td>${result.similarity}%</td>
+                        <td>${result.similarTo || '-'}</td>
+                        <td>
+                            <button class="btn btn-info" style="font-size: 12px; padding: 5px 10px;" onclick="showDetails(${index})">
+                                <i class="fas fa-eye"></i> عرض
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function filterResults() {
+            const filterType = document.getElementById('filterType').value;
+            const searchText = document.getElementById('searchPlate').value.toUpperCase();
+            const minOccurrences = parseInt(document.getElementById('minOccurrences').value);
+
+            filteredResults = allResults.filter(result => {
+                // فلتر النوع
+                if (filterType !== 'all' && result.type !== filterType) {
+                    return false;
+                }
+
+                // فلتر البحث
+                if (searchText && !result.plate.includes(searchText)) {
+                    return false;
+                }
+
+                // فلتر الحد الأدنى
+                if (result.count < minOccurrences) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            displayResults();
+        }
+
+        function showDetails(index) {
+            const result = filteredResults[index];
+            let details = `اللوحة: ${result.plate}\n`;
+            details += `النوع: ${result.type === 'exact' ? 'مكررة تماماً' : 'متشابهة'}\n`;
+            details += `عدد التكرار: ${result.count}\n\n`;
+            details += `التفاصيل:\n`;
+            
+            result.items.forEach((item, i) => {
+                details += `${i + 1}. المالك: ${item.resident_name || 'غير محدد'}\n`;
+                details += `   نوع السيارة: ${item.vehicle_type || 'غير محدد'}\n`;
+                details += `   تاريخ الإصدار: ${item.issue_date || 'غير محدد'}\n\n`;
+            });
+
+            alert(details);
+        }
+
+        function exportToExcel() {
+            if (filteredResults.length === 0) {
+                alert('لا توجد نتائج للتصدير');
+                return;
+            }
+
+            let csv = 'رقم اللوحة,النوع,عدد التكرار,نسبة التشابه,متشابه مع\n';
+            
+            filteredResults.forEach(result => {
+                csv += `"${result.plate}",`;
+                csv += `"${result.type === 'exact' ? 'مكررة' : 'متشابهة'}",`;
+                csv += `${result.count},`;
+                csv += `${result.similarity}%,`;
+                csv += `"${result.similarTo || '-'}"\n`;
+            });
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `تقرير_اللوحات_المتكررة_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        function generateDetailedReport() {
+            if (filteredResults.length === 0) {
+                alert('لا توجد نتائج لإنشاء تقرير');
+                return;
+            }
+
+            let report = '=== تقرير مفصل - اللوحات المتكررة والمتشابهة ===\n\n';
+            report += `تاريخ التقرير: ${new Date().toLocaleString('ar-SA')}\n`;
+            report += `إجمالي اللوحات المفحوصة: ${allResults.length}\n`;
+            report += `اللوحات المكررة تماماً: ${allResults.filter(r => r.type === 'exact').length}\n`;
+            report += `اللوحات المتشابهة: ${allResults.filter(r => r.type === 'similar').length}\n\n`;
+            report += '--- التفاصيل ---\n\n';
+
+            filteredResults.forEach((result, index) => {
+                report += `${index + 1}. اللوحة: ${result.plate}\n`;
+                report += `   النوع: ${result.type === 'exact' ? 'مكررة تماماً' : 'متشابهة'}\n`;
+                report += `   عدد التكرار: ${result.count}\n`;
+                report += `   نسبة التشابه: ${result.similarity}%\n`;
+                if (result.similarTo) {
+                    report += `   متشابهة مع: ${result.similarTo}\n`;
+                }
+                report += `   التفاصيل:\n`;
+                result.items.forEach((item, i) => {
+                    report += `     ${i + 1}. ${item.resident_name || 'غير محدد'} - ${item.vehicle_type || 'غير محدد'}\n`;
+                });
+                report += '\n';
+            });
+
+            report += '=== نهاية التقرير ===';
+
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `تقرير_تفصيلي_اللوحات_${new Date().toISOString().split('T')[0]}.txt`;
+            link.click();
+        }
+    </script>
+</body>
+</html>
