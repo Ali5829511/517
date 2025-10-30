@@ -1341,18 +1341,16 @@ def get_resident_card():
         # السيارات والملصقات
         cursor.execute('''
             SELECT 
-                v.id,
-                v.plate_number,
-                v.make,
-                v.model,
-                v.color,
-                s.sticker_number,
-                s.status as sticker_status,
-                s.issue_date,
-                s.expiry_date
-            FROM vehicles v
-            LEFT JOIN stickers s ON v.id = s.vehicle_id
-            WHERE v.resident_id = ?
+                vs.id,
+                vs.sticker_number,
+                vs.plate_number,
+                vs.vehicle_type,
+                vs.vehicle_color,
+                vs.issue_date,
+                vs.status
+            FROM vehicle_stickers vs
+            WHERE vs.resident_id = ?
+            ORDER BY vs.issue_date DESC
         ''', (resident_data['resident_id'],))
         
         vehicles = [dict(row) for row in cursor.fetchall()]
@@ -1361,8 +1359,8 @@ def get_resident_card():
         cursor.execute('''
             SELECT 
                 ps.spot_number,
-                ps.location,
-                ps.type,
+                ps.parking_area,
+                ps.spot_type,
                 ps.status
             FROM parking_spots ps
             WHERE ps.unit_id = ?
@@ -1370,26 +1368,27 @@ def get_resident_card():
         
         parking = [dict(row) for row in cursor.fetchall()]
         
-        # المخالفات
-        vehicle_ids = [v['id'] for v in vehicles]
-        violations = []
-        
-        if vehicle_ids:
-            placeholders = ','.join('?' * len(vehicle_ids))
-            cursor.execute(f'''
-                SELECT 
-                    vio.date,
-                    vio.violation_type,
-                    vio.description,
-                    vio.status,
-                    v.plate_number
-                FROM violations vio
-                JOIN vehicles v ON vio.vehicle_id = v.id
-                WHERE vio.vehicle_id IN ({placeholders})
-                ORDER BY vio.date DESC
-            ''', vehicle_ids)
-            
-            violations = [dict(row) for row in cursor.fetchall()]
+        # جلب الصور المعالجة للوحات السيارات إن وجدت
+        plate_images = []
+        if vehicles:
+            for vehicle in vehicles:
+                if vehicle['plate_number']:
+                    cursor.execute('''
+                        SELECT 
+                            pi.id,
+                            pi.original_image_path,
+                            pi.plate_number,
+                            pi.confidence_score,
+                            pi.processing_date
+                        FROM processed_images pi
+                        WHERE pi.plate_number = ?
+                        ORDER BY pi.processing_date DESC
+                        LIMIT 1
+                    ''', (vehicle['plate_number'],))
+                    
+                    img = cursor.fetchone()
+                    if img:
+                        plate_images.append(dict(img))
         
         conn.close()
         
@@ -1410,7 +1409,7 @@ def get_resident_card():
             },
             'vehicles': vehicles,
             'parking': parking,
-            'violations': violations
+            'plate_images': plate_images
         })
         
     except Exception as e:
