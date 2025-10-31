@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة الإسكان الجامعي - جامعة الإمام محمد بن سعود</title>
+    <title>وحدة إسكان هيئة التدريس - جامعة الإمام محمد بن سعود</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400,300&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
     <style>
         * {
             margin: 0;
@@ -655,7 +655,7 @@
         }
 
         /* التوافق مع الجوال */
-        @media (max-width: 968px) {
+        @media (max-width: 768px) {
             .menu-toggle {
                 display: block;
             }
@@ -755,7 +755,7 @@
                 <i class="fas fa-building"></i>
             </div>
             <div class="logo-text">
-                <h1>نظام إدارة الإسكان الجامعي</h1>
+                <h1>وحدة إسكان هيئة التدريس</h1>
                 <p>جامعة الإمام محمد بن سعود الإسلامية</p>
             </div>
         </div>
@@ -843,7 +843,7 @@
     <div class="main-content" id="mainContent">
         <!-- قسم الترحيب -->
         <div class="welcome-section">
-            <h2>مرحباً بك في نظام إدارة الإسكان الجامعي</h2>
+            <h2>مرحباً بك في وحدة إسكان هيئة التدريس</h2>
             <p>لوحة تحكم شاملة لإدارة الوحدات السكنية والسكان والمواقف</p>
         </div>
 
@@ -1049,7 +1049,7 @@
     <!-- التذييل -->
     <div class="footer" id="footer">
         <p>© 2025 جامعة الإمام محمد بن سعود الإسلامية - الإدارة العامة للأمن والسلامة</p>
-        <p>نظام إدارة الإسكان الجامعي - الإصدار 2.0</p>
+        <p>وحدة إسكان هيئة التدريس - الإصدار 2.0</p>
         <div class="footer-links">
             <a href="#"><i class="fas fa-headset"></i> الدعم الفني</a>
             <a href="#"><i class="fas fa-user-shield"></i> سياسة الخصوصية</a>
@@ -1066,7 +1066,7 @@
             
             sidebar.classList.toggle('show');
             
-            if (window.innerWidth > 968) {
+            if (window.innerWidth > 768) {
                 sidebar.classList.toggle('hidden');
                 mainContent.classList.toggle('expanded');
                 footer.classList.toggle('expanded');
@@ -1075,7 +1075,7 @@
 
         // إغلاق القائمة عند النقر خارجها على الجوال
         document.addEventListener('click', function(event) {
-            if (window.innerWidth <= 968) {
+            if (window.innerWidth <= 768) {
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.querySelector('.menu-toggle');
                 
@@ -1085,15 +1085,21 @@
             }
         });
 
-        // تأثير المؤشر على البطاقات
+        // تأثير المؤشر على البطاقات مع تحسين الأداء
         document.querySelectorAll('.stat-card, .section-card').forEach(card => {
+            let rafId = null;
             card.addEventListener('mousemove', function(e) {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                if (rafId) return;
                 
-                card.style.setProperty('--mouse-x', x + 'px');
-                card.style.setProperty('--mouse-y', y + 'px');
+                rafId = requestAnimationFrame(() => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    card.style.setProperty('--mouse-x', x + 'px');
+                    card.style.setProperty('--mouse-y', y + 'px');
+                    rafId = null;
+                });
             });
         });
     </script>
