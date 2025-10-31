@@ -894,7 +894,7 @@
                     <i class="fas fa-building"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>165</h3>
+                    <h3 id="stat-buildings"><i class="fas fa-spinner fa-spin"></i></h3>
                     <p>المباني</p>
                 </div>
             </div>
@@ -904,7 +904,7 @@
                     <i class="fas fa-door-open"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>1,134</h3>
+                    <h3 id="stat-units"><i class="fas fa-spinner fa-spin"></i></h3>
                     <p>الوحدات السكنية</p>
                 </div>
             </div>
@@ -914,7 +914,7 @@
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>1,057</h3>
+                    <h3 id="stat-residents"><i class="fas fa-spinner fa-spin"></i></h3>
                     <p>السكان</p>
                 </div>
             </div>
@@ -924,7 +924,7 @@
                     <i class="fas fa-parking"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>1,293</h3>
+                    <h3 id="stat-parking"><i class="fas fa-spinner fa-spin"></i></h3>
                     <p>المواقف</p>
                 </div>
             </div>
@@ -934,7 +934,7 @@
                     <i class="fas fa-id-card"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>2,370</h3>
+                    <h3 id="stat-stickers"><i class="fas fa-spinner fa-spin"></i></h3>
                     <p>ملصقات السيارات</p>
                 </div>
             </div>
@@ -944,7 +944,7 @@
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>12</h3>
+                    <h3 id="stat-violations"><i class="fas fa-spinner fa-spin"></i></h3>
                     <p>المخالفات النشطة</p>
                 </div>
             </div>
@@ -1170,6 +1170,45 @@
                 });
             });
         });
+
+        // جلب الإحصائيات من API
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/statistics');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // تحديث الأرقام
+                    document.getElementById('stat-buildings').textContent = data.data.buildings.toLocaleString('ar-EG');
+                    document.getElementById('stat-units').textContent = data.data.units.toLocaleString('ar-EG');
+                    document.getElementById('stat-residents').textContent = data.data.residents.toLocaleString('ar-EG');
+                    document.getElementById('stat-parking').textContent = data.data.parking_spots.toLocaleString('ar-EG');
+                    document.getElementById('stat-stickers').textContent = data.data.vehicle_stickers.toLocaleString('ar-EG');
+                    document.getElementById('stat-violations').textContent = '0'; // سيتم تحديثها لاحقاً
+                } else {
+                    console.error('خطأ في جلب الإحصائيات:', data.error);
+                    // عرض القيم الافتراضية في حالة الخطأ
+                    document.getElementById('stat-buildings').textContent = '165';
+                    document.getElementById('stat-units').textContent = '1,134';
+                    document.getElementById('stat-residents').textContent = '1,057';
+                    document.getElementById('stat-parking').textContent = '1,293';
+                    document.getElementById('stat-stickers').textContent = '2,370';
+                    document.getElementById('stat-violations').textContent = '12';
+                }
+            } catch (error) {
+                console.error('خطأ في الاتصال بالخادم:', error);
+                // عرض القيم الافتراضية في حالة الخطأ
+                document.getElementById('stat-buildings').textContent = '165';
+                document.getElementById('stat-units').textContent = '1,134';
+                document.getElementById('stat-residents').textContent = '1,057';
+                document.getElementById('stat-parking').textContent = '1,293';
+                document.getElementById('stat-stickers').textContent = '2,370';
+                document.getElementById('stat-violations').textContent = '12';
+            }
+        }
+
+        // تحميل الإحصائيات عند تحميل الصفحة
+        window.addEventListener('load', loadStatistics);
     </script>
 </body>
 </html>
