@@ -108,14 +108,20 @@
         .logo-icon {
             width: 60px;
             height: 60px;
-            background: var(--secondary-gradient);
+            background: white;
             border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            box-shadow: 0 5px 20px rgba(102,126,234,0.4);
+            padding: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
             animation: pulse 2s ease-in-out infinite;
+        }
+
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         @keyframes pulse {
@@ -693,7 +699,7 @@
             .logo-icon {
                 width: 50px;
                 height: 50px;
-                font-size: 26px;
+                padding: 6px;
             }
 
             .user-badge span {
@@ -752,7 +758,7 @@
     <div class="top-bar">
         <div class="logo">
             <div class="logo-icon">
-                <i class="fas fa-building"></i>
+                <img src="imam_university_logo.png" alt="شعار جامعة الإمام">
             </div>
             <div class="logo-text">
                 <h1>وحدة إسكان هيئة التدريس</h1>
