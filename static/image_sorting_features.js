@@ -11,6 +11,13 @@ let sortingStats = {
     byCategory: {}
 };
 
+// ملاحظة: هذا السكريبت يعتمد على المتغيرات العامة التالية من comprehensive_image_processing.html:
+// Note: This script depends on the following global variables from comprehensive_image_processing.html:
+// - processedResults: Array of processed image results
+// - selectedFiles: Array of selected files
+// هذه المتغيرات يجب أن تكون متاحة في النطاق العام عند تحميل هذا السكريبت
+// These variables must be available in global scope when this script loads
+
 /**
  * إضافة عناصر التحكم في الفرز
  * Add sorting controls to the UI

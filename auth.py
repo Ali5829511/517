@@ -18,6 +18,7 @@ from flask import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
 from database_api import get_db_connection
 import logging
 
@@ -25,6 +26,16 @@ logger = logging.getLogger(__name__)
 
 # إنشاء Blueprint للمصادقة / Create authentication Blueprint
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+
+def is_safe_url(target):
+    """
+    التحقق من أن الرابط آمن للتوجيه
+    Check if URL is safe for redirection (prevents open redirect)
+    """
+    parsed = urlparse(target)
+    # Allow only relative URLs (no scheme or netloc)
+    return parsed.scheme == "" and parsed.netloc == ""
 
 
 def login_required(f):
@@ -54,7 +65,11 @@ def admin_required(f):
             return redirect(url_for("auth.login"))
         if session.get("role") != "admin":
             flash("ليس لديك صلاحية الوصول لهذه الصفحة", "danger")
-            return redirect(url_for("index"))
+            # Redirect to main page or login
+            try:
+                return redirect(url_for("index"))
+            except Exception:
+                return redirect(url_for("auth.login"))
         return f(*args, **kwargs)
 
     return decorated_function
@@ -83,7 +98,8 @@ def check_login_attempts(username, ip_address):
         result = cursor.fetchone()
         conn.close()
 
-        count = result["count"] if result else 0
+        # Safe dictionary access with fallback
+        count = result["count"] if result and "count" in dict(result) else 0
         return count < 5  # السماح بـ 5 محاولات فقط / Allow only 5 attempts
 
     except Exception as e:
@@ -120,7 +136,10 @@ def login():
     # إذا كان المستخدم مسجل دخول بالفعل، إعادة توجيهه للصفحة الرئيسية
     # If user is already logged in, redirect to main page
     if "user_id" in session:
-        return redirect(url_for("index"))
+        try:
+            return redirect(url_for("index"))
+        except Exception:
+            return redirect("/")
 
     if request.method == "POST":
         username = request.form.get("username")
@@ -171,9 +190,18 @@ def login():
                 conn.close()
 
                 # إعادة التوجيه للصفحة المطلوبة أو الصفحة الرئيسية
-                # Redirect to requested page or main page
+                # Redirect to requested page or main page (with validation)
                 next_page = request.args.get("next")
-                return redirect(next_page if next_page else url_for("index"))
+                try:
+                    default_page = url_for("index")
+                except Exception:
+                    default_page = "/"
+                
+                # Validate next_page to prevent open redirect vulnerability
+                if next_page and is_safe_url(next_page):
+                    return redirect(next_page)
+                
+                return redirect(default_page)
             else:
                 # فشل تسجيل الدخول / Failed login
                 log_login_attempt(username, ip_address, False)
@@ -267,7 +295,10 @@ def profile():
     except Exception as e:
         logger.error(f"Profile error: {e}")
         flash("حدث خطأ أثناء تحميل الملف الشخصي", "danger")
-        return redirect(url_for("index"))
+        try:
+            return redirect(url_for("index"))
+        except Exception:
+            return redirect("/")
 
 
 @auth_bp.route("/change-password", methods=["POST"])
