@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 ### 6. Start Command
 ```bash
-gunicorn app:app --bind 0.0.0.0:$PORT
+gunicorn app:app --bind 0.0.0.0:$PORT --workers 4 --timeout 120
 ```
 
 ### 7. Instance Type
