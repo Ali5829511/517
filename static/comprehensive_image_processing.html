@@ -1372,6 +1372,36 @@
             });
         });
     </script>
+    
+    <!-- نظام فرز الصور المتقدم / Advanced Image Sorting System -->
+    <script src="image_sorting_features.js"></script>
+    
+    <script>
+        // دمج ميزات الفرز مع معالجة الصور
+        // Integrate sorting features with image processing
+        
+        // تعديل دالة processImages الأصلية لدعم الفرز التلقائي
+        const originalProcessImages = window.processImages;
+        if (typeof originalProcessImages === 'function') {
+            window.processImages = async function() {
+                await originalProcessImages.apply(this, arguments);
+                
+                // تطبيق الفرز التلقائي بعد المعالجة
+                if (autoSortEnabled && processedResults && processedResults.length > 0) {
+                    setTimeout(() => {
+                        applyAutoSorting();
+                        
+                        // حذف الصور إذا كان مفعلاً
+                        if (deleteAfterProcess) {
+                            setTimeout(deleteProcessedImages, 2000);
+                        }
+                    }, 500);
+                }
+            };
+        }
+        
+        console.log('✅ تم دمج ميزات الفرز المتقدمة مع نظام معالجة الصور');
+    </script>
 </body>
 </html>
 
