@@ -48,7 +48,7 @@ Closes #(issue number)
 <!-- ضع علامة (x) على جميع العناصر التي تنطبق -->
 <!-- Mark all items that apply with (x) -->
 
-- [ ] قرأت [دليل المساهمة](https://github.com/Ali5829511/517/blob/main/.github/copilot-instructions.md) - I have read the contributing guidelines
+- [ ] قرأت [دليل المساهمة](https://github.com/Ali5829511/517/blob/main/.github/CONTRIBUTING.md) - I have read the contributing guidelines
 - [ ] الكود الخاص بي يتبع أسلوب هذا المشروع - My code follows the style guidelines of this project
 - [ ] قمت بمراجعة الكود الخاص بي - I have performed a self-review of my own code
 - [ ] قمت بالتعليق على الكود في الأماكن الصعبة - I have commented my code, particularly in hard-to-understand areas

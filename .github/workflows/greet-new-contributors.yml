@@ -74,7 +74,7 @@ jobs:
                 
                 - [دليل البدء السريع - Quick Start Guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/QUICK_START.md)
                 - [دليل التطوير - Development Guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/DEVELOPMENT.md)
-                - [إرشادات المساهمة - Contribution Guidelines](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/.github/copilot-instructions.md)
+                - [إرشادات المساهمة - Contribution Guidelines](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/.github/CONTRIBUTING.md)
                 
                 نحن سعداء بانضمامك إلى مجتمعنا! 🌟
                 We're happy to have you in our community! 🌟`;

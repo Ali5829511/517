@@ -105,13 +105,15 @@ jobs:
             }
             
             // Size labels based on changes
-            const totalChanges = files.data.reduce((sum, f) => sum + f.changes, 0);
-            if (totalChanges < 10) {
-              labels.push('size: small');
-            } else if (totalChanges < 100) {
-              labels.push('size: medium');
-            } else {
-              labels.push('size: large');
+            if (files.data && files.data.length > 0) {
+              const totalChanges = files.data.reduce((sum, f) => sum + (f.changes || 0), 0);
+              if (totalChanges < 10) {
+                labels.push('size: small');
+              } else if (totalChanges < 100) {
+                labels.push('size: medium');
+              } else {
+                labels.push('size: large');
+              }
             }
             
             // Add labels if any were identified

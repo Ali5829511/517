@@ -126,7 +126,9 @@ def test_label_issues_workflow_valid():
         wf = yaml.safe_load(f)
     
     assert 'name' in wf, "Workflow should have 'name' field"
-    # Note: 'on' is a YAML boolean, so it gets parsed as True in Python
+    # Note: In GitHub Actions YAML, 'on' is a keyword but Python's YAML parser
+    # treats it as a boolean and converts it to True. This is expected behavior.
+    # The workflow file is still valid for GitHub Actions.
     assert (True in wf or 'on' in wf), "Workflow should have 'on' field"
     assert 'jobs' in wf, "Workflow should have 'jobs' field"
 
