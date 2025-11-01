@@ -745,7 +745,6 @@ def api_version():
     """
     try:
         import subprocess
-        from datetime import datetime
         
         version_info = {
             "app_name": "نظام إدارة الإسكان الجامعي - University Housing Management System",
@@ -764,17 +763,18 @@ def api_version():
                 text=True
             ).strip()
             version_info["git_commit"] = git_commit
-        except:
+        except (subprocess.CalledProcessError, FileNotFoundError, OSError) as e:
+            logger.debug(f"Could not get git commit: {e}")
             version_info["git_commit"] = "unknown"
             
         # Try to read BUILD_INFO.txt if it exists
         try:
             if os.path.exists("BUILD_INFO.txt"):
-                with open("BUILD_INFO.txt", "r") as f:
+                with open("BUILD_INFO.txt", "r", encoding="utf-8") as f:
                     build_info = f.read()
                     version_info["build_info"] = build_info
-        except:
-            pass
+        except (FileNotFoundError, IOError, PermissionError) as e:
+            logger.debug(f"Could not read BUILD_INFO.txt: {e}")
             
         # Get database statistics
         try:
@@ -786,7 +786,8 @@ def api_version():
                 "stickers": stats.get("stickers", 0),
                 "parking_spots": stats.get("parking_spots", 0)
             }
-        except:
+        except Exception as e:
+            logger.debug(f"Could not get database statistics: {e}")
             version_info["database"] = "unavailable"
         
         return jsonify({

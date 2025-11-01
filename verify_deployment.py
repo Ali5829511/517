@@ -61,8 +61,8 @@ def verify_endpoint(base_url, endpoint, description):
                     data = response.json()
                     print_info(f"Response: {json.dumps(data, indent=2, ensure_ascii=False)[:200]}...")
                     return True, data
-                except:
-                    print_info("Response is not JSON")
+                except (json.JSONDecodeError, ValueError) as e:
+                    print_info(f"Response is not valid JSON: {e}")
                     return True, None
             else:
                 print_info(f"Content length: {len(response.content)} bytes")
@@ -77,8 +77,11 @@ def verify_endpoint(base_url, endpoint, description):
     except requests.exceptions.ConnectionError:
         print_error("Connection failed")
         return False, None
+    except requests.exceptions.RequestException as e:
+        print_error(f"Request error: {str(e)}")
+        return False, None
     except Exception as e:
-        print_error(f"Error: {str(e)}")
+        print_error(f"Unexpected error: {str(e)}")
         return False, None
 
 
