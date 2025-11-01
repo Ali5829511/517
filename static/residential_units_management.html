@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المباني - وحدة إسكان أعضاء هيئة التدريس</title>
+    <title>إدارة الوحدات السكنية - وحدة إسكان أعضاء هيئة التدريس</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -373,7 +373,7 @@
                 <div class="university-logo">
                     <img src="/static/images/university_logo.png" alt="شعار الجامعة" style="width: 100%; height: 100%; object-fit: contain; border-radius: 10px;" onerror="this.style.display='none'; this.parentElement.innerHTML='🏛️'">
                 </div>
-                <h1>إدارة المباني</h1>
+                <h1>إدارة الوحدات السكنية</h1>
             </div>
             <div class="nav-links">
                 <a href="/main_portal.html" class="nav-link">
@@ -389,8 +389,8 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="fas fa-building stat-icon" style="color: #2e8bc0;"></i>
-                <div class="stat-number" id="totalBuildings">0</div>
-                <div class="stat-label">إجمالي المباني</div>
+                <div class="stat-number" id="totalUnits">0</div>
+                <div class="stat-label">إجمالي الوحدات</div>
             </div>
             <div class="stat-card">
                 <i class="fas fa-door-open stat-icon" style="color: #28a745;"></i>
@@ -414,7 +414,7 @@
             <div class="card-header">
                 <h2 class="card-title">
                     <i class="fas fa-list"></i>
-                    قائمة المباني
+                    قائمة الوحدات السكنية
                 </h2>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn btn-primary" onclick="openAddModal()">
@@ -433,20 +433,19 @@
             </div>
 
             <div class="table-container">
-                <table id="buildingsTable">
+                <table id="unitsTable">
                     <thead>
                         <tr>
-                            <th>رقم المبنى</th>
-                            <th>نوع المبنى</th>
-                            <th>إجمالي الوحدات</th>
-                            <th>الوحدات المشغولة</th>
-                            <th>الوحدات الشاغرة</th>
-                            <th>معدل الإشغال</th>
+                            <th>#</th>
+                            <th>رقم الوحدة</th>
+                            <th>المبنى</th>
                             <th>الحالة</th>
+                            <th>الساكن</th>
+                            <th>تاريخ الإشغال</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
-                    <tbody id="buildingsTableBody">
+                    <tbody id="unitsTableBody">
                         <!-- سيتم ملء البيانات ديناميكياً -->
                     </tbody>
                 </table>
@@ -500,22 +499,22 @@
     </div>
 
     <script>
-        let buildingsData = [];
+        let unitsData = [];
         let currentEditId = null;
 
         // تحميل البيانات من API
-        async function loadBuildingsData() {
+        async function loadUnitsData() {
             try {
-                const response = await fetch('/api/buildings');
+                const response = await fetch('/api/units');
                 const result = await response.json();
                 if (result.success) {
-                    buildingsData = result.data.map(b => ({
-                        id: b.id,
-                        buildingNumber: b.buildingNumber || b.building_number || 'غير محدد',
-                        buildingType: b.buildingType || b.building_type || 'غير محدد',
-                        totalUnits: b.totalUnits || b.total_units || 0,
-                        occupiedUnits: b.occupiedUnits || b.occupied_units || 0,
-                        status: b.status || 'نشط'
+                    unitsData = result.data.map(u => ({
+                        id: u.id,
+                        unitNumber: u.unit_number || 'غير محدد',
+                        buildingName: u.building_name || 'غير محدد',
+                        status: u.status || 'شاغر',
+                        residentName: u.resident_name || '-',
+                        occupancyDate: u.occupancy_date || '-'
                     }));
                     renderTable();
                     updateStats();
@@ -529,52 +528,41 @@
 
         // تحديث الإحصائيات
         function updateStats() {
-            const totalBuildings = buildingsData.length;
-            const totalUnits = buildingsData.reduce((sum, b) => sum + b.totalUnits, 0);
-            const occupiedUnits = buildingsData.reduce((sum, b) => sum + b.occupiedUnits, 0);
-            const occupancyRate = totalUnits > 0 ? ((occupiedUnits / totalUnits) * 100).toFixed(1) : 0;
+            const totalUnitsCount = unitsData.length;
+            const occupiedUnits = unitsData.filter(u => u.status === 'مشغول' || u.status === 'occupied').length;
+            const vacantUnits = totalUnitsCount - occupiedUnits;
+            const occupancyRate = totalUnitsCount > 0 ? ((occupiedUnits / totalUnitsCount) * 100).toFixed(1) : 0;
             
-            document.getElementById('totalBuildings').textContent = totalBuildings;
-            document.getElementById('totalUnits').textContent = totalUnits;
+            document.getElementById('totalUnits').textContent = totalUnitsCount;
             document.getElementById('occupiedUnits').textContent = occupiedUnits;
             document.getElementById('occupancyRate').textContent = occupancyRate + '%';
         }
 
         // عرض الجدول
-        function renderTable(data = buildingsData) {
-            const tbody = document.getElementById('buildingsTableBody');
+        function renderTable(data = unitsData) {
+            const tbody = document.getElementById('unitsTableBody');
             tbody.innerHTML = '';
 
-            data.forEach(building => {
-                const vacantUnits = building.totalUnits - building.occupiedUnits;
-                const occupancyRate = building.totalUnits > 0 ? 
-                    ((building.occupiedUnits / building.totalUnits) * 100).toFixed(1) : 0;
-                const statusClass = building.status === 'نشط' ? 'status-active' : 'status-inactive';
+            data.forEach((unit, index) => {
+                const statusClass = unit.status === 'مشغول' || unit.status === 'occupied' ? 'status-active' : 'status-inactive';
+                const statusText = unit.status === 'مشغول' || unit.status === 'occupied' ? 'مشغول' : 'شاغر';
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${building.buildingNumber}</td>
-                    <td>${building.buildingType}</td>
-                    <td>${building.totalUnits}</td>
-                    <td>${building.occupiedUnits}</td>
-                    <td>${vacantUnits}</td>
+                    <td>${index + 1}</td>
+                    <td>${unit.unitNumber}</td>
+                    <td>${unit.buildingName}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                    <td>${unit.residentName}</td>
+                    <td>${unit.occupancyDate}</td>
                     <td>
-                        <div>
-                            ${occupancyRate}%
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${occupancyRate}%"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td><span class="${statusClass}">${building.status}</span></td>
-                    <td>
-                        <button class="action-btn btn-view" onclick="viewBuilding(${building.id})">
+                        <button class="action-btn btn-view" onclick="viewUnit(${unit.id})">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn btn-edit" onclick="editBuilding(${building.id})">
+                        <button class="action-btn btn-edit" onclick="editUnit(${unit.id})">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="action-btn btn-delete" onclick="deleteBuilding(${building.id})">
+                        <button class="action-btn btn-delete" onclick="deleteUnit(${unit.id})">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -691,7 +679,7 @@
         }
 
         // تحميل البيانات عند تحميل الصفحة
-        window.addEventListener('DOMContentLoaded', loadBuildingsData);
+        window.addEventListener('DOMContentLoaded', loadUnitsData);
     </script>
 </body>
 </html>
