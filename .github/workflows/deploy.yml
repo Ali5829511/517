@@ -14,10 +14,15 @@ on:
         required: false
         default: 'false'
 
+permissions:
+  contents: read
+
 jobs:
   pre-deployment-checks:
     name: Pre-Deployment Validation
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
@@ -72,6 +77,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-deployment-checks
     if: github.event_name == 'push' || github.event.pull_request.merged == true
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
@@ -106,6 +113,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-info
     if: github.event_name == 'push' || github.event.pull_request.merged == true
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code

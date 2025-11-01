@@ -9,10 +9,15 @@ on:
         required: true
         default: 'https://your-app.railway.app'
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     name: Verify Deployment
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
     - name: Checkout code
