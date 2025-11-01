@@ -737,6 +737,70 @@ def api_get_resident_vehicles(resident_id):
         return jsonify({"success": False, "error": "حدث خطأ أثناء جلب بيانات مركبات الساكن"}), 500
 
 
+@app.route("/api/version", methods=["GET"])
+def api_version():
+    """
+    Get application version and deployment information
+    الحصول على إصدار التطبيق ومعلومات النشر
+    """
+    try:
+        import subprocess
+        from datetime import datetime
+        
+        version_info = {
+            "app_name": "نظام إدارة الإسكان الجامعي - University Housing Management System",
+            "version": "2.0.0",
+            "deployment_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "running",
+            "python_version": "3.11.0",
+            "flask_version": "3.0.0"
+        }
+        
+        # Try to get git commit info if available
+        try:
+            git_commit = subprocess.check_output(
+                ["git", "rev-parse", "--short", "HEAD"],
+                stderr=subprocess.DEVNULL,
+                text=True
+            ).strip()
+            version_info["git_commit"] = git_commit
+        except:
+            version_info["git_commit"] = "unknown"
+            
+        # Try to read BUILD_INFO.txt if it exists
+        try:
+            if os.path.exists("BUILD_INFO.txt"):
+                with open("BUILD_INFO.txt", "r") as f:
+                    build_info = f.read()
+                    version_info["build_info"] = build_info
+        except:
+            pass
+            
+        # Get database statistics
+        try:
+            stats = get_statistics()
+            version_info["database"] = {
+                "residents": stats.get("residents", 0),
+                "buildings": stats.get("buildings", 0),
+                "units": stats.get("units", 0),
+                "stickers": stats.get("stickers", 0),
+                "parking_spots": stats.get("parking_spots", 0)
+            }
+        except:
+            version_info["database"] = "unavailable"
+        
+        return jsonify({
+            "success": True,
+            "data": version_info
+        })
+    except Exception as e:
+        logger.error(f"Error getting version info: {e}")
+        return jsonify({
+            "success": False,
+            "error": "حدث خطأ أثناء جلب معلومات الإصدار"
+        }), 500
+
+
 # إضافة headers لمنع الـ cache
 @app.after_request
 def add_header(response):

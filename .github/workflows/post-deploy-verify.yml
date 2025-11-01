@@ -1,0 +1,47 @@
+name: Post-Deployment Verification
+# التحقق بعد النشر
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: 'Deployment URL to verify'
+        required: true
+        default: 'https://your-app.railway.app'
+
+jobs:
+  verify:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        pip install requests
+        
+    - name: Run verification script
+      run: |
+        python verify_deployment.py ${{ github.event.inputs.deployment_url }}
+        
+    - name: Create verification report
+      if: always()
+      run: |
+        echo "## 🔍 Post-Deployment Verification Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**URL Tested:** ${{ github.event.inputs.deployment_url }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Time:** $(date '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Endpoints Checked" >> $GITHUB_STEP_SUMMARY
+        echo "- Main Page (`/`)" >> $GITHUB_STEP_SUMMARY
+        echo "- Version API (`/api/version`)" >> $GITHUB_STEP_SUMMARY
+        echo "- Statistics API (`/api/statistics`)" >> $GITHUB_STEP_SUMMARY
+        echo "- Main Portal" >> $GITHUB_STEP_SUMMARY
+        echo "- Comprehensive Report" >> $GITHUB_STEP_SUMMARY
