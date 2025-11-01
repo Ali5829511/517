@@ -69,6 +69,12 @@ app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("FLASK_ENV") == "production"
 app.config["SESSION_COOKIE_HTTPONLY"] = True  # Prevent JavaScript access to session cookie
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # CSRF protection
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=2)  # Session duration
+
+# Register authentication blueprint
+from auth import auth_bp
+
+app.register_blueprint(auth_bp)
 
 # تكوين التطبيق
 
