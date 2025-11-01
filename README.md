@@ -1,5 +1,10 @@
 # نظام إدارة الإسكان الجامعي
 
+![Build Status](https://github.com/Ali5829511/517/workflows/Python%20Package%20using%20Conda/badge.svg)
+![Deployment](https://github.com/Ali5829511/517/workflows/Deployment%20Automation/badge.svg)
+![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
 نظام متكامل لإدارة إسكان أعضاء هيئة التدريس مع ميزات الذكاء الاصطناعي
 
 ## 🚀 التشغيل السريع
@@ -22,21 +27,34 @@ python app.py
 - 2,381 ملصق سيارة
 - 1,308 موقف
 
-## 🆕 آخر التحديثات (30 أكتوبر 2025)
-- ✅ إصلاح 343 مشكلة جودة كود
-- ✅ إصلاح 20 ثغرة أمنية
-- ✅ نظام تقارير شامل تفاعلي
-- ✅ 8 رسوم بيانية متقدمة
-- راجع `DEPLOYMENT_UPDATE_OCT_2025.md` للتفاصيل
+## 🆕 آخر التحديثات (1 نوفمبر 2025)
+- ✅ إصلاح مشكلة عدم انعكاس التحديثات على الاستضافة
+- ✅ إضافة GitHub Actions للنشر التلقائي
+- ✅ إضافة نقطة نهاية `/api/version` للتحقق من الإصدار
+- ✅ تحسين عملية النشر مع Railway/Render/Vercel
+- ✅ إضافة سكريبت التحقق من النشر
+- راجع `DEPLOYMENT_WORKFLOW.md` للتفاصيل الكاملة
 
 ## 🌐 النشر
 النظام جاهز للنشر على منصات متعددة:
-- **Railway.app** (موصى به) - نشر تلقائي
-- **Render.com** - خطة مجانية
+
+### المنصات الموصى بها:
+- **Railway.app** (موصى به) - نشر تلقائي ⚡
+- **Render.com** - خطة مجانية 🆓
+- **Fly.io** - أداء عالي 🚀
+- **Deta Space** - مجاني 100% للتعليم 🎓
+
+### المنصات الإضافية:
 - **Vercel** - نشر سريع
 - **Heroku** - الأكثر شهرة
+- **Azure App Service** - للمشاريع الحكومية
+- **Google Cloud Run** - للمشاريع الكبيرة
+- و**10+ منصات أخرى**
 
-📖 **دليل النشر الشامل:** راجع [DEPLOYMENT.md](DEPLOYMENT.md) لتعليمات مفصلة
+📖 **أدلة النشر:**
+- [DEPLOYMENT.md](DEPLOYMENT.md) - دليل شامل للمنصات الرئيسية (10 منصات)
+- [ALTERNATIVE_HOSTING_PLATFORMS.md](ALTERNATIVE_HOSTING_PLATFORMS.md) - **جديد!** 10 منصات إضافية
+- [HOSTING_COMPARISON.md](HOSTING_COMPARISON.md) - مقارنة تفصيلية لجميع المنصات
 
 ### خطوات سريعة للنشر على Railway:
 1. سجل على https://railway.app
