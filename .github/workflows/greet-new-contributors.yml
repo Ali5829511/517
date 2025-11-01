@@ -1,0 +1,138 @@
+name: Greet New Contributors
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Greet new contributors
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const isNewContributor = context.payload.sender.type === 'User';
+            
+            // Check if this is an issue or PR
+            const isIssue = !!context.payload.issue;
+            const isPR = !!context.payload.pull_request;
+            
+            if (!isNewContributor) {
+              console.log('Not a new contributor, skipping greeting');
+              return;
+            }
+            
+            // Get all issues and PRs from this user
+            let userContributions = [];
+            
+            if (isIssue) {
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                creator: context.payload.sender.login,
+                state: 'all'
+              });
+              userContributions = issues.data;
+            } else if (isPR) {
+              const prs = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'all'
+              });
+              userContributions = prs.data.filter(pr => pr.user.login === context.payload.sender.login);
+            }
+            
+            // If this is their first contribution, greet them
+            if (userContributions.length === 1) {
+              let message = '';
+              
+              if (isIssue) {
+                message = `## 🎉 مرحباً بك! Welcome!
+                
+                شكراً لك على فتح أول قضية في نظام إدارة الإسكان الجامعي!
+                Thank you for opening your first issue in the University Housing Management System!
+
+                ### ماذا بعد؟ What's next?
+                
+                - سيقوم فريقنا بمراجعة القضية في أقرب وقت ممكن
+                  Our team will review your issue as soon as possible
+                  
+                - يمكنك متابعة التحديثات من خلال هذه الصفحة
+                  You can follow updates on this page
+                  
+                - إذا كنت ترغب في العمل على حل هذه القضية، فلا تتردد في إخبارنا!
+                  If you'd like to work on solving this issue, please let us know!
+                
+                ### موارد مفيدة - Helpful Resources
+                
+                - [دليل البدء السريع - Quick Start Guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/QUICK_START.md)
+                - [دليل التطوير - Development Guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/DEVELOPMENT.md)
+                - [إرشادات المساهمة - Contribution Guidelines](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/.github/CONTRIBUTING.md)
+                
+                نحن سعداء بانضمامك إلى مجتمعنا! 🌟
+                We're happy to have you in our community! 🌟`;
+              } else if (isPR) {
+                message = `## 🎉 مرحباً بك! Welcome!
+                
+                شكراً لك على فتح أول طلب سحب في نظام إدارة الإسكان الجامعي!
+                Thank you for opening your first pull request in the University Housing Management System!
+                
+                ### ماذا بعد؟ What's next?
+                
+                - سيقوم فريقنا بمراجعة التغييرات الخاصة بك
+                  Our team will review your changes
+                  
+                - تأكد من أن جميع الاختبارات تمر بنجاح
+                  Make sure all tests pass successfully
+                  
+                - نحن نقدر الوقت والجهد الذي بذلته!
+                  We appreciate the time and effort you've put in!
+                
+                ### نصائح للمراجعة - Review Tips
+                
+                ✅ تأكد من اتباع معايير الكود في المشروع
+                   Make sure to follow the project's code standards
+                
+                ✅ أضف اختبارات إذا كان ذلك مناسباً
+                   Add tests if applicable
+                
+                ✅ قم بتحديث التوثيق إذا لزم الأمر
+                   Update documentation if necessary
+                
+                ### موارد مفيدة - Helpful Resources
+                
+                - [دليل البدء السريع - Quick Start Guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/QUICK_START.md)
+                - [دليل التطوير - Development Guide](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/DEVELOPMENT.md)
+                - [كيفية تشغيل الاختبارات - How to Run Tests](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/DEVELOPMENT.md#testing)
+                
+                نحن متحمسون لرؤية مساهمتك! 🚀
+                We're excited to see your contribution! 🚀`;
+              }
+              
+              if (message) {
+                if (isIssue) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.payload.issue.number,
+                    body: message
+                  });
+                } else if (isPR) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.payload.pull_request.number,
+                    body: message
+                  });
+                }
+                
+                console.log('Greeted new contributor!');
+              }
+            }

@@ -1,0 +1,129 @@
+name: Auto Label Pull Requests
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Label based on PR content and files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const title = pr.title.toLowerCase();
+            const body = pr.body ? pr.body.toLowerCase() : '';
+            const labels = [];
+            
+            // Get list of changed files
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+            
+            const changedFiles = files.data.map(f => f.filename);
+            console.log('Changed files:', changedFiles);
+            
+            // Auto-label based on PR title and body
+            // تسمية تلقائية بناءً على عنوان ووصف PR
+            
+            // Type labels / تسميات النوع
+            if (title.includes('fix') || title.includes('bug') || title.includes('إصلاح') ||
+                title.includes('خطأ')) {
+              labels.push('bug');
+            }
+            
+            if (title.includes('feature') || title.includes('add') || title.includes('ميزة') ||
+                title.includes('إضافة')) {
+              labels.push('enhancement');
+            }
+            
+            if (title.includes('refactor') || title.includes('إعادة هيكلة') ||
+                title.includes('cleanup')) {
+              labels.push('type: refactor');
+            }
+            
+            if (title.includes('test') || title.includes('اختبار')) {
+              labels.push('type: test');
+            }
+            
+            if (title.includes('deploy') || title.includes('نشر')) {
+              labels.push('type: deployment');
+            }
+            
+            // Component labels based on changed files
+            // تسميات المكونات بناءً على الملفات المعدلة
+            
+            if (changedFiles.some(f => f.includes('database') || f.includes('db') || 
+                                      f.includes('.db') || f.includes('sql'))) {
+              labels.push('component: database');
+            }
+            
+            if (changedFiles.some(f => f.includes('static/') || f.includes('.html') || 
+                                      f.includes('.css') || f.includes('.js'))) {
+              labels.push('component: ui');
+            }
+            
+            if (changedFiles.some(f => f.includes('app.py') || f.includes('api') ||
+                                      f.includes('routes'))) {
+              labels.push('component: api');
+            }
+            
+            if (changedFiles.some(f => f.includes('test_') || f.includes('_test.py') ||
+                                      f.includes('.test.'))) {
+              labels.push('type: test');
+            }
+            
+            if (changedFiles.some(f => f.includes('README') || f.includes('.md') ||
+                                      f.includes('docs/'))) {
+              labels.push('documentation');
+            }
+            
+            if (changedFiles.some(f => f.includes('deploy') || f.includes('build') ||
+                                      f.includes('requirements') || f.includes('railway') ||
+                                      f.includes('render') || f.includes('vercel'))) {
+              labels.push('type: deployment');
+            }
+            
+            // Check for security-related changes
+            if (changedFiles.some(f => f.includes('security') || f.includes('auth')) ||
+                body.includes('security') || body.includes('أمان') ||
+                body.includes('vulnerability') || body.includes('ثغرة')) {
+              labels.push('component: security');
+            }
+            
+            // Size labels based on changes
+            if (files.data && files.data.length > 0) {
+              const totalChanges = files.data.reduce((sum, f) => sum + (f.changes || 0), 0);
+              if (totalChanges < 10) {
+                labels.push('size: small');
+              } else if (totalChanges < 100) {
+                labels.push('size: medium');
+              } else {
+                labels.push('size: large');
+              }
+            }
+            
+            // Add labels if any were identified
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: labels
+              });
+              
+              console.log(`Added labels: ${labels.join(', ')}`);
+            }

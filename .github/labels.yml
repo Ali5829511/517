@@ -1,0 +1,121 @@
+# تكوين التسميات لنظام إدارة الإسكان الجامعي
+# Labels configuration for University Housing Management System
+
+# Labels for issue types / تسميات لأنواع القضايا
+- name: "bug"
+  color: "d73a4a"
+  description: "خطأ في البرنامج - Something isn't working"
+
+- name: "enhancement"
+  color: "a2eeef"
+  description: "ميزة جديدة أو طلب تحسين - New feature or request"
+
+- name: "documentation"
+  color: "0075ca"
+  description: "تحسينات في التوثيق - Improvements or additions to documentation"
+
+- name: "question"
+  color: "d876e3"
+  description: "سؤال أو طلب معلومات إضافية - Further information is requested"
+
+# Labels for new contributors / تسميات للمساهمين الجدد
+- name: "good first issue"
+  color: "7057ff"
+  description: "مناسب للمساهمين الجدد - Good for newcomers"
+
+- name: "help wanted"
+  color: "008672"
+  description: "نحتاج مساعدة إضافية - Extra attention is needed"
+
+# Priority labels / تسميات الأولوية
+- name: "priority: critical"
+  color: "b60205"
+  description: "أولوية قصوى - Critical priority"
+
+- name: "priority: high"
+  color: "d93f0b"
+  description: "أولوية عالية - High priority"
+
+- name: "priority: medium"
+  color: "fbca04"
+  description: "أولوية متوسطة - Medium priority"
+
+- name: "priority: low"
+  color: "0e8a16"
+  description: "أولوية منخفضة - Low priority"
+
+# Status labels / تسميات الحالة
+- name: "status: in progress"
+  color: "ededed"
+  description: "قيد التنفيذ - Work in progress"
+
+- name: "status: on hold"
+  color: "e4e669"
+  description: "معلق مؤقتاً - On hold"
+
+- name: "status: needs review"
+  color: "fbca04"
+  description: "يحتاج إلى مراجعة - Needs review"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "لن يتم إصلاحه - This will not be worked on"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "مكرر - This issue or pull request already exists"
+
+- name: "invalid"
+  color: "e4e669"
+  description: "غير صالح - This doesn't seem right"
+
+# Component labels / تسميات المكونات
+- name: "component: database"
+  color: "c2e0c6"
+  description: "متعلق بقاعدة البيانات - Related to database"
+
+- name: "component: ui"
+  color: "bfdadc"
+  description: "متعلق بواجهة المستخدم - Related to user interface"
+
+- name: "component: api"
+  color: "d4c5f9"
+  description: "متعلق بالواجهة البرمجية - Related to API"
+
+- name: "component: ai"
+  color: "f9d0c4"
+  description: "متعلق بالذكاء الاصطناعي - Related to AI features"
+
+- name: "component: security"
+  color: "ff0000"
+  description: "متعلق بالأمان - Related to security"
+
+# Type labels / تسميات النوع
+- name: "type: refactor"
+  color: "fbca04"
+  description: "إعادة هيكلة الكود - Code refactoring"
+
+- name: "type: test"
+  color: "1d76db"
+  description: "إضافة أو تحسين الاختبارات - Adding or improving tests"
+
+- name: "type: deployment"
+  color: "5319e7"
+  description: "متعلق بالنشر - Related to deployment"
+
+- name: "type: maintenance"
+  color: "fbca04"
+  description: "صيانة وتحديثات - Maintenance and updates"
+
+# Size labels for PRs / تسميات الحجم لطلبات السحب
+- name: "size: small"
+  color: "00ff00"
+  description: "تغييرات صغيرة - Small changes (< 10 lines)"
+
+- name: "size: medium"
+  color: "ffff00"
+  description: "تغييرات متوسطة - Medium changes (10-100 lines)"
+
+- name: "size: large"
+  color: "ff0000"
+  description: "تغييرات كبيرة - Large changes (> 100 lines)"
