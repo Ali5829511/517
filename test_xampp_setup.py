@@ -23,6 +23,7 @@ class Colors:
     RED = '\033[91m'
     YELLOW = '\033[93m'
     BLUE = '\033[94m'
+    INFO = '\033[96m'  # Cyan for info messages
     RESET = '\033[0m'
     BOLD = '\033[1m'
 

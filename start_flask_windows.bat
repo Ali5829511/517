@@ -67,9 +67,16 @@ if not exist "%DATABASE_PATH%" (
     echo WARNING: Database file not found: %DATABASE_PATH%
     echo تحذير: ملف قاعدة البيانات غير موجود: %DATABASE_PATH%
     echo.
-    echo Attempting to create database...
-    echo محاولة إنشاء قاعدة البيانات...
-    python generate_database.py
+    if exist "generate_database.py" (
+        echo Attempting to create database...
+        echo محاولة إنشاء قاعدة البيانات...
+        python generate_database.py
+    ) else (
+        echo ERROR: Cannot create database - generate_database.py not found
+        echo خطأ: لا يمكن إنشاء قاعدة البيانات - generate_database.py غير موجود
+        echo Please ensure the database file exists before running
+        echo يرجى التأكد من وجود ملف قاعدة البيانات قبل التشغيل
+    )
 )
 
 REM Check if required directories exist

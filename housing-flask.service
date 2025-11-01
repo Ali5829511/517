@@ -64,7 +64,10 @@ Environment="WORKERS=4"
 # مفتاح OpenAI API - مهم: عيّن هذا أو استخدم EnvironmentFile
 # Environment="OPENAI_API_KEY=your-api-key-here"
 
-# Alternative: Load environment from file / بديل: تحميل البيئة من ملف
+# RECOMMENDED: Load environment from file (more secure)
+# مُوصى به: تحميل البيئة من ملف (أكثر أماناً)
+# Create a .env file with your sensitive variables and uncomment this line:
+# أنشئ ملف .env مع المتغيرات الحساسة وألغِ التعليق عن هذا السطر:
 # EnvironmentFile=/opt/lampp/htdocs/housing-system/.env
 
 # Start command - Using Gunicorn (recommended)
