@@ -761,11 +761,9 @@ def get_comprehensive_statistics():
             "parking_utilization": round(parking_utilization, 1),
             "stickers_per_resident": round(stickers_per_resident, 2),
             "active_sticker_rate": round(
-                (
-                    (stickers_stats["active_stickers"] / stickers_stats["total_stickers"] * 100)
-                    if stickers_stats["total_stickers"] > 0
-                    else 0
-                ),
+                (stickers_stats["active_stickers"] / stickers_stats["total_stickers"] * 100)
+                if stickers_stats["total_stickers"] > 0
+                else 0,
                 1,
             ),
         },
