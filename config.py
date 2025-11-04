@@ -44,6 +44,10 @@ class DevelopmentConfig:
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     OPENAI_AVAILABLE = bool(OPENAI_API_KEY and OPENAI_API_KEY != "your-api-key-here")
 
+    # GitHub
+    GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
+    GITHUB_AVAILABLE = bool(GITHUB_TOKEN and GITHUB_TOKEN != "your-github-token-here")
+
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     LOG_FILE = os.environ.get("LOG_FILE", "logs/app.log")
@@ -93,6 +97,10 @@ class ProductionConfig:
     # OpenAI
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
     OPENAI_AVAILABLE = bool(OPENAI_API_KEY)
+
+    # GitHub
+    GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+    GITHUB_AVAILABLE = bool(GITHUB_TOKEN)
 
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")
