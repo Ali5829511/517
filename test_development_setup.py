@@ -55,21 +55,21 @@ def test_config_import():
 def test_config_get_config():
     """Test get_config function"""
     from config import get_config
-    
+
     dev_config = get_config('development')
-    assert dev_config.DEBUG == True
-    
+    assert dev_config.DEBUG is True
+
     prod_config = get_config('production')
-    assert prod_config.DEBUG == False
-    
+    assert prod_config.DEBUG is False
+
     test_config = get_config('testing')
-    assert test_config.TESTING == True
+    assert test_config.TESTING is True
 
 
 def test_gitignore_includes_build_artifacts():
     """Test that .gitignore includes development artifacts"""
     gitignore_content = Path('.gitignore').read_text()
-    
+
     # Check for important patterns
     assert '.pytest_cache' in gitignore_content
     assert 'htmlcov' in gitignore_content

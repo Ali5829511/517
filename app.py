@@ -323,7 +323,8 @@ def extract_plate():
                             "content": [
                                 {
                                     "type": "text",
-                                    "text": """أنت خبير في قراءة لوحات السيارات السعودية. حلل هذه الصورة بدقة عالية جداً واستخرج:
+                                    "text": """أنت خبير في قراءة لوحات السيارات السعودية.
+حلل هذه الصورة بدقة عالية جداً واستخرج:
 
 **مهم جداً:**
 - اللوحات السعودية تحتوي على 3 أحرف إنجليزية + 4 أرقام
@@ -389,7 +390,10 @@ def extract_plate():
                         vehicle_color=result.get("vehicle_color", "غير محدد"),
                         confidence=result.get("confidence", 0),
                         image_path=saved_filepath if saved_filepath else "",
-                        notes=f"استخراج تلقائي - الأحرف: {result.get('english_letters', '')}, الأرقام: {result.get('numbers', '')}",
+                        notes=(
+                            f"استخراج تلقائي - الأحرف: {result.get('english_letters', '')}, "
+                            f"الأرقام: {result.get('numbers', '')}"
+                        ),
                     )
                 except Exception as db_error:
                     logger.warning(f"فشل حفظ الصورة في قاعدة البيانات: {db_error}")
@@ -891,18 +895,37 @@ def send_reset_email(email, token, username):
         <html dir="rtl">
         <body style="font-family: Arial, sans-serif; direction: rtl; text-align: right;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px; background: #f5f5f5;">
-                <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div style="background: white; padding: 30px; border-radius: 10px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                     <h2 style="color: #667eea; margin-bottom: 20px;">إعادة تعيين كلمة المرور</h2>
-                    <p style="font-size: 16px; line-height: 1.6; color: #333;">مرحباً <strong>{username}</strong>،</p>
-                    <p style="font-size: 16px; line-height: 1.6; color: #333;">تلقينا طلباً لإعادة تعيين كلمة المرور لحسابك في نظام إدارة الإسكان.</p>
-                    <p style="font-size: 16px; line-height: 1.6; color: #333;">لإعادة تعيين كلمة المرور، يرجى الضغط على الرابط أدناه:</p>
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        مرحباً <strong>{username}</strong>،
+                    </p>
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        تلقينا طلباً لإعادة تعيين كلمة المرور لحسابك في نظام إدارة الإسكان.
+                    </p>
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        لإعادة تعيين كلمة المرور، يرجى الضغط على الرابط أدناه:
+                    </p>
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="{reset_link}" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold;">إعادة تعيين كلمة المرور</a>
+                        <a href="{reset_link}"
+                           style="display: inline-block; padding: 15px 40px;
+                                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                  color: white; text-decoration: none; border-radius: 5px;
+                                  font-size: 16px; font-weight: bold;">
+                            إعادة تعيين كلمة المرور
+                        </a>
                     </div>
-                    <p style="font-size: 14px; color: #666;">إذا لم تطلب إعادة تعيين كلمة المرور، يرجى تجاهل هذه الرسالة.</p>
-                    <p style="font-size: 14px; color: #666;">هذا الرابط صالح لمدة <strong>30 دقيقة</strong> فقط.</p>
+                    <p style="font-size: 14px; color: #666;">
+                        إذا لم تطلب إعادة تعيين كلمة المرور، يرجى تجاهل هذه الرسالة.
+                    </p>
+                    <p style="font-size: 14px; color: #666;">
+                        هذا الرابط صالح لمدة <strong>30 دقيقة</strong> فقط.
+                    </p>
                     <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-                    <p style="font-size: 12px; color: #999; text-align: center;">&copy; 2025 جامعة الإمام محمد بن سعود الإسلامية</p>
+                    <p style="font-size: 12px; color: #999; text-align: center;">
+                        &copy; 2025 جامعة الإمام محمد بن سعود الإسلامية
+                    </p>
                 </div>
             </div>
         </body>
@@ -1195,7 +1218,9 @@ def get_report(report_type):
                        COUNT(u.id) as "إجمالي الوحدات",
                        SUM(CASE WHEN u.status="occupied" THEN 1 ELSE 0 END) as "المشغولة",
                        SUM(CASE WHEN u.status="vacant" THEN 1 ELSE 0 END) as "الشاغرة",
-                       ROUND(SUM(CASE WHEN u.status="occupied" THEN 1 ELSE 0 END) * 100.0 / COUNT(u.id), 1) || '%' as "نسبة الإشغال"
+                       ROUND(
+                           SUM(CASE WHEN u.status="occupied" THEN 1 ELSE 0 END) * 100.0 / COUNT(u.id), 1
+                       ) || '%' as "نسبة الإشغال"
                 FROM buildings b
                 LEFT JOIN units u ON b.id = u.building_id
                 GROUP BY b.id
