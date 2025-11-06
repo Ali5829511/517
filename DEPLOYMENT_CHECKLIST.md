@@ -30,9 +30,9 @@ Use this checklist to ensure everything is ready for deployment.
 
 ### البنية الأساسية | Basic Structure
 - [x] المجلد `static/` موجود | `static/` folder exists
-- [ ] المجلد `uploads/` (سيُنشأ تلقائياً) | `uploads/` folder (auto-created)
-- [ ] المجلد `processed_images/` (سيُنشأ تلقائياً) | `processed_images/` folder (auto-created)
-- [ ] المجلد `logs/` (سيُنشأ تلقائياً) | `logs/` folder (auto-created)
+- [x] المجلد `uploads/` موجود | `uploads/` folder exists
+- [x] المجلد `processed_images/` موجود | `processed_images/` folder exists
+- [x] المجلد `logs/` موجود | `logs/` folder exists
 
 ---
 
