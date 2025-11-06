@@ -1,0 +1,105 @@
+# Systemd service file for Housing Management System
+# ملف خدمة Systemd لنظام إدارة الإسكان الجامعي
+#
+# INSTALLATION / التثبيت:
+# ================
+# 1. Copy this file to: /etc/systemd/system/housing-flask.service
+#    انسخ هذا الملف إلى: /etc/systemd/system/housing-flask.service
+#
+#    sudo cp housing-flask.service /etc/systemd/system/
+#
+# 2. Edit the paths and settings below to match your installation
+#    عدّل المسارات والإعدادات أدناه لتطابق تثبيتك
+#
+# 3. Reload systemd daemon / أعد تحميل systemd daemon
+#    sudo systemctl daemon-reload
+#
+# 4. Enable the service to start on boot / فعّل الخدمة للبدء عند التشغيل
+#    sudo systemctl enable housing-flask
+#
+# 5. Start the service / شغّل الخدمة
+#    sudo systemctl start housing-flask
+#
+# 6. Check status / تحقق من الحالة
+#    sudo systemctl status housing-flask
+#
+# MANAGEMENT / الإدارة:
+# =================
+# Start service / تشغيل الخدمة:
+#   sudo systemctl start housing-flask
+#
+# Stop service / إيقاف الخدمة:
+#   sudo systemctl stop housing-flask
+#
+# Restart service / إعادة تشغيل الخدمة:
+#   sudo systemctl restart housing-flask
+#
+# View logs / عرض السجلات:
+#   sudo journalctl -u housing-flask -f
+
+[Unit]
+Description=Housing Management Flask Application
+Description[ar]=تطبيق Flask لنظام إدارة الإسكان الجامعي
+After=network.target
+Documentation=https://github.com/Ali5829511/517
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+
+# Working directory - UPDATE THIS PATH
+# مجلد العمل - عدّل هذا المسار
+WorkingDirectory=/opt/lampp/htdocs/housing-system
+
+# Environment variables
+# متغيرات البيئة
+Environment="FLASK_ENV=production"
+Environment="DATABASE_PATH=housing_database.db"
+Environment="HOST=127.0.0.1"
+Environment="PORT=5000"
+Environment="WORKERS=4"
+
+# OpenAI API Key - IMPORTANT: Set this or use EnvironmentFile
+# مفتاح OpenAI API - مهم: عيّن هذا أو استخدم EnvironmentFile
+# Environment="OPENAI_API_KEY=your-api-key-here"
+
+# RECOMMENDED: Load environment from file (more secure)
+# مُوصى به: تحميل البيئة من ملف (أكثر أماناً)
+# Create a .env file with your sensitive variables and uncomment this line:
+# أنشئ ملف .env مع المتغيرات الحساسة وألغِ التعليق عن هذا السطر:
+# EnvironmentFile=/opt/lampp/htdocs/housing-system/.env
+
+# Start command - Using Gunicorn (recommended)
+# أمر البدء - باستخدام Gunicorn (موصى به)
+ExecStart=/usr/local/bin/gunicorn \
+    --workers 4 \
+    --bind 127.0.0.1:5000 \
+    --timeout 120 \
+    --access-logfile /var/log/housing/gunicorn-access.log \
+    --error-logfile /var/log/housing/gunicorn-error.log \
+    --log-level info \
+    app:app
+
+# Alternative: Using Flask development server (NOT recommended for production)
+# بديل: استخدام خادم Flask التطويري (غير موصى به للإنتاج)
+# ExecStart=/usr/bin/python3 /opt/lampp/htdocs/housing-system/app.py
+
+# Restart policy / سياسة إعادة التشغيل
+Restart=always
+RestartSec=10
+
+# Security settings / إعدادات الأمان
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Resource limits / حدود الموارد
+LimitNOFILE=65536
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=housing-flask
+
+[Install]
+WantedBy=multi-user.target
