@@ -13,8 +13,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Tajawal', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a3e 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -29,7 +29,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a3e 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -71,8 +71,8 @@
 
         .nav-tab.active {
             background: white;
-            border-bottom-color: #667eea;
-            color: #667eea;
+            border-bottom-color: #1a472a;
+            color: #1a472a;
             font-weight: bold;
         }
 
@@ -102,7 +102,7 @@
         }
 
         .kpi-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a3e 100%);
             color: white;
             padding: 25px;
             border-radius: 15px;
@@ -136,7 +136,7 @@
 
         .chart-title {
             font-size: 1.5em;
-            color: #667eea;
+            color: #1a472a;
             margin-bottom: 20px;
             font-weight: bold;
         }
@@ -155,7 +155,7 @@
         }
 
         .stats-table th {
-            background: #667eea;
+            background: #1a472a;
             color: white;
             font-weight: bold;
         }
@@ -186,7 +186,7 @@
             text-align: center;
             padding: 50px;
             font-size: 1.5em;
-            color: #667eea;
+            color: #1a472a;
         }
 
         .error {
@@ -242,7 +242,7 @@
 
             <!-- نظرة عامة -->
             <div id="overview" class="tab-content active">
-                <h2 style="color: #667eea; margin-bottom: 20px;">📈 مؤشرات الأداء الرئيسية (KPIs)</h2>
+                <h2 style="color: #1a472a; margin-bottom: 20px;">📈 مؤشرات الأداء الرئيسية (KPIs)</h2>
                 <div class="kpi-grid" id="kpi-grid"></div>
 
                 <div class="chart-container">
@@ -253,7 +253,7 @@
 
             <!-- المباني -->
             <div id="buildings" class="tab-content">
-                <h2 style="color: #667eea; margin-bottom: 20px;">🏢 تقرير المباني التفصيلي</h2>
+                <h2 style="color: #1a472a; margin-bottom: 20px;">🏢 تقرير المباني التفصيلي</h2>
                 <div class="chart-container">
                     <div class="chart-title">توزيع المباني حسب النوع</div>
                     <canvas id="buildingsChart"></canvas>
@@ -266,7 +266,7 @@
 
             <!-- الوحدات -->
             <div id="units" class="tab-content">
-                <h2 style="color: #667eea; margin-bottom: 20px;">🏠 تقرير الوحدات السكنية</h2>
+                <h2 style="color: #1a472a; margin-bottom: 20px;">🏠 تقرير الوحدات السكنية</h2>
                 <div class="chart-container">
                     <div class="chart-title">حالة إشغال الوحدات</div>
                     <canvas id="unitsChart"></canvas>
@@ -276,7 +276,7 @@
 
             <!-- السكان -->
             <div id="residents" class="tab-content">
-                <h2 style="color: #667eea; margin-bottom: 20px;">👥 تقرير السكان</h2>
+                <h2 style="color: #1a472a; margin-bottom: 20px;">👥 تقرير السكان</h2>
                 <div class="chart-container">
                     <div class="chart-title">أكثر 10 سكان من حيث عدد المركبات</div>
                     <canvas id="topResidentsChart"></canvas>
@@ -286,7 +286,7 @@
 
             <!-- المواقف -->
             <div id="parking" class="tab-content">
-                <h2 style="color: #667eea; margin-bottom: 20px;">🅿️ تقرير المواقف</h2>
+                <h2 style="color: #1a472a; margin-bottom: 20px;">🅿️ تقرير المواقف</h2>
                 <div class="chart-container">
                     <div class="chart-title">توزيع المواقف حسب النوع</div>
                     <canvas id="parkingTypeChart"></canvas>
@@ -299,7 +299,7 @@
 
             <!-- الملصقات -->
             <div id="stickers" class="tab-content">
-                <h2 style="color: #667eea; margin-bottom: 20px;">🚗 تقرير ملصقات السيارات</h2>
+                <h2 style="color: #1a472a; margin-bottom: 20px;">🚗 تقرير ملصقات السيارات</h2>
                 <div class="chart-container">
                     <div class="chart-title">حالة الملصقات</div>
                     <canvas id="stickersChart"></canvas>
@@ -515,7 +515,7 @@
             // إحصائيات إضافية
             document.getElementById('units-stats').innerHTML = `
                 <div class="chart-container">
-                    <h3 style="color: #667eea; margin-bottom: 15px;">إحصائيات الوحدات</h3>
+                    <h3 style="color: #1a472a; margin-bottom: 15px;">إحصائيات الوحدات</h3>
                     <table class="stats-table">
                         <tr>
                             <th>المؤشر</th>
@@ -655,7 +655,7 @@
             // إحصائيات إضافية
             document.getElementById('stickers-stats').innerHTML = `
                 <div class="chart-container">
-                    <h3 style="color: #667eea; margin-bottom: 15px;">إحصائيات الملصقات</h3>
+                    <h3 style="color: #1a472a; margin-bottom: 15px;">إحصائيات الملصقات</h3>
                     <table class="stats-table">
                         <tr>
                             <th>المؤشر</th>
@@ -691,7 +691,7 @@
             if (statsData.top_residents && statsData.top_residents.length > 0) {
                 document.getElementById('residents-table').innerHTML = `
                     <div class="chart-container">
-                        <h3 style="color: #667eea; margin-bottom: 15px;">أكثر 10 سكان من حيث عدد المركبات</h3>
+                        <h3 style="color: #1a472a; margin-bottom: 15px;">أكثر 10 سكان من حيث عدد المركبات</h3>
                         <table class="stats-table">
                             <tr>
                                 <th>#</th>
