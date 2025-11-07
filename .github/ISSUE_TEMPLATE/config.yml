@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "📚 التوثيق - Documentation"
+    url: https://github.com/Ali5829511/517/blob/main/README.md
+    about: "راجع التوثيق للحصول على معلومات حول النظام - Check the documentation for system information"
+  - name: "💬 الأسئلة والدعم - Questions & Support"
+    url: https://github.com/Ali5829511/517/discussions
+    about: "اطرح أسئلتك في قسم المناقشات - Ask questions in Discussions"
+  - name: "🔧 الإعداد السريع - Quick Start"
+    url: https://github.com/Ali5829511/517/blob/main/QUICK_START.md
+    about: "دليل الإعداد السريع للنظام - Quick start guide for the system"

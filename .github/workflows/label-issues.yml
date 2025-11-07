@@ -1,0 +1,95 @@
+name: Auto Label Issues
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    
+    steps:
+      - name: Label based on issue title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const title = issue.title.toLowerCase();
+            const body = issue.body ? issue.body.toLowerCase() : '';
+            const labels = [];
+            
+            // Auto-label based on keywords in title and body
+            // تسمية تلقائية بناءً على الكلمات المفتاحية
+            
+            // Bug related / متعلق بالأخطاء
+            if (title.includes('bug') || title.includes('خطأ') || title.includes('مشكلة') ||
+                title.includes('error') || title.includes('issue') || title.includes('fix')) {
+              labels.push('bug');
+            }
+            
+            // Enhancement/Feature related / متعلق بالميزات
+            if (title.includes('feature') || title.includes('enhancement') || title.includes('ميزة') ||
+                title.includes('تحسين') || title.includes('إضافة') || title.includes('add')) {
+              labels.push('enhancement');
+            }
+            
+            // Documentation related / متعلق بالتوثيق
+            if (title.includes('doc') || title.includes('documentation') || title.includes('توثيق') ||
+                title.includes('readme') || title.includes('guide')) {
+              labels.push('documentation');
+            }
+            
+            // Question related / متعلق بالأسئلة
+            if (title.includes('question') || title.includes('سؤال') || title.includes('how to') ||
+                title.includes('كيف') || title.includes('help')) {
+              labels.push('question');
+            }
+            
+            // Component labels / تسميات المكونات
+            if (body.includes('database') || body.includes('قاعدة البيانات') || body.includes('db') ||
+                body.includes('sql')) {
+              labels.push('component: database');
+            }
+            
+            if (body.includes('ui') || body.includes('واجهة') || body.includes('interface') ||
+                body.includes('html') || body.includes('css')) {
+              labels.push('component: ui');
+            }
+            
+            if (body.includes('api') || body.includes('endpoint') || body.includes('route') ||
+                body.includes('واجهة برمجية')) {
+              labels.push('component: api');
+            }
+            
+            if (body.includes('ai') || body.includes('openai') || body.includes('ذكاء اصطناعي') ||
+                body.includes('ocr') || body.includes('vision')) {
+              labels.push('component: ai');
+            }
+            
+            if (body.includes('security') || body.includes('أمان') || body.includes('vulnerability') ||
+                body.includes('ثغرة')) {
+              labels.push('component: security');
+            }
+            
+            // Priority labels based on keywords / تسميات الأولوية
+            if (title.includes('critical') || title.includes('urgent') || title.includes('حرج') ||
+                title.includes('عاجل')) {
+              labels.push('priority: critical');
+            } else if (title.includes('important') || title.includes('مهم')) {
+              labels.push('priority: high');
+            }
+            
+            // Add labels if any were identified
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: labels
+              });
+              
+              console.log(`Added labels: ${labels.join(', ')}`);
+            }

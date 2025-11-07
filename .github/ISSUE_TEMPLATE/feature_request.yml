@@ -1,0 +1,93 @@
+name: "✨ طلب ميزة جديدة - Feature Request"
+description: "اقتراح ميزة جديدة للنظام - Suggest a new feature for the system"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        شكراً لك على اقتراح ميزة جديدة!
+        Thank you for suggesting a new feature!
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "المشكلة - Problem Statement"
+      description: "هل هذا الطلب مرتبط بمشكلة؟ صف المشكلة - Is your feature request related to a problem?"
+      placeholder: "أشعر بالإحباط عندما..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: "الحل المقترح - Proposed Solution"
+      description: "وصف واضح ومختصر للحل الذي تريده - A clear description of what you want to happen"
+      placeholder: "أقترح إضافة ميزة لـ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "البدائل - Alternatives Considered"
+      description: "هل فكرت في حلول بديلة؟ - Have you considered any alternative solutions?"
+      placeholder: "فكرت في استخدام..."
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "المكون - Component"
+      description: "أي جزء من النظام سيتأثر؟ - Which part of the system will be affected?"
+      options:
+        - "واجهة المستخدم - UI"
+        - "قاعدة البيانات - Database"
+        - "الواجهة البرمجية - API"
+        - "الذكاء الاصطناعي - AI"
+        - "التقارير - Reports"
+        - "أخرى - Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "الأولوية - Priority"
+      description: "ما مدى أهمية هذه الميزة؟ - How important is this feature?"
+      options:
+        - "منخفضة - Low"
+        - "متوسطة - Medium"
+        - "عالية - High"
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: "الفوائد - Benefits"
+      description: "كيف ستفيد هذه الميزة المستخدمين؟ - How will this feature benefit users?"
+      placeholder: "ستساعد هذه الميزة في..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: "نماذج أولية - Mockups/Wireframes"
+      description: "إضافة نماذج أو صور توضيحية إن أمكن - Add mockups or wireframes if available"
+      placeholder: "اسحب وأفلت الصور هنا"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "معلومات إضافية - Additional Context"
+      description: "أي معلومات إضافية عن طلب الميزة - Any additional context about the feature request"
+      placeholder: "أي تفاصيل أخرى قد تكون مفيدة"
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: "المساهمة - Contribution"
+      description: "هل أنت مستعد للمساهمة؟ - Are you willing to contribute?"
+      options:
+        - label: "أنا مستعد للعمل على تنفيذ هذه الميزة - I'm willing to work on implementing this feature"
