@@ -10,14 +10,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --imam-blue: #5A8CA3;
-            --imam-light-blue: #7BA7BC;
+            --imam-blue: #1a472a;
+            --imam-light-blue: #2d6a3e;
             --imam-dark-blue: #4A7A8F;
         }
 
         body {
             font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(135deg, #D4E9F2 0%, #A8D5E2 100%);
+            background: linear-gradient(135deg, #e8f5ec 0%, #c8e6d0 100%);
             direction: rtl;
         }
 
@@ -117,12 +117,12 @@
         }
 
         .btn-export {
-            background: #4CAF50;
+            background: #2d6a3e;
             color: white;
         }
 
         .btn-print {
-            background: #2196F3;
+            background: #1a472a;
             color: white;
         }
 
@@ -491,7 +491,7 @@
                         labels: ['وحدات مشغولة', 'وحدات متاحة'],
                         datasets: [{
                             data: [stats.occupiedUnits || 0, stats.vacantUnits || 0],
-                            backgroundColor: ['#2D5F3F', '#e8f5e9']
+                            backgroundColor: ['#1a472a', '#e8f5e9']
                         }]
                     },
                     options: {
@@ -525,7 +525,7 @@
                                 stats.activeStickers || 0,
                                 stats.cancelledStickers || 0
                             ],
-                            backgroundColor: ['#f44336', '#4CAF50', '#FFC107']
+                            backgroundColor: ['#f44336', '#2d6a3e', '#FFC107']
                         }]
                     },
                     options: {

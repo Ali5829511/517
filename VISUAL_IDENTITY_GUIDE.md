@@ -180,15 +180,17 @@ background: linear-gradient(135deg, #C9A961 0%, #d4b56e 100%);
 
 ## ملف CSS الموحد | Unified CSS File
 
-تم إنشاء ملف `unified_theme.css` يحتوي على جميع أنماط الهوية البصرية الموحدة:
+تم إنشاء ملف `unified_theme.css` يحتوي على جميع أنماط الهوية البصرية الموحدة كمرجع للمطورين:
 
 ```
 /static/unified_theme.css
 ```
 
-يمكن استخدامه في صفحات جديدة بإضافة:
+**ملاحظة:** الصفحات الحالية تستخدم أنماطًا مضمنة (inline styles) تم تحديثها بنفس الألوان والتصميم. يمكن استخدام ملف CSS الموحد في صفحات جديدة بإضافة:
 
 ```html
+<link rel="stylesheet" href="/static/unified_theme.css">
+<!-- or for relative path -->
 <link rel="stylesheet" href="unified_theme.css">
 ```
 
