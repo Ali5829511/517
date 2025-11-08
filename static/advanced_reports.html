@@ -10,8 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --imam-blue: #1a472a;
-            --imam-light-blue: #2d6a3e;
+            --imam-blue: #1e3a5f;
+            --imam-light-blue: #2c5282;
             --imam-dark-blue: #4A7A8F;
         }
 
@@ -117,12 +117,12 @@
         }
 
         .btn-export {
-            background: #2d6a3e;
+            background: #2c5282;
             color: white;
         }
 
         .btn-print {
-            background: #1a472a;
+            background: #1e3a5f;
             color: white;
         }
 
@@ -491,7 +491,7 @@
                         labels: ['وحدات مشغولة', 'وحدات متاحة'],
                         datasets: [{
                             data: [stats.occupiedUnits || 0, stats.vacantUnits || 0],
-                            backgroundColor: ['#1a472a', '#e8f5e9']
+                            backgroundColor: ['#1e3a5f', '#e8f5e9']
                         }]
                     },
                     options: {
@@ -525,7 +525,7 @@
                                 stats.activeStickers || 0,
                                 stats.cancelledStickers || 0
                             ],
-                            backgroundColor: ['#f44336', '#2d6a3e', '#FFC107']
+                            backgroundColor: ['#f44336', '#2c5282', '#FFC107']
                         }]
                     },
                     options: {

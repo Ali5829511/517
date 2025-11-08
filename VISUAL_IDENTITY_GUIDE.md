@@ -14,8 +14,8 @@ The visual identity of the Faculty Housing Management System for Imam Muhammad b
 ### الألوان الأساسية | Primary Colors
 
 ```css
---imam-dark-green: #1a472a;   /* الأخضر الداكن */
---imam-green: #2d6a3e;         /* الأخضر المتوسط */
+--imam-dark-green: #1e3a5f;   /* الأزرق الداكن */
+--imam-green: #2c5282;         /* الأزرق المتوسط */
 --imam-gold: #C9A961;          /* الذهبي */
 ```
 
@@ -60,7 +60,7 @@ font-family: 'Tajawal', Arial, sans-serif;
 ### التدرج الأساسي | Primary Gradient
 
 ```css
-background: linear-gradient(135deg, #1a472a 0%, #2d6a3e 100%);
+background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
 ```
 
 يُستخدم في:
@@ -88,7 +88,7 @@ background: linear-gradient(135deg, #C9A961 0%, #d4b56e 100%);
 #### الزر الأساسي | Primary Button
 ```css
 .btn-primary {
-    background: linear-gradient(135deg, #2d6a3e 0%, #1a472a 100%);
+    background: linear-gradient(135deg, #2c5282 0%, #1e3a5f 100%);
     color: white;
     padding: 12px 25px;
     border-radius: 12px;
@@ -99,7 +99,7 @@ background: linear-gradient(135deg, #C9A961 0%, #d4b56e 100%);
 ```css
 .btn-secondary {
     background: #C9A961;
-    color: #1a472a;
+    color: #1e3a5f;
     padding: 12px 25px;
     border-radius: 12px;
 }
@@ -122,7 +122,7 @@ background: linear-gradient(135deg, #C9A961 0%, #d4b56e 100%);
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, #2d6a3e 0%, #1a472a 100%);
+    background: linear-gradient(90deg, #2c5282 0%, #1e3a5f 100%);
 }
 ```
 
@@ -130,7 +130,7 @@ background: linear-gradient(135deg, #C9A961 0%, #d4b56e 100%);
 
 ```css
 .header {
-    background: linear-gradient(135deg, #1a472a 0%, #2d6a3e 100%);
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
     color: white;
     padding: 30px;
     border-radius: 20px;
@@ -230,7 +230,7 @@ background: linear-gradient(135deg, #C9A961 0%, #d4b56e 100%);
 ## إرشادات الاستخدام | Usage Guidelines
 
 ### 1. الألوان | Colors
-- استخدم الأخضر الداكن (#1a472a) والأخضر المتوسط (#2d6a3e) للعناصر الرئيسية
+- استخدم الأزرق الداكن (#1e3a5f) والأزرق المتوسط (#2c5282) للعناصر الرئيسية
 - استخدم الذهبي (#C9A961) للعناصر المميزة والتأكيدات
 - حافظ على التباين الجيد بين النص والخلفية
 
