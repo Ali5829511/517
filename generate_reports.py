@@ -118,7 +118,8 @@ def create_excel_report(report_type="all"):
     conn.close()
 
     # حفظ الملف
-    filename = f'/home/ubuntu/housing-system-deployment/static/reports/تقرير_شامل_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f'/home/ubuntu/housing-system-deployment/static/reports/تقرير_شامل_{timestamp}.xlsx'
     wb.save(filename)
     return filename
 
