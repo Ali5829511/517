@@ -772,3 +772,385 @@ def get_comprehensive_statistics():
         "top_residents": top_residents,
         "top_buildings": top_buildings,
     }
+
+
+# ============================================
+# وظائف إدارة السيارات - Vehicles Management
+# ============================================
+
+def get_all_vehicles():
+    """الحصول على جميع السيارات"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT
+            v.id,
+            v.plate_number,
+            v.plate_arabic,
+            v.plate_english,
+            v.vehicle_make,
+            v.vehicle_model,
+            v.vehicle_year,
+            v.vehicle_type,
+            v.vehicle_color,
+            v.registration_date,
+            v.last_seen,
+            v.status,
+            v.notes,
+            r.name as owner_name,
+            r.national_id,
+            u.unit_number,
+            b.building_number
+        FROM vehicles v
+        LEFT JOIN residents r ON v.resident_id = r.id
+        LEFT JOIN units u ON r.unit_id = u.id
+        LEFT JOIN buildings b ON u.building_id = b.id
+        ORDER BY v.registration_date DESC
+    """
+    )
+    vehicles = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return vehicles
+
+
+def add_vehicle(resident_id, plate_number, vehicle_make=None, vehicle_model=None,
+                vehicle_year=None, vehicle_type=None, vehicle_color=None,
+                plate_arabic=None, plate_english=None, notes=None):
+    """إضافة سيارة جديدة"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute(
+            """
+            INSERT INTO vehicles (
+                resident_id, plate_number, plate_arabic, plate_english,
+                vehicle_make, vehicle_model, vehicle_year,
+                vehicle_type, vehicle_color, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (resident_id, plate_number, plate_arabic, plate_english,
+             vehicle_make, vehicle_model, vehicle_year,
+             vehicle_type, vehicle_color, notes)
+        )
+        conn.commit()
+        vehicle_id = cursor.lastrowid
+        conn.close()
+        return {"success": True, "id": vehicle_id}
+    except sqlite3.IntegrityError as e:
+        conn.close()
+        return {"success": False, "error": str(e)}
+
+
+def update_vehicle(vehicle_id, **kwargs):
+    """تحديث معلومات سيارة"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # بناء استعلام التحديث
+    fields = []
+    values = []
+    for key, value in kwargs.items():
+        fields.append(f"{key} = ?")
+        values.append(value)
+    
+    if not fields:
+        conn.close()
+        return {"success": False, "error": "لا توجد حقول للتحديث"}
+    
+    values.append(vehicle_id)
+    query = f"UPDATE vehicles SET {', '.join(fields)} WHERE id = ?"
+    
+    try:
+        cursor.execute(query, values)
+        conn.commit()
+        conn.close()
+        return {"success": True}
+    except Exception as e:
+        conn.close()
+        return {"success": False, "error": str(e)}
+
+
+def search_vehicle_by_plate(plate_number):
+    """البحث عن سيارة برقم اللوحة"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT
+            v.*,
+            r.name as owner_name,
+            r.national_id,
+            r.phone,
+            u.unit_number,
+            b.building_number
+        FROM vehicles v
+        LEFT JOIN residents r ON v.resident_id = r.id
+        LEFT JOIN units u ON r.unit_id = u.id
+        LEFT JOIN buildings b ON u.building_id = b.id
+        WHERE v.plate_number LIKE ? OR v.plate_arabic LIKE ? OR v.plate_english LIKE ?
+    """,
+        (f"%{plate_number}%", f"%{plate_number}%", f"%{plate_number}%")
+    )
+    vehicle = cursor.fetchone()
+    conn.close()
+    
+    if vehicle:
+        return {"found": True, "vehicle": dict(vehicle)}
+    return {"found": False}
+
+
+# ============================================
+# وظائف إدارة المخالفات - Violations Management
+# ============================================
+
+def get_all_violations():
+    """الحصول على جميع المخالفات"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT
+            tv.*,
+            v.vehicle_make,
+            v.vehicle_model,
+            r.name as owner_name,
+            r.phone
+        FROM traffic_violations tv
+        LEFT JOIN vehicles v ON tv.vehicle_id = v.id
+        LEFT JOIN residents r ON v.resident_id = r.id
+        ORDER BY tv.violation_date DESC
+    """
+    )
+    violations = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return violations
+
+
+def add_violation(vehicle_id, plate_number, violation_type, violation_description=None,
+                  violation_location=None, fine_amount=0, image_path=None,
+                  confidence_score=None, notes=None):
+    """إضافة مخالفة مرورية"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        """
+        INSERT INTO traffic_violations (
+            vehicle_id, plate_number, violation_type, violation_description,
+            violation_location, fine_amount, image_path, confidence_score, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """,
+        (vehicle_id, plate_number, violation_type, violation_description,
+         violation_location, fine_amount, image_path, confidence_score, notes)
+    )
+    conn.commit()
+    violation_id = cursor.lastrowid
+    conn.close()
+    return {"success": True, "id": violation_id}
+
+
+def update_violation_status(violation_id, status, payment_date=None):
+    """تحديث حالة المخالفة"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        """
+        UPDATE traffic_violations
+        SET status = ?, payment_date = ?
+        WHERE id = ?
+    """,
+        (status, payment_date, violation_id)
+    )
+    conn.commit()
+    conn.close()
+    return {"success": True}
+
+
+def get_violations_by_plate(plate_number):
+    """الحصول على مخالفات سيارة معينة"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM traffic_violations
+        WHERE plate_number LIKE ?
+        ORDER BY violation_date DESC
+    """,
+        (f"%{plate_number}%",)
+    )
+    violations = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return violations
+
+
+# ============================================
+# وظائف التكامل مع تكامل - Takamul Integration
+# ============================================
+
+def log_takamul_sync(sync_type, records_synced, status="نجح", error_message=None, data_snapshot=None):
+    """تسجيل عملية مزامنة مع نظام تكامل"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        """
+        INSERT INTO takamul_integration (
+            sync_type, records_synced, status, error_message, data_snapshot
+        ) VALUES (?, ?, ?, ?, ?)
+    """,
+        (sync_type, records_synced, status, error_message, data_snapshot)
+    )
+    conn.commit()
+    sync_id = cursor.lastrowid
+    conn.close()
+    return {"success": True, "id": sync_id}
+
+
+def get_takamul_sync_history(limit=50):
+    """الحصول على سجل المزامنة مع تكامل"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM takamul_integration
+        ORDER BY sync_date DESC
+        LIMIT ?
+    """,
+        (limit,)
+    )
+    history = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return history
+
+
+# ============================================
+# وظائف Plate Recognizer
+# ============================================
+
+def log_plate_recognizer_analysis(image_path, plate_number=None, vehicle_type=None,
+                                   vehicle_color=None, confidence=None, api_response=None,
+                                   webhook_data=None, status="معالج", notes=None):
+    """تسجيل تحليل صورة من Plate Recognizer"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        """
+        INSERT INTO plate_recognizer_log (
+            image_path, plate_number, vehicle_type, vehicle_color,
+            confidence, api_response, webhook_data, status, notes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """,
+        (image_path, plate_number, vehicle_type, vehicle_color,
+         confidence, api_response, webhook_data, status, notes)
+    )
+    conn.commit()
+    log_id = cursor.lastrowid
+    conn.close()
+    return {"success": True, "id": log_id}
+
+
+def get_plate_recognizer_logs(limit=100):
+    """الحصول على سجل تحليلات Plate Recognizer"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT * FROM plate_recognizer_log
+        ORDER BY processing_date DESC
+        LIMIT ?
+    """,
+        (limit,)
+    )
+    logs = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return logs
+
+
+def get_vehicles_statistics():
+    """الحصول على إحصائيات السيارات"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # إجمالي السيارات
+    cursor.execute("SELECT COUNT(*) as total FROM vehicles")
+    total = cursor.fetchone()["total"]
+    
+    # السيارات النشطة
+    cursor.execute("SELECT COUNT(*) as active FROM vehicles WHERE status = 'نشط'")
+    active = cursor.fetchone()["active"]
+    
+    # السيارات حسب النوع
+    cursor.execute(
+        """
+        SELECT vehicle_type, COUNT(*) as count
+        FROM vehicles
+        GROUP BY vehicle_type
+        ORDER BY count DESC
+    """
+    )
+    by_type = [dict(row) for row in cursor.fetchall()]
+    
+    # السيارات حسب اللون
+    cursor.execute(
+        """
+        SELECT vehicle_color, COUNT(*) as count
+        FROM vehicles
+        WHERE vehicle_color IS NOT NULL
+        GROUP BY vehicle_color
+        ORDER BY count DESC
+        LIMIT 10
+    """
+    )
+    by_color = [dict(row) for row in cursor.fetchall()]
+    
+    conn.close()
+    
+    return {
+        "total": total,
+        "active": active,
+        "by_type": by_type,
+        "by_color": by_color
+    }
+
+
+def get_violations_statistics():
+    """الحصول على إحصائيات المخالفات"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # إجمالي المخالفات
+    cursor.execute("SELECT COUNT(*) as total FROM traffic_violations")
+    total = cursor.fetchone()["total"]
+    
+    # المخالفات المفتوحة
+    cursor.execute("SELECT COUNT(*) as open FROM traffic_violations WHERE status = 'مفتوح'")
+    open_violations = cursor.fetchone()["open"]
+    
+    # إجمالي الغرامات
+    cursor.execute("SELECT SUM(fine_amount) as total_fines FROM traffic_violations")
+    total_fines = cursor.fetchone()["total_fines"] or 0
+    
+    # المخالفات حسب النوع
+    cursor.execute(
+        """
+        SELECT violation_type, COUNT(*) as count
+        FROM traffic_violations
+        GROUP BY violation_type
+        ORDER BY count DESC
+    """
+    )
+    by_type = [dict(row) for row in cursor.fetchall()]
+    
+    conn.close()
+    
+    return {
+        "total": total,
+        "open": open_violations,
+        "closed": total - open_violations,
+        "total_fines": total_fines,
+        "by_type": by_type
+    }

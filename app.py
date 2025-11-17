@@ -28,6 +28,21 @@ from database_api import (
     get_all_buildings,
     get_db_connection,
     get_comprehensive_statistics,
+    # وظائف السيارات والمخالفات الجديدة
+    get_all_vehicles,
+    add_vehicle,
+    update_vehicle,
+    search_vehicle_by_plate,
+    get_all_violations,
+    add_violation,
+    update_violation_status,
+    get_violations_by_plate,
+    log_takamul_sync,
+    get_takamul_sync_history,
+    log_plate_recognizer_analysis,
+    get_plate_recognizer_logs,
+    get_vehicles_statistics,
+    get_violations_statistics,
 )
 
 # Load environment variables from .env file
@@ -1395,6 +1410,341 @@ def get_resident_card():
     except Exception as e:
         logger.error(f"خطأ في get_resident_card: {str(e)}")
         return jsonify({"found": False, "error": "حدث خطأ أثناء جلب بيانات الساكن"}), 500
+
+
+# ============================================
+# API endpoints للسيارات والمخالفات
+# Vehicles and Violations API endpoints
+# ============================================
+
+@app.route("/api/vehicles", methods=["GET"])
+@login_required
+def api_get_vehicles():
+    """الحصول على جميع السيارات"""
+    try:
+        vehicles = get_all_vehicles()
+        return jsonify({"success": True, "vehicles": vehicles, "count": len(vehicles)})
+    except Exception as e:
+        logger.error(f"خطأ في api_get_vehicles: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/vehicles", methods=["POST"])
+@login_required
+def api_add_vehicle():
+    """إضافة سيارة جديدة"""
+    try:
+        data = request.json
+        result = add_vehicle(
+            resident_id=data.get("resident_id"),
+            plate_number=data.get("plate_number"),
+            vehicle_make=data.get("vehicle_make"),
+            vehicle_model=data.get("vehicle_model"),
+            vehicle_year=data.get("vehicle_year"),
+            vehicle_type=data.get("vehicle_type"),
+            vehicle_color=data.get("vehicle_color"),
+            plate_arabic=data.get("plate_arabic"),
+            plate_english=data.get("plate_english"),
+            notes=data.get("notes")
+        )
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"خطأ في api_add_vehicle: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/vehicles/<int:vehicle_id>", methods=["PUT"])
+@login_required
+def api_update_vehicle(vehicle_id):
+    """تحديث معلومات سيارة"""
+    try:
+        data = request.json
+        result = update_vehicle(vehicle_id, **data)
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"خطأ في api_update_vehicle: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/vehicles/search", methods=["POST"])
+@login_required
+def api_search_vehicle():
+    """البحث عن سيارة برقم اللوحة"""
+    try:
+        data = request.json
+        plate_number = data.get("plate_number", "")
+        result = search_vehicle_by_plate(plate_number)
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"خطأ في api_search_vehicle: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/vehicles/statistics", methods=["GET"])
+@login_required
+def api_vehicles_statistics():
+    """الحصول على إحصائيات السيارات"""
+    try:
+        stats = get_vehicles_statistics()
+        return jsonify({"success": True, "statistics": stats})
+    except Exception as e:
+        logger.error(f"خطأ في api_vehicles_statistics: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/violations", methods=["GET"])
+@login_required
+def api_get_violations():
+    """الحصول على جميع المخالفات"""
+    try:
+        violations = get_all_violations()
+        return jsonify({"success": True, "violations": violations, "count": len(violations)})
+    except Exception as e:
+        logger.error(f"خطأ في api_get_violations: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/violations", methods=["POST"])
+@login_required
+def api_add_violation():
+    """إضافة مخالفة جديدة"""
+    try:
+        data = request.json
+        result = add_violation(
+            vehicle_id=data.get("vehicle_id"),
+            plate_number=data.get("plate_number"),
+            violation_type=data.get("violation_type"),
+            violation_description=data.get("violation_description"),
+            violation_location=data.get("violation_location"),
+            fine_amount=data.get("fine_amount", 0),
+            image_path=data.get("image_path"),
+            confidence_score=data.get("confidence_score"),
+            notes=data.get("notes")
+        )
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"خطأ في api_add_violation: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/violations/<int:violation_id>", methods=["PUT"])
+@login_required
+def api_update_violation(violation_id):
+    """تحديث حالة مخالفة"""
+    try:
+        data = request.json
+        result = update_violation_status(
+            violation_id=violation_id,
+            status=data.get("status"),
+            payment_date=data.get("payment_date")
+        )
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"خطأ في api_update_violation: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/violations/by-plate", methods=["POST"])
+@login_required
+def api_violations_by_plate():
+    """الحصول على مخالفات سيارة معينة"""
+    try:
+        data = request.json
+        plate_number = data.get("plate_number", "")
+        violations = get_violations_by_plate(plate_number)
+        return jsonify({"success": True, "violations": violations, "count": len(violations)})
+    except Exception as e:
+        logger.error(f"خطأ في api_violations_by_plate: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/violations/statistics", methods=["GET"])
+@login_required
+def api_violations_statistics():
+    """الحصول على إحصائيات المخالفات"""
+    try:
+        stats = get_violations_statistics()
+        return jsonify({"success": True, "statistics": stats})
+    except Exception as e:
+        logger.error(f"خطأ في api_violations_statistics: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ============================================
+# Plate Recognizer Integration
+# ============================================
+
+@app.route("/api/plate-recognizer/analyze", methods=["POST"])
+@login_required
+def api_plate_recognizer_analyze():
+    """تحليل صورة باستخدام Plate Recognizer API"""
+    try:
+        from plate_recognizer_client import PlateRecognizerClient
+        
+        # التحقق من وجود صورة
+        if 'image' not in request.files:
+            return jsonify({"success": False, "error": "لم يتم إرفاق صورة"}), 400
+        
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({"success": False, "error": "لم يتم تحديد ملف"}), 400
+        
+        # حفظ الصورة مؤقتاً
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(filepath)
+        
+        # تحليل الصورة
+        client = PlateRecognizerClient()
+        result = client.recognize_plate(
+            image_path=filepath,
+            regions=['sa']  # السعودية
+        )
+        
+        # تسجيل النتيجة في قاعدة البيانات
+        if result.get("success"):
+            log_plate_recognizer_analysis(
+                image_path=filepath,
+                plate_number=result.get("plate_number"),
+                vehicle_type=result.get("vehicle", {}).get("type"),
+                vehicle_color=result.get("vehicle", {}).get("color"),
+                confidence=result.get("confidence"),
+                api_response=json.dumps(result.get("raw_response", {})),
+                status="نجح"
+            )
+        else:
+            log_plate_recognizer_analysis(
+                image_path=filepath,
+                status="فشل",
+                notes=result.get("error")
+            )
+        
+        return jsonify(result)
+    
+    except Exception as e:
+        logger.error(f"خطأ في api_plate_recognizer_analyze: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/webhooks/plate-recognizer", methods=["POST"])
+def webhook_plate_recognizer():
+    """
+    Webhook لاستقبال البيانات من Plate Recognizer
+    Webhook endpoint for Plate Recognizer
+    """
+    try:
+        data = request.json
+        logger.info(f"Received Plate Recognizer webhook: {data}")
+        
+        # استخراج البيانات
+        results = data.get('results', [])
+        
+        if not results:
+            return jsonify({"success": False, "error": "No results in webhook data"}), 400
+        
+        # معالجة كل نتيجة
+        for result in results:
+            plate_number = result.get('plate', '')
+            confidence = result.get('score', 0) * 100
+            
+            # تسجيل في قاعدة البيانات
+            log_plate_recognizer_analysis(
+                image_path=data.get('image_url', ''),
+                plate_number=plate_number,
+                vehicle_type=result.get('vehicle', {}).get('type'),
+                vehicle_color=result.get('vehicle', {}).get('color', [{}])[0].get('color', ''),
+                confidence=confidence,
+                webhook_data=json.dumps(data),
+                status="معالج من webhook"
+            )
+            
+            # البحث عن السيارة في النظام
+            vehicle_result = search_vehicle_by_plate(plate_number)
+            
+            # إذا لم توجد السيارة، يمكن إنشاء تنبيه أو مخالفة
+            if not vehicle_result.get("found"):
+                logger.warning(f"Unknown vehicle detected: {plate_number}")
+                # يمكن إضافة منطق لإنشاء مخالفة تلقائياً
+        
+        return jsonify({"success": True, "processed": len(results)})
+    
+    except Exception as e:
+        logger.error(f"خطأ في webhook_plate_recognizer: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/plate-recognizer/logs", methods=["GET"])
+@login_required
+def api_plate_recognizer_logs():
+    """الحصول على سجل تحليلات Plate Recognizer"""
+    try:
+        limit = request.args.get('limit', 100, type=int)
+        logs = get_plate_recognizer_logs(limit=limit)
+        return jsonify({"success": True, "logs": logs, "count": len(logs)})
+    except Exception as e:
+        logger.error(f"خطأ في api_plate_recognizer_logs: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+# ============================================
+# Takamul Integration
+# ============================================
+
+@app.route("/api/takamul/sync", methods=["POST"])
+@login_required
+def api_takamul_sync():
+    """مزامنة البيانات مع نظام تكامل"""
+    try:
+        from takamul_client import TakamulClient
+        
+        data = request.json
+        sync_type = data.get("sync_type", "vehicles")
+        
+        client = TakamulClient()
+        
+        if sync_type == "vehicles":
+            result = client.sync_vehicles()
+        elif sync_type == "residents":
+            result = client.fetch_residents_data()
+        else:
+            return jsonify({"success": False, "error": "نوع مزامنة غير صحيح"}), 400
+        
+        return jsonify(result)
+    
+    except Exception as e:
+        logger.error(f"خطأ في api_takamul_sync: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/takamul/sync-history", methods=["GET"])
+@login_required
+def api_takamul_sync_history():
+    """الحصول على سجل المزامنة مع تكامل"""
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        history = get_takamul_sync_history(limit=limit)
+        return jsonify({"success": True, "history": history, "count": len(history)})
+    except Exception as e:
+        logger.error(f"خطأ في api_takamul_sync_history: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/takamul/send-violation", methods=["POST"])
+@login_required
+def api_takamul_send_violation():
+    """إرسال مخالفة إلى نظام تكامل"""
+    try:
+        from takamul_client import TakamulClient
+        
+        data = request.json
+        client = TakamulClient()
+        result = client.send_violation_report(data)
+        
+        return jsonify(result)
+    
+    except Exception as e:
+        logger.error(f"خطأ في api_takamul_send_violation: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 if __name__ == "__main__":
