@@ -35,6 +35,7 @@ from database_api import (
 load_dotenv()
 
 # Database configuration
+# تكوين قاعدة البيانات - يمكن تعيين DATABASE_PATH في المتغيرات البيئية
 DATABASE = os.getenv('DATABASE_PATH', 'housing_database.db')
 
 # Configure logging
