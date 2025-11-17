@@ -17,8 +17,9 @@
 
 ### نظرة عامة على المشروع
 - **[README.md](README.md)** - الصفحة الرئيسية للمشروع
+- **[COMPREHENSIVE_FINAL_SUMMARY.md](COMPREHENSIVE_FINAL_SUMMARY.md)** ⭐⭐⭐ - **الملخص النهائي الشامل** (جديد 17 نوفمبر 2025)
 - **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - حالة المشروع والميزات
-- **[COMPLETION_SUMMARY.md](COMPLETION_SUMMARY.md)** ⭐ - ملخص شامل للإكمال (جديد)
+- **[COMPLETION_SUMMARY.md](COMPLETION_SUMMARY.md)** ⭐ - ملخص شامل للإكمال
 
 ### التطوير
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - دليل التطوير الكامل
@@ -77,9 +78,11 @@
 ## 📋 التقارير والملخصات - Reports & Summaries
 
 ### تقارير الإكمال
+- **[COMPREHENSIVE_FINAL_SUMMARY.md](COMPREHENSIVE_FINAL_SUMMARY.md)** ⭐⭐⭐ - **الملخص النهائي الشامل** (أحدث)
 - **[FINAL_COMPLETION_REPORT.md](FINAL_COMPLETION_REPORT.md)** - التقرير النهائي للإكمال
 - **[FINAL_SUMMARY.md](FINAL_SUMMARY.md)** - الملخص النهائي
 - **[FINAL_VERIFICATION.md](FINAL_VERIFICATION.md)** - التحقق النهائي
+- **[TASK_COMPLETION_SUMMARY_AR.md](TASK_COMPLETION_SUMMARY_AR.md)** - ملخص إكمال المهمة
 
 ### تقارير أخرى
 - **[ALL_MERGES_AND_COMMITS.md](ALL_MERGES_AND_COMMITS.md)** - سجل الدمج والالتزامات
