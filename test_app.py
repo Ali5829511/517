@@ -1,7 +1,7 @@
 """
 Basic tests for the Flask application
 """
-import pytest
+
 from app import app
 
 
@@ -13,6 +13,7 @@ def test_app_exists():
 def test_app_is_flask_instance():
     """Test that app is a Flask instance"""
     from flask import Flask
+
     assert isinstance(app, Flask)
 
 
