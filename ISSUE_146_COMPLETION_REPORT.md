@@ -311,6 +311,11 @@ Deployment:      ████████████ 100%
 - Manus AI
 - جامعة الإمام محمد بن سعود الإسلامية
 
+**شارك في تأليف:**
+Co-authored-by: Ali5829511 <132597948+Ali5829511@users.noreply.github.com>
+
+HWGP - Housing Management System Project
+
 **الأدوات المستخدمة:**
 - Python 3.12.3
 - Flask 3.0.0

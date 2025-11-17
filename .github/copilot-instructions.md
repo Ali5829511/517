@@ -430,3 +430,8 @@ When requesting features, include:
 ---
 
 **Built with assistance from Manus AI for Imam Muhammad bin Saud Islamic University**
+
+**شارك في تأليف:**
+Co-authored-by: Ali5829511 <132597948+Ali5829511@users.noreply.github.com>
+
+HWGP - Housing Management System Project

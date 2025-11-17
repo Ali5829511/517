@@ -78,3 +78,8 @@ python app.py
 4. سيتم النشر تلقائياً ✅
 
 تم التطوير بواسطة Manus AI
+
+**شارك في تأليف:**
+Co-authored-by: Ali5829511 <132597948+Ali5829511@users.noreply.github.com>
+
+HWGP - Housing Management System Project
