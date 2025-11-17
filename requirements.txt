@@ -8,6 +8,7 @@ Flask-Login==0.6.3
 Flask-WTF==1.2.1
 bcrypt==4.1.2
 python-dotenv==1.0.1
+requests==2.31.0
 
 openai>=1.0.0
 pytesseract==0.3.10
