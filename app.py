@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory, session, redirect
 import os
+import sqlite3
 import logging
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
@@ -32,6 +33,9 @@ from database_api import (
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Database configuration
+DATABASE = os.getenv('DATABASE_PATH', 'housing_database.db')
 
 # Configure logging
 logging.basicConfig(
