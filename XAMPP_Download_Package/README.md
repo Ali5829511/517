@@ -319,3 +319,8 @@ All files are ready to use. Follow the steps above to get started.
 © 2025 جامعة الإمام محمد بن سعود الإسلامية
 **تم التطوير بواسطة GitHub Copilot**
 Developed with GitHub Copilot
+
+**شارك في تأليف:**
+Co-authored-by: Ali5829511 <132597948+Ali5829511@users.noreply.github.com>
+
+HWGP - Housing Management System Project
