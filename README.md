@@ -65,13 +65,31 @@ python app.py
 
 ### 📖 أدلة النشر | Deployment Guides
 
-#### 🆕 دليل شامل جديد | New Comprehensive Guide
+#### 🆕 أدلة جديدة وشاملة | New Comprehensive Guides
 - ⭐ **[CLOUD_DEPLOYMENT_GUIDE.md](CLOUD_DEPLOYMENT_GUIDE.md)** - **دليل النشر السحابي الشامل لـ 8 منصات** 🆕
   - خطوات مفصلة لكل منصة
   - أمثلة أوامر قابلة للتنفيذ
   - استكشاف الأخطاء وحلولها
-  - إرشادات الأمان
-  - تحسينات الأداء
+  - إرشادات الأمان والأداء
+- 🚀 **[CLOUD_DEPLOYMENT_QUICKSTART.md](CLOUD_DEPLOYMENT_QUICKSTART.md)** - **دليل البدء السريع** 🆕
+  - أزرار النشر بنقرة واحدة
+  - مقارنة المنصات
+  - نصائح النجاح
+- 🇸🇦 **[DEPLOYMENT_GUIDE_AR.md](DEPLOYMENT_GUIDE_AR.md)** - **دليل النشر بالعربية** 🆕
+  - شرح مبسط للمبتدئين
+  - خطوات واضحة ومفصلة
+  - حل المشاكل الشائعة
+
+#### ملفات التكوين الجاهزة | Ready Configuration Files
+- ✅ `Procfile` - Heroku, Railway
+- ✅ `app.json` - Heroku one-click deploy
+- ✅ `railway.json` - Railway configuration
+- ✅ `render.yaml` - Render configuration
+- ✅ `vercel.json` - Vercel configuration
+- ✅ `app.yaml` - Google Cloud App Engine
+- ✅ `azure-pipelines.yml` - Azure DevOps
+- ✅ `.do/app.yaml` - DigitalOcean App Platform
+- ✅ `Dockerfile` - Docker/Cloud Run
 
 #### أدلة أخرى | Other Guides
 - [XAMPP_QUICK_START.md](XAMPP_QUICK_START.md) - دليل سريع للتشغيل على XAMPP
@@ -79,11 +97,13 @@ python app.py
 - [DEPLOYMENT.md](DEPLOYMENT.md) - دليل النشر الشامل (نسخة سابقة)
 - [QUICK_DEPLOY.md](QUICK_DEPLOY.md) - النشر في 3 دقائق
 
-### 🚀 سكريبت النشر السريع | Quick Deploy Script
-```bash
-# استخدم السكريبت التفاعلي
-./quick_cloud_deploy.sh
-```
+### 🚀 النشر السريع | Quick Deploy
+
+#### نشر بنقرة واحدة | One-Click Deploy
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/Ali5829511/517)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Ali5829511/517)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Ali5829511/517)
 
 ### ⚡ خطوات سريعة للنشر على Railway (موصى به):
 1. سجل على https://railway.app
@@ -107,7 +127,10 @@ python app.py
 4. شغّل `start_flask_windows.bat`
 5. افتح `http://127.0.0.1:5000` ✅
 
-📚 للتفاصيل الكاملة، راجع [CLOUD_DEPLOYMENT_GUIDE.md](CLOUD_DEPLOYMENT_GUIDE.md)
+📚 للتفاصيل الكاملة، راجع:
+- [CLOUD_DEPLOYMENT_GUIDE.md](CLOUD_DEPLOYMENT_GUIDE.md) - الدليل الشامل
+- [CLOUD_DEPLOYMENT_QUICKSTART.md](CLOUD_DEPLOYMENT_QUICKSTART.md) - البدء السريع
+- [DEPLOYMENT_GUIDE_AR.md](DEPLOYMENT_GUIDE_AR.md) - دليل عربي مبسط
 
 تم التطوير بواسطة Manus AI
 
