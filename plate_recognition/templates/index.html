@@ -1,0 +1,300 @@
+<!-- templates/index.html - واجهة رئيسية عربية -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>نظام المخالفات المرورية - لوحة رئيسية</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { 
+      background: #f6f7fb;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .card { 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: none;
+      border-radius: 10px;
+    }
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: bold;
+      border-radius: 10px 10px 0 0 !important;
+    }
+    table img { 
+      max-height: 48px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .badge-open { 
+      background: #dc3545;
+    }
+    .badge-review { 
+      background: #ffc107;
+      color: #000;
+    }
+    .badge-closed { 
+      background: #198754;
+    }
+    .table-hover tbody tr:hover {
+      background-color: #f1f3f5;
+    }
+    .btn-custom {
+      border-radius: 20px;
+      padding: 8px 20px;
+    }
+    h3 {
+      color: #667eea;
+      font-weight: bold;
+    }
+    .list-group-item {
+      border: none;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <div class="text-center mb-4">
+    <h3 class="mb-3">🚗 الواجهة الرئيسية — الأحداث والمخالفات</h3>
+    <p class="text-muted">نظام متكامل للتعرف على اللوحات وتتبع المخالفات المرورية</p>
+  </div>
+
+  <div class="row g-3">
+    <!-- قسم الأحداث -->
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <i class="bi bi-camera"></i> أحدث الأحداث
+        </div>
+        <div class="card-body">
+          <!-- أدوات التصدير والفلترة -->
+          <div class="d-flex justify-content-between mb-3">
+            <div>
+              <button class="btn btn-sm btn-primary btn-custom" onclick="exportData('excel')">
+                📊 تصدير Excel
+              </button>
+              <button class="btn btn-sm btn-secondary btn-custom" onclick="exportData('html')">
+                🌐 تصدير HTML
+              </button>
+              <button class="btn btn-sm btn-danger btn-custom" onclick="exportData('pdf')">
+                📄 تصدير PDF
+              </button>
+            </div>
+            <div class="d-flex align-items-center">
+              <label class="form-label me-2 mb-0">الحد الأدنى للثقة:</label>
+              <input type="number" id="minConfidence" class="form-control form-control-sm" 
+                     style="width:100px" placeholder="80" />
+              <button class="btn btn-sm btn-outline-dark btn-custom ms-2" onclick="reload()">
+                🔄 تحديث
+              </button>
+            </div>
+          </div>
+
+          <!-- جدول الأحداث -->
+          <div class="table-responsive">
+            <table class="table table-sm table-striped table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>الصورة</th>
+                  <th>التاريخ/الوقت</th>
+                  <th>اللوحة</th>
+                  <th>الثقة %</th>
+                  <th>النوع</th>
+                  <th>الشركة</th>
+                  <th>اللون</th>
+                  <th>الكاميرا</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in rows %}
+                <tr>
+                  <td>
+                    {% if r.image_url %}
+                      <img src="{{ r.image_url }}" alt="img" loading="lazy"/>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td><small>{{ r.timestamp }}</small></td>
+                  <td><strong class="text-primary">{{ r.plate }}</strong></td>
+                  <td>
+                    <span class="badge bg-info">{{ r.confidence }}%</span>
+                  </td>
+                  <td>{{ r.type or '-' }}</td>
+                  <td>{{ r.make or '-' }}</td>
+                  <td>{{ r.color or '-' }}</td>
+                  <td><small>{{ r.camera_id }}</small></td>
+                </tr>
+                {% endfor %}
+                {% if not rows %}
+                <tr>
+                  <td colspan="8" class="text-center text-muted py-4">
+                    لا توجد أحداث لعرضها
+                  </td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- قسم المخالفات -->
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <i class="bi bi-exclamation-triangle"></i> المخالفات
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            {% for v in viols %}
+            <li class="list-group-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="mb-1">
+                    <strong class="text-dark">{{ v.plate }}</strong>
+                    <span class="text-muted"> — {{ v.type }}</span>
+                  </div>
+                  <small class="text-muted d-block">
+                    📅 {{ v.start_time }}
+                    {% if v.end_time %} → {{ v.end_time }}{% endif %}
+                  </small>
+                  <small class="d-block mt-1">
+                    <strong>التكرار:</strong> {{ v.count }} مرة
+                  </small>
+                  {% if v.notes %}
+                  <small class="text-muted d-block">{{ v.notes }}</small>
+                  {% endif %}
+                </div>
+                <span class="badge {% if v.status=='open' %}badge-open{% elif v.status=='closed' %}badge-closed{% else %}badge-review{% endif %}">
+                  {{ v.status }}
+                </span>
+              </div>
+            </li>
+            {% endfor %}
+            {% if not viols %}
+            <li class="list-group-item text-center text-muted">
+              ✅ لا توجد مخالفات
+            </li>
+            {% endif %}
+          </ul>
+          
+          <hr class="my-3">
+          
+          <!-- قسم الاستيراد -->
+          <div class="import-section">
+            <h6 class="mb-3">📥 استيراد من Excel</h6>
+            <form id="importForm">
+              <div class="mb-2">
+                <input type="file" name="file" class="form-control form-control-sm" 
+                       accept=".xlsx,.xls" required/>
+              </div>
+              <button class="btn btn-sm btn-outline-primary btn-custom w-100" 
+                      type="button" onclick="importExcel()">
+                ⬆️ استيراد البيانات
+              </button>
+            </form>
+            <div id="importResult" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- بطاقة الإحصائيات -->
+      <div class="card mt-3">
+        <div class="card-header">
+          📊 إحصائيات سريعة
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>إجمالي الأحداث:</span>
+            <strong class="text-primary">{{ rows|length }}</strong>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>إجمالي المخالفات:</span>
+            <strong class="text-danger">{{ viols|length }}</strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>المخالفات المفتوحة:</span>
+            <strong class="text-warning">
+              {{ viols|selectattr("status", "equalto", "open")|list|length }}
+            </strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function exportData(fmt){
+  const minConf = document.getElementById('minConfidence').value;
+  const body = { format: fmt, filter: {} };
+  if (minConf) body.filter.min_confidence = parseFloat(minConf);
+  
+  fetch('/api/export', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  }).then(async resp=>{
+    if(fmt==='html'){
+      const html = await resp.text();
+      const w = window.open();
+      w.document.write(html);
+      w.document.close();
+    } else {
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fmt==='excel' ? 'events.xlsx' : 'events.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  }).catch(err => {
+    alert('حدث خطأ أثناء التصدير: ' + err.message);
+  });
+}
+
+function importExcel(){
+  const form = document.getElementById('importForm');
+  const fileInput = form.querySelector('input[type="file"]');
+  
+  if (!fileInput.files.length) {
+    alert('الرجاء اختيار ملف Excel');
+    return;
+  }
+  
+  const fd = new FormData(form);
+  const resultDiv = document.getElementById('importResult');
+  resultDiv.innerHTML = '<small class="text-info">⏳ جاري الاستيراد...</small>';
+  
+  fetch('/api/import/excel', {
+    method:'POST',
+    body: fd
+  })
+  .then(r=>r.json())
+  .then(j=>{
+    resultDiv.innerHTML = `<small class="text-success">✅ ${j.message}</small>`;
+    setTimeout(()=>location.reload(), 1500);
+  })
+  .catch(err => {
+    resultDiv.innerHTML = `<small class="text-danger">❌ خطأ: ${err.message}</small>`;
+  });
+}
+
+function reload(){
+  const minConf = document.getElementById('minConfidence').value;
+  const url = minConf ? '/?min_confidence=' + minConf : '/';
+  location.href = url;
+}
+</script>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</body>
+</html>
