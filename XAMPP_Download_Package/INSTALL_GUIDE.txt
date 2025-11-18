@@ -1,0 +1,161 @@
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║           دليل التثبيت السريع - Quick Installation Guide                 ║
+║           نظام إدارة الإسكان الجامعي على XAMPP                            ║
+║           Housing Management System on XAMPP                              ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+📋 الخطوات الأساسية - Basic Steps:
+═══════════════════════════════════════════════════════════════════════════
+
+1️⃣ تثبيت XAMPP - Install XAMPP
+   ├─ حمّل من: https://www.apachefriends.org/download.html
+   ├─ ثبّت في: C:\xampp (Windows) أو /opt/lampp (Linux)
+   └─ تأكد من عمل Apache
+
+2️⃣ تثبيت Python 3.11+ - Install Python 3.11+
+   ├─ حمّل من: https://www.python.org/downloads/
+   ├─ ✅ حدد "Add Python to PATH" أثناء التثبيت
+   └─ تحقق: python --version
+
+3️⃣ نسخ المشروع - Copy Project
+   ├─ انسخ مجلد المشروع الكامل إلى:
+   │  Windows: C:\xampp\htdocs\housing-system
+   │  Linux:   /opt/lampp/htdocs/housing-system
+   └─ انسخ محتويات هذه الحزمة إلى نفس المجلد
+
+4️⃣ تثبيت المكتبات - Install Dependencies
+   ├─ افتح Command Prompt / Terminal
+   ├─ cd C:\xampp\htdocs\housing-system
+   └─ pip install -r requirements.txt
+
+5️⃣ إنشاء ملف .env - Create .env File
+   ├─ أنشئ ملف جديد اسمه .env
+   └─ أضف المحتوى التالي:
+   
+   OPENAI_API_KEY=your-api-key-here
+   FLASK_ENV=production
+   SECRET_KEY=change-this-to-random-string
+   DATABASE_PATH=housing_database.db
+   HOST=127.0.0.1
+   PORT=5000
+
+6️⃣ تشغيل النظام - Run the System
+   
+   🪟 Windows:
+   ────────────
+   انقر نقراً مزدوجاً على:
+   scripts\start_flask_windows.bat
+   
+   🐧 Linux:
+   ────────────
+   ./scripts/start_flask_linux.sh
+
+7️⃣ الوصول للنظام - Access the System
+   ├─ افتح المتصفح: http://127.0.0.1:5000
+   ├─ اسم المستخدم: admin
+   └─ كلمة المرور: Admin@2025
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ اختبار التثبيت - Test Installation:
+═══════════════════════════════════════════════════════════════════════════
+
+بعد نسخ الملفات، نفّذ:
+After copying files, run:
+
+   python tools/test_xampp_setup.py
+
+يجب أن ترى جميع الاختبارات تنجح:
+You should see all tests pass:
+
+   ✓ Python Version: PASSED
+   ✓ Required Modules: PASSED
+   ✓ Project Files: PASSED
+   ✓ Environment File: Check status
+   ✓ App Import: PASSED
+   ✓ Database: PASSED
+   ✓ Port Availability: PASSED
+
+═══════════════════════════════════════════════════════════════════════════
+
+📚 الوثائق الكاملة - Full Documentation:
+═══════════════════════════════════════════════════════════════════════════
+
+للحصول على تعليمات مفصلة، راجع:
+For detailed instructions, see:
+
+   📘 documentation/README_XAMPP_AR.md     (دليل شامل بالعربية)
+   📗 documentation/XAMPP_QUICK_START.md  (بدء سريع - 5 دقائق)
+   📙 documentation/XAMPP_DEPLOYMENT.md   (دليل تقني كامل)
+   📕 documentation/XAMPP_SETUP_CHECKLIST.md (قائمة تحقق)
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔧 طرق التشغيل - Deployment Methods:
+═══════════════════════════════════════════════════════════════════════════
+
+الطريقة 1: تشغيل مباشر (للتطوير)
+Method 1: Direct Run (Development)
+└─ استخدم السكريبتات في مجلد scripts/
+
+الطريقة 2: Apache Reverse Proxy (موصى بها)
+Method 2: Apache Reverse Proxy (Recommended)
+└─ راجع configuration/apache_vhost_config.conf
+
+الطريقة 3: mod_wsgi (للإنتاج)
+Method 3: mod_wsgi (Production)
+└─ استخدم configuration/housing.wsgi
+
+═══════════════════════════════════════════════════════════════════════════
+
+🐛 حل المشاكل الشائعة - Common Issues:
+═══════════════════════════════════════════════════════════════════════════
+
+❌ Python not found
+   الحل: أضف Python إلى PATH
+
+❌ Port 5000 already in use
+   الحل: غيّر PORT=8000 في ملف .env
+
+❌ Module not found
+   الحل: pip install -r requirements.txt
+
+❌ Database not found
+   الحل: تأكد من وجود housing_database.db في المجلد
+
+❌ Apache not working
+   الحل: أغلق Skype أو أي برنامج يستخدم المنفذ 80
+
+═══════════════════════════════════════════════════════════════════════════
+
+📞 الدعم والمساعدة - Support:
+═══════════════════════════════════════════════════════════════════════════
+
+📖 اقرأ الوثائق في مجلد documentation/
+📧 راجع XAMPP_INDEX.md للإرشادات
+🧪 استخدم test_xampp_setup.py للتحقق
+
+═══════════════════════════════════════════════════════════════════════════
+
+🎓 معلومات المشروع - Project Info:
+═══════════════════════════════════════════════════════════════════════════
+
+المؤسسة: جامعة الإمام محمد بن سعود الإسلامية
+Institution: Imam Muhammad bin Saud Islamic University
+
+النظام: نظام إدارة الإسكان الجامعي
+System: Faculty Housing Management System
+
+البيانات:
+- 165 مبنى | 165 buildings
+- 1,134 وحدة سكنية | 1,134 units
+- 1,057 ساكن | 1,057 residents
+
+═══════════════════════════════════════════════════════════════════════════
+
+✨ تم التطوير بواسطة GitHub Copilot
+   Developed with GitHub Copilot
+
+© 2025 جامعة الإمام محمد بن سعود الإسلامية

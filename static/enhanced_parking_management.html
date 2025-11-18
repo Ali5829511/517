@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة المواقف - نظام الإسكان</title>
+    <!-- Version: 2025-11-03-20:00 - Fixed parking data display with Arabic values -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Tajawal', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -38,7 +39,7 @@
         }
 
         .header h1 {
-            color: #667eea;
+            color: #1e3a5f;
             font-size: 28px;
             display: flex;
             align-items: center;
@@ -66,7 +67,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
             color: white;
         }
 
@@ -156,7 +157,7 @@
         }
 
         .content-box h2 {
-            color: #667eea;
+            color: #1e3a5f;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -183,7 +184,7 @@
         .search-filter input:focus,
         .search-filter select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #1e3a5f;
         }
 
         table {
@@ -193,7 +194,7 @@
         }
 
         thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
             color: white;
         }
 
@@ -288,7 +289,7 @@
         }
 
         .modal-content h2 {
-            color: #667eea;
+            color: #1e3a5f;
             margin-bottom: 25px;
         }
 
@@ -315,7 +316,7 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #1e3a5f;
         }
 
         .form-buttons {
@@ -449,7 +450,7 @@
                     <tbody id="parkingTableBody">
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 40px;">
-                                <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #667eea;"></i>
+                                <i class="fas fa-spinner fa-spin" style="font-size: 32px; color: #1e3a5f;"></i>
                                 <p style="margin-top: 15px; color: #666;">جاري تحميل البيانات...</p>
                             </td>
                         </tr>
