@@ -1,0 +1,186 @@
+# Example CI/CD Workflow for Cloud Deployment
+# مثال على سير عمل CI/CD للنشر السحابي
+#
+# هذا الملف مثال فقط - لا يتم تنفيذه تلقائياً
+# This is an example file only - it won't run automatically
+#
+# لاستخدامه، انسخه إلى .github/workflows/ وعدّله حسب احتياجاتك
+# To use it, copy to .github/workflows/ and modify for your needs
+
+name: Deploy to Cloud Platform
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # وظيفة الاختبار / Test job
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov flake8
+      
+      - name: Run linting
+        run: |
+          flake8 app.py database_api.py --count --select=E9,F63,F7,F82 --show-source --statistics
+      
+      - name: Run tests
+        run: |
+          pytest test_app.py -v
+  
+  # مثال: النشر إلى Railway / Example: Deploy to Railway
+  deploy-railway:
+    name: Deploy to Railway
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+      
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway up
+  
+  # مثال: النشر إلى Render / Example: Deploy to Render
+  deploy-render:
+    name: Deploy to Render
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Deploy to Render
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+  
+  # مثال: النشر إلى Heroku / Example: Deploy to Heroku
+  deploy-heroku:
+    name: Deploy to Heroku
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.14
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+  
+  # مثال: النشر إلى Google Cloud Run / Example: Deploy to Google Cloud Run
+  deploy-gcp:
+    name: Deploy to Google Cloud Run
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+      
+      - name: Build and Deploy to Cloud Run
+        run: |
+          gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/housing-app
+          gcloud run deploy housing-system \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/housing-app \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated
+  
+  # مثال: النشر إلى Azure / Example: Deploy to Azure
+  deploy-azure:
+    name: Deploy to Azure
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: housing-management-system
+          package: .
+  
+  # مثال: النشر إلى AWS Elastic Beanstalk / Example: Deploy to AWS EB
+  deploy-aws:
+    name: Deploy to AWS
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: housing-system
+          environment_name: housing-env
+          version_label: ${{ github.sha }}
+          region: us-east-1
+          deployment_package: .
+
+# ملاحظات / Notes:
+# 
+# 1. هذا الملف مثال فقط للتوضيح
+#    This file is an example for demonstration only
+#
+# 2. يجب إضافة الأسرار (Secrets) في GitHub Settings
+#    You must add Secrets in GitHub Settings
+#
+# 3. فعّل فقط المنصة التي تريد استخدامها
+#    Enable only the platform you want to use
+#
+# 4. راجع CLOUD_DEPLOYMENT_GUIDE.md للتفاصيل
+#    See CLOUD_DEPLOYMENT_GUIDE.md for details
