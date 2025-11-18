@@ -4,15 +4,18 @@
 import sys
 import os
 
-# إضافة المسار للاستيراد
-sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+# إضافة مسار plate_recognition للاستيراد
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'plate_recognition'))
 
 import pytest
 from datetime import datetime
 from fastapi.testclient import TestClient
-from plate_recognition.main import app
-from plate_recognition.database import SessionLocal, init_db
-from plate_recognition.models import Vehicle, Camera, Event, Violation
+
+# الاستيراد من داخل مجلد plate_recognition
+os.chdir(os.path.join(os.path.dirname(__file__), 'plate_recognition'))
+from main import app
+from database import SessionLocal, init_db
+from models import Vehicle, Camera, Event, Violation
 
 client = TestClient(app)
 
