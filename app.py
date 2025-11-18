@@ -321,7 +321,7 @@ def extract_plate():
             try:
                 # استخدام GPT-4 Vision لاستخراج رقم اللوحة
                 response = client.chat.completions.create(
-                    model="gpt-4.1-mini",
+                    model="gpt-4o-mini",
                     messages=[
                         {
                             "role": "user",

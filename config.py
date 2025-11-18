@@ -48,6 +48,10 @@ class DevelopmentConfig:
     GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
     GITHUB_AVAILABLE = bool(GITHUB_TOKEN and GITHUB_TOKEN != "your-github-token-here")
 
+    # ParkPow API
+    PARKPOW_API_TOKEN = os.environ.get("PARKPOW_API_TOKEN", "")
+    PARKPOW_AVAILABLE = bool(PARKPOW_API_TOKEN and PARKPOW_API_TOKEN != "your-parkpow-token-here")
+
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
     LOG_FILE = os.environ.get("LOG_FILE", "logs/app.log")
@@ -101,6 +105,10 @@ class ProductionConfig:
     # GitHub
     GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
     GITHUB_AVAILABLE = bool(GITHUB_TOKEN)
+
+    # ParkPow API
+    PARKPOW_API_TOKEN = os.environ.get("PARKPOW_API_TOKEN")
+    PARKPOW_AVAILABLE = bool(PARKPOW_API_TOKEN)
 
     # Logging
     LOG_LEVEL = os.environ.get("LOG_LEVEL", "WARNING")
