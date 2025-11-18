@@ -1,0 +1,35 @@
+# fly.toml - ملف تكوين Fly.io
+# Fly.io configuration file for Housing Management System
+# نظام إدارة الإسكان الجامعي
+
+app = "housing-system"
+primary_region = "iad"  # Washington D.C. - غيّره حسب موقعك | Change based on your location
+
+# Build configuration
+[build]
+
+# HTTP service configuration
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+# VM configuration - Free tier
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+
+# Environment variables (non-sensitive)
+[env]
+  FLASK_ENV = "production"
+  PORT = "8080"
+
+# Persistent storage (if needed for database/uploads)
+# Uncomment if you need persistent storage
+# [[mounts]]
+#   source = "housing_data"
+#   destination = "/app/data"
