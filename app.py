@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, send_from_directory, session, redirect
 import os
-import sqlite3
 import logging
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
