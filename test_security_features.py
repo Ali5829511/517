@@ -7,8 +7,12 @@ from app import app, OPENAI_AVAILABLE
 
 
 def test_session_cookie_secure():
-    """Test that session cookie security is enabled"""
-    assert app.config.get('SESSION_COOKIE_SECURE') is True
+    """Test that session cookie security is configured based on environment"""
+    import os
+    # In development, SESSION_COOKIE_SECURE should be False to allow HTTP
+    # In production, it should be True
+    expected_secure = os.getenv("FLASK_ENV") == "production"
+    assert app.config.get('SESSION_COOKIE_SECURE') == expected_secure
 
 
 def test_session_cookie_httponly():
