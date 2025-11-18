@@ -4,8 +4,14 @@
 
 ## 📚 التوثيق الشامل - Comprehensive Documentation
 
-**🆕 وثائق جديدة (17 نوفمبر 2025):**
-- ⭐ **[COMPREHENSIVE_FINAL_SUMMARY.md](COMPREHENSIVE_FINAL_SUMMARY.md)** - **الملخص النهائي الشامل - جميع الالتزامات مكتملة**
+**🆕 وثائق نظام التعرف على اللوحات (18 نوفمبر 2025):**
+- 🚗 **[PLATE_RECOGNITION_GUIDE.md](PLATE_RECOGNITION_GUIDE.md)** - **دليل شامل لنظام التعرف على اللوحات**
+- ⚡ **[plate_recognition/QUICKSTART.md](plate_recognition/QUICKSTART.md)** - تشغيل سريع في خطوة واحدة
+- 📖 **[plate_recognition/README.md](plate_recognition/README.md)** - توثيق تفصيلي كامل
+- 💡 **[USAGE_EXAMPLES.md](USAGE_EXAMPLES.md)** - أمثلة عملية شاملة (curl, Python, سيناريوهات)
+
+**وثائق النظام الأساسي (17 نوفمبر 2025):**
+- ⭐ **[COMPREHENSIVE_FINAL_SUMMARY.md](COMPREHENSIVE_FINAL_SUMMARY.md)** - الملخص النهائي الشامل
 - 📖 **[QUICK_USE_GUIDE.md](QUICK_USE_GUIDE.md)** - دليل الاستخدام السريع
 - 📊 **[COMPLETION_SUMMARY.md](COMPLETION_SUMMARY.md)** - تقرير شامل عن حالة المشروع
 - 🔒 **[SECURITY_NOTES.md](SECURITY_NOTES.md)** - ملاحظات أمنية مفصلة
@@ -13,18 +19,26 @@
 
 ## 🚀 التشغيل السريع
 
+### نظام إدارة الإسكان (Flask)
+```bash
+pip install -r requirements.txt
+export OPENAI_API_KEY="sk-your-key-here"  # اختياري
+python app.py
+# افتح: http://localhost:5000
+```
+
+### نظام التعرف على اللوحات (FastAPI) 🆕
+```bash
+./run_plate_system.sh
+# أو: cd plate_recognition && uvicorn main:app --reload
+# افتح: http://localhost:8000
+# التوثيق: http://localhost:8000/docs
+```
+
 ### المتطلبات
 - Python 3.11+
 - مفتاح OpenAI API (اختياري للميزات الذكية)
 - رمز GitHub PAT (اختياري لتكامل GitHub)
-
-### التثبيت
-```bash
-pip install -r requirements.txt
-export OPENAI_API_KEY="sk-your-key-here"  # اختياري
-export GITHUB_TOKEN="ghp_your-token-here"  # اختياري
-python app.py
-```
 
 ⚠️ **تحذير أمني**: لا تشارك المفاتيح السرية أو الرموز. احفظها في متغيرات البيئة فقط.
 
@@ -36,6 +50,17 @@ python app.py
 - 1,308 موقف
 
 ## 🆕 آخر التحديثات
+
+### 18 نوفمبر 2025 - نظام التعرف على اللوحات المرورية 🚗⭐
+- ✅ **نظام FastAPI متكامل** للتعرف على اللوحات وتتبع المخالفات
+- ✅ **4 جداول قاعدة بيانات** (vehicles, cameras, events, violations)
+- ✅ **API شامل** مع 9 endpoints (webhook, events, violations, export, import)
+- ✅ **تتبع مخالفات تلقائي** (التكرار، الدخول غير المصرح)
+- ✅ **تصدير/استيراد** (Excel, PDF, HTML)
+- ✅ **واجهة عربية احترافية** مع Bootstrap 5
+- ✅ **11 اختبار شامل** (100% نجاح)
+- ✅ **توثيق كامل** (4 ملفات جديدة)
+- 📖 راجع: [PLATE_RECOGNITION_GUIDE.md](PLATE_RECOGNITION_GUIDE.md)
 
 ### 4 نوفمبر 2025 - تحديث التوثيق والأمان ⭐
 - ✅ إضافة توثيق شامل جديد (4 ملفات)
