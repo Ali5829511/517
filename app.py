@@ -29,6 +29,8 @@ from database_api import (
     get_all_buildings,
     get_db_connection,
     get_comprehensive_statistics,
+    get_all_units,
+    get_units_statistics,
 )
 
 # Load environment variables from .env file
@@ -631,6 +633,28 @@ def api_get_parking():
     except Exception as e:
         logger.error(f"Error getting parking spots: {e}")
         return jsonify({"success": False, "error": "حدث خطأ أثناء جلب بيانات المواقف"}), 500
+
+
+@app.route("/api/units", methods=["GET"])
+def api_get_units():
+    """الحصول على جميع الوحدات السكنية"""
+    try:
+        units = get_all_units()
+        return jsonify({"success": True, "data": units})
+    except Exception as e:
+        logger.error(f"Error getting units: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب بيانات الوحدات السكنية"}), 500
+
+
+@app.route("/api/units-statistics", methods=["GET"])
+def api_get_units_statistics():
+    """الحصول على إحصائيات الوحدات السكنية"""
+    try:
+        stats = get_units_statistics()
+        return jsonify({"success": True, "data": stats})
+    except Exception as e:
+        logger.error(f"Error getting units statistics: {e}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء جلب إحصائيات الوحدات"}), 500
 
 
 @app.route("/api/statistics", methods=["GET"])
