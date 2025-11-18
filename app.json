@@ -1,0 +1,48 @@
+{
+  "name": "University Housing Management System",
+  "description": "نظام إدارة الإسكان الجامعي - Imam Muhammad bin Saud Islamic University",
+  "repository": "https://github.com/Ali5829511/517",
+  "logo": "https://www.imamu.edu.sa/Style%20Library/imamu2020/img/logo-ar.png",
+  "keywords": [
+    "flask",
+    "python",
+    "housing-management",
+    "university",
+    "ai",
+    "openai"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "FLASK_ENV": {
+      "description": "Flask environment mode",
+      "value": "production",
+      "required": true
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for Flask sessions (will be auto-generated if not provided)",
+      "generator": "secret",
+      "required": false
+    },
+    "OPENAI_API_KEY": {
+      "description": "OpenAI API key for AI features (optional - system works without it)",
+      "required": false
+    },
+    "DATABASE_PATH": {
+      "description": "Path to SQLite database file",
+      "value": "housing_database.db",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "stack": "heroku-22",
+  "addons": []
+}
