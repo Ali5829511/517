@@ -173,10 +173,14 @@ def get_statistics():
     cursor.execute("SELECT COUNT(*) as total FROM buildings")
     stats["totalBuildings"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM buildings WHERE building_type = 'عمارة'")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM buildings WHERE building_type = 'عمارة'"
+    )
     stats["totalApartmentBuildings"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM buildings WHERE building_type = 'فيلا'")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM buildings WHERE building_type = 'فيلا'"
+    )
     stats["totalVillas"] = cursor.fetchone()["total"]
 
     # إحصائيات الوحدات
@@ -206,17 +210,23 @@ def get_statistics():
     cursor.execute("SELECT COUNT(*) as total FROM parking_spots WHERE status = 'متاح'")
     stats["availableSpots"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM parking_spots WHERE spot_type = 'معاقين'")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM parking_spots WHERE spot_type = 'معاقين'"
+    )
     stats["disabledSpots"] = cursor.fetchone()["total"]
 
     # إحصائيات الملصقات
     cursor.execute("SELECT COUNT(*) as total FROM vehicle_stickers")
     stats["totalStickers"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM vehicle_stickers WHERE status = 'فعال'")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM vehicle_stickers WHERE status = 'فعال'"
+    )
     stats["activeStickers"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM vehicle_stickers WHERE status = 'ملغي'")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM vehicle_stickers WHERE status = 'ملغي'"
+    )
     stats["cancelledStickers"] = cursor.fetchone()["total"]
 
     conn.close()
@@ -418,7 +428,9 @@ def get_processed_images(limit=100, category=None):
 
     if category and category != "all":
         query += " WHERE pi.category = ?"
-        cursor.execute(query + " ORDER BY pi.processing_date DESC LIMIT ?", (category, limit))
+        cursor.execute(
+            query + " ORDER BY pi.processing_date DESC LIMIT ?", (category, limit)
+        )
     else:
         cursor.execute(query + " ORDER BY pi.processing_date DESC LIMIT ?", (limit,))
 
@@ -587,16 +599,24 @@ def get_processed_images_statistics():
     cursor.execute("SELECT COUNT(*) as total FROM processed_images")
     stats["total"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM processed_images WHERE category = 'normal'")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM processed_images WHERE category = 'normal'"
+    )
     stats["normal"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM processed_images WHERE category = 'disabled'")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM processed_images WHERE category = 'disabled'"
+    )
     stats["disabled"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM processed_images WHERE category = 'violation'")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM processed_images WHERE category = 'violation'"
+    )
     stats["violation"] = cursor.fetchone()["total"]
 
-    cursor.execute("SELECT COUNT(*) as total FROM processed_images WHERE resident_id IS NOT NULL")
+    cursor.execute(
+        "SELECT COUNT(*) as total FROM processed_images WHERE resident_id IS NOT NULL"
+    )
     stats["withResident"] = cursor.fetchone()["total"]
 
     cursor.execute("SELECT AVG(confidence) as avg FROM processed_images")
@@ -646,7 +666,7 @@ def get_all_units():
             b.building_type as buildingType
         FROM units u
         LEFT JOIN buildings b ON u.building_id = b.id
-        ORDER BY b.building_number, CAST(u.unit_number AS INTEGER)
+        ORDER BY b.building_number, u.id
     """
     )
     units = [dict(row) for row in cursor.fetchall()]
@@ -661,7 +681,7 @@ def get_units_statistics():
     """
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     # إحصائيات عامة
     cursor.execute(
         """
@@ -813,7 +833,11 @@ def get_comprehensive_statistics():
             "stickers_per_resident": round(stickers_per_resident, 2),
             "active_sticker_rate": round(
                 (
-                    (stickers_stats["active_stickers"] / stickers_stats["total_stickers"] * 100)
+                    (
+                        stickers_stats["active_stickers"]
+                        / stickers_stats["total_stickers"]
+                        * 100
+                    )
                     if stickers_stats["total_stickers"] > 0
                     else 0
                 ),
