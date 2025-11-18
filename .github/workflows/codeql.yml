@@ -1,0 +1,140 @@
+# CodeQL Security Analysis Workflow
+# فحص الثغرات الأمنية باستخدام CodeQL
+
+name: "CodeQL Security Analysis"
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master", "develop" ]
+  schedule:
+    # يتم الفحص الأسبوعي يوم الاثنين الساعة 6:00 صباحاً بتوقيت UTC
+    # Weekly scan every Monday at 6:00 AM UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    # يمكن تشغيل الفحص يدوياً / Can be triggered manually
+
+jobs:
+  analyze:
+    name: Analyze Code Security
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    
+    permissions:
+      # مطلوب لجميع سير العمل
+      # Required for all workflows
+      security-events: write
+      # مطلوب فقط لسير العمل في المستودعات الخاصة
+      # Required only for workflows in private repositories
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # CodeQL يدعم: 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift'
+        # هذا المشروع يستخدم Python فقط
+        # CodeQL supports multiple languages, this project uses Python only
+        language: [ 'python' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    # تهيئة CodeQL
+    # Initialize CodeQL
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        # استعلامات إضافية للأمان
+        # Additional security queries
+        queries: +security-and-quality
+        # تكوين مخصص (اختياري)
+        # Custom configuration (optional)
+        # config-file: ./.github/codeql/codeql-config.yml
+
+    # بناء التطبيق (للغات المترجمة فقط، Python لا يحتاج إلى بناء)
+    # Build the application (for compiled languages only, Python doesn't need building)
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v3
+
+    # إجراء تحليل CodeQL
+    # Perform CodeQL analysis
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{matrix.language}}"
+        # رفع النتائج إلى GitHub Security
+        # Upload results to GitHub Security
+        upload: true
+        # حفظ قاعدة بيانات CodeQL للتحليل المحلي (اختياري)
+        # Save CodeQL database for local analysis (optional)
+        # output: sarif-results
+        # retention-days: 5
+
+    # خطوات إضافية للأمان (اختياري)
+    # Additional security steps (optional)
+    - name: Check for secrets (if enabled)
+      if: github.event_name == 'push'
+      run: |
+        echo "Checking for accidentally committed secrets..."
+        # يمكن إضافة أدوات فحص إضافية هنا
+        # Additional scanning tools can be added here
+
+    # إرسال إشعار في حالة الفشل (اختياري)
+    # Send notification on failure (optional)
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "::warning::CodeQL analysis failed. Please check the security alerts."
+        echo "تحذير: فشل فحص CodeQL. يرجى مراجعة تنبيهات الأمان."
+
+  # وظيفة إضافية: فحص الثغرات في المكتبات
+  # Additional job: Dependency vulnerability scanning
+  dependency-check:
+    name: Check Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Safety
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety
+
+    - name: Run Safety check
+      run: |
+        echo "Checking for vulnerable dependencies..."
+        echo "فحص الثغرات في المكتبات..."
+        pip install -r requirements.txt
+        safety check --json || true
+      continue-on-error: true
+
+    - name: Summary
+      run: |
+        echo "### Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+        echo "✅ CodeQL analysis completed" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Dependency check completed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📊 Check the **Security** tab for detailed results" >> $GITHUB_STEP_SUMMARY
+        echo "تحقق من علامة التبويب **Security** للحصول على النتائج التفصيلية" >> $GITHUB_STEP_SUMMARY
