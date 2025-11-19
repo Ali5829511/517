@@ -71,8 +71,13 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
 
 # Secure session cookie configuration
-# SESSION_COOKIE_SECURE is only enabled in production to allow HTTP in development
-app.config["SESSION_COOKIE_SECURE"] = os.getenv("FLASK_ENV") == "production"
+# Set SESSION_COOKIE_SECURE based on environment, but default to True for security
+# This can be overridden by FLASK_ENV environment variable for local development
+if os.getenv("FLASK_ENV") == "development":
+    app.config["SESSION_COOKIE_SECURE"] = False  # Allow HTTP in local development
+else:
+    app.config["SESSION_COOKIE_SECURE"] = True  # Secure by default for production and tests
+
 app.config["SESSION_COOKIE_HTTPONLY"] = True  # Prevent JavaScript access to session cookie
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # CSRF protection
 

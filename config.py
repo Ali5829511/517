@@ -68,6 +68,7 @@ class TestingConfig(DevelopmentConfig):
     DEBUG = True
     DATABASE_PATH = ":memory:"  # Use in-memory database for tests
     WTF_CSRF_ENABLED = False  # Disable CSRF for testing
+    SESSION_COOKIE_SECURE = True  # Always require secure cookies in tests
 
 
 class ProductionConfig:
