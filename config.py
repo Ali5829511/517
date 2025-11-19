@@ -12,13 +12,25 @@ BASE_DIR = Path(__file__).resolve().parent
 # Flask Configuration
 
 
-class DevelopmentConfig:
+class Config:
+    """Base configuration"""
+
+    # Flask
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
+
+    # Session - secure defaults
+    SESSION_COOKIE_SECURE = True  # Require HTTPS for session cookies
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    PERMANENT_SESSION_LIFETIME = 3600  # 1 hour
+
+
+class DevelopmentConfig(Config):
     """Development configuration"""
 
     # Flask
     DEBUG = True
     TESTING = False
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 
     # Server
     HOST = "0.0.0.0"
@@ -34,11 +46,8 @@ class DevelopmentConfig:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max file size
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
-    # Session
-    SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Lax"
-    PERMANENT_SESSION_LIFETIME = 3600  # 1 hour
+    # Session - keep secure in development too for consistency
+    # If local development on HTTP is needed, override locally
 
     # OpenAI
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
@@ -68,10 +77,10 @@ class TestingConfig(DevelopmentConfig):
     DEBUG = True
     DATABASE_PATH = ":memory:"  # Use in-memory database for tests
     WTF_CSRF_ENABLED = False  # Disable CSRF for testing
-    SESSION_COOKIE_SECURE = True  # Always require secure cookies in tests
+    SESSION_COOKIE_SECURE = True  # Ensure secure cookies in tests
 
 
-class ProductionConfig:
+class ProductionConfig(Config):
     """Production configuration"""
 
     # Flask
@@ -93,11 +102,8 @@ class ProductionConfig:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 
-    # Session
-    SESSION_COOKIE_SECURE = True  # Require HTTPS
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Strict"
-    PERMANENT_SESSION_LIFETIME = 3600
+    # Session - inherit from Config base class with SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_SAMESITE = "Strict"  # Stricter in production
 
     # OpenAI
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
