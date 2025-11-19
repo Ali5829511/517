@@ -70,9 +70,9 @@ except Exception as e:
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.secret_key = secrets.token_hex(32)  # مفتاح سري للجلسات
 
-# Secure session cookie configuration
-# SESSION_COOKIE_SECURE is True by default (secure by default), disabled only for development
-app.config["SESSION_COOKIE_SECURE"] = os.getenv("FLASK_ENV") != "development"
+# Secure session cookie configuration with defensive defaults
+# Set SESSION_COOKIE_SECURE=True by default for security
+app.config["SESSION_COOKIE_SECURE"] = True  # Always enforce HTTPS for session cookies
 app.config["SESSION_COOKIE_HTTPONLY"] = True  # Prevent JavaScript access to session cookie
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # CSRF protection
 
