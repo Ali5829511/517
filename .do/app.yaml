@@ -1,0 +1,31 @@
+name: housing-management-system
+region: nyc
+services:
+  - name: web
+    github:
+      repo: Ali5829511/517
+      branch: main
+      deploy_on_push: true
+    build_command: pip install -r requirements.txt
+    run_command: gunicorn app:app --bind 0.0.0.0:8080 --workers 4 --timeout 120
+    environment_slug: python
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 8080
+    routes:
+      - path: /
+    health_check:
+      http_path: /
+    envs:
+      - key: FLASK_ENV
+        value: production
+        scope: RUN_TIME
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+        scope: BUILD_TIME
+      - key: OPENAI_API_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: DATABASE_PATH
+        value: housing_database.db
+        scope: RUN_TIME
