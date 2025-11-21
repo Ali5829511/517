@@ -1,5 +1,10 @@
 # نظام إدارة الإسكان الجامعي
 
+![Build Status](https://github.com/Ali5829511/517/workflows/Python%20Package%20using%20Conda/badge.svg)
+![Deployment](https://github.com/Ali5829511/517/workflows/Deployment%20Automation/badge.svg)
+![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
 نظام متكامل لإدارة إسكان أعضاء هيئة التدريس مع ميزات الذكاء الاصطناعي
 
 ## 📚 التوثيق الشامل - Comprehensive Documentation

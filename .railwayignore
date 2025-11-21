@@ -1,0 +1,51 @@
+# Railway Deployment - Files to ignore
+# ملفات لتجاهلها أثناء النشر على Railway
+
+# Development files
+.git/
+.github/
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Testing
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+
+# Temporary files
+*.log
+*.tmp
+*.bak
+*.old
+*.backup
+
+# Documentation (optional - uncomment if you want to exclude)
+# *.md
+# !README.md
+
+# Large test files
+*.xlsx
+*.csv
+
+# Local development
+.env.local
+.env.development
+
+# OS files
+.DS_Store
+Thumbs.db

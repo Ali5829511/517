@@ -26,3 +26,26 @@ def test_app_has_secret_key():
 def test_static_folder_exists():
     """Test that static folder is configured"""
     assert app.static_folder is not None
+
+
+def test_version_endpoint():
+    """Test that the version endpoint works"""
+    with app.test_client() as client:
+        response = client.get('/api/version')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data is not None
+        assert 'success' in data
+        assert data['success'] is True
+        assert 'data' in data
+        assert 'version' in data['data']
+        assert 'app_name' in data['data']
+
+
+def test_statistics_endpoint():
+    """Test that the statistics endpoint works"""
+    with app.test_client() as client:
+        response = client.get('/api/statistics')
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data is not None
