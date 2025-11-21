@@ -1,6 +1,22 @@
 # GitHub Copilot Instructions for University Housing Management System
 # نظام إدارة الإسكان الجامعي
 
+## Quick Reference
+
+**Essential Commands:**
+- `make install` - Install dependencies
+- `make test` - Run tests
+- `make lint` - Check code quality
+- `make dev` - Run development server
+- `make format` - Auto-format code with Black
+
+**Project Root:** `/home/runner/work/517/517` or current working directory  
+**Main Files:** `app.py`, `database_api.py`, `config.py`  
+**Database:** `housing_database.db` (SQLite3)  
+**Language:** Bilingual (Arabic/English) - maintain both in user-facing content
+
+---
+
 ## Project Overview
 
 This is a comprehensive Faculty Housing Management System (نظام إدارة الإسكان الجامعي) for Imam Muhammad bin Saud Islamic University. It's a Flask-based web application with AI-powered features for managing residential units, residents, vehicle stickers, and parking spots.
@@ -427,6 +443,41 @@ When requesting features, include:
 9. **Update tests**: Add tests for new functionality
 10. **Check dependencies**: Run security checks before adding new packages
 
+## Copilot Agent Guidelines
+
+### When Assisting with Code
+- **Always test changes**: Run `make test` and `make lint` after modifications
+- **Preserve Arabic content**: Never remove or corrupt Arabic text - use UTF-8 encoding
+- **Follow existing patterns**: Match the coding style and structure of existing files
+- **Think security-first**: Validate inputs, use parameterized queries, never expose secrets
+- **Document as you go**: Add docstrings for new functions with both Arabic and English
+
+### When Suggesting Solutions
+- **Provide runnable examples**: Include complete code snippets that can be tested
+- **Reference existing code**: Point to similar implementations in the codebase
+- **Consider the full stack**: Think about database, backend, frontend, and deployment impacts
+- **Suggest testing approaches**: Recommend how to test the proposed changes
+
+### When Creating New Features
+- **Start with database**: Consider if schema changes are needed (check `database_api.py`)
+- **Add API endpoints**: Follow the pattern in `app.py` with proper error handling
+- **Update frontend**: Add corresponding HTML/CSS/JS in `/static/` directory
+- **Provide translations**: Include both Arabic and English text for user-facing features
+- **Write tests**: Add test cases in `test_app.py` or new test files
+
+### Do Not
+- Remove or modify existing tests unless fixing a bug
+- Change core database schema without careful consideration
+- Disable security features or validation
+- Remove Arabic language support
+- Commit API keys or sensitive data
+- Break backward compatibility without discussion
+
 ---
 
 **Built with assistance from Manus AI for Imam Muhammad bin Saud Islamic University**
+
+**شارك في تأليف:**
+Co-authored-by: Ali5829511 <132597948+Ali5829511@users.noreply.github.com>
+
+HWGP - Housing Management System Project

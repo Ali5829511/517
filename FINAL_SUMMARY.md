@@ -127,7 +127,7 @@ python-dotenv==1.0.1
 
 ### **الخيار 1: Render.com (موصى به)**
 
-**المشكلة الحالية**: Repository MWMW لا يظهر في قائمة Render رغم أنه عام.
+**المشكلة الحالية**: Repository 517 لا يظهر في قائمة Render رغم أنه عام.
 
 **الحلول الممكنة**:
 1. **الانتظار**: قد يستغرق GitHub/Render بعض الوقت لتحديث الكاش (15-30 دقيقة)
@@ -138,7 +138,7 @@ python-dotenv==1.0.1
 ```bash
 1. افتح https://dashboard.render.com/
 2. اضغط "New" → "Web Service"
-3. اختر repository: Ali5829511/MWMW
+3. اختر repository: Ali5829511/517
 4. املأ البيانات:
    - Name: housing-system
    - Language: Python 3
@@ -159,7 +159,7 @@ Railway أسهل وأسرع من Render:
 1. افتح https://railway.app/
 2. سجل دخول بحساب GitHub
 3. اضغط "New Project" → "Deploy from GitHub repo"
-4. اختر Ali5829511/MWMW
+4. اختر Ali5829511/517
 5. Railway سيكتشف تلقائياً أنه Flask app
 6. انتظر حتى ينتهي النشر
 ```
@@ -182,7 +182,7 @@ Railway أسهل وأسرع من Render:
 2. أنشئ حساب مجاني
 3. افتح Bash console
 4. استنسخ المشروع:
-   git clone https://github.com/Ali5829511/MWMW.git
+   git clone https://github.com/Ali5829511/517.git
 5. ثبت المتطلبات:
    pip3 install -r requirements.txt
 6. أنشئ Web app من لوحة التحكم
@@ -209,7 +209,7 @@ Railway أسهل وأسرع من Render:
 1. افتح https://vercel.com/
 2. سجل دخول بحساب GitHub
 3. اضغط "New Project"
-4. اختر Ali5829511/MWMW
+4. اختر Ali5829511/517
 5. Vercel سيكتشف تلقائياً Flask
 6. اضغط "Deploy"
 ```
@@ -231,8 +231,8 @@ Railway أسهل وأسرع من Render:
 
 ```bash
 # 1. استنسخ المشروع
-git clone https://github.com/Ali5829511/MWMW.git
-cd MWMW
+git clone https://github.com/Ali5829511/517.git
+cd 517
 
 # 2. ثبت المتطلبات
 pip install -r requirements.txt
@@ -289,7 +289,7 @@ Password: Admin@2025
 ## 🆘 **الدعم والمساعدة**
 
 ### **روابط مفيدة**:
-- GitHub Repository: https://github.com/Ali5829511/MWMW
+- GitHub Repository: https://github.com/Ali5829511/517
 - Render Docs: https://render.com/docs
 - Railway Docs: https://docs.railway.app/
 - Flask Docs: https://flask.palletsprojects.com/

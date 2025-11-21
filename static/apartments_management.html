@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الشقق</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tajawal:700,400&display=swap">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Tajawal', Arial, sans-serif;
+            direction: rtl;
+            background: linear-gradient(120deg, #e0e7ef 0%, #f7fcff 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0 4px 16px #2e8bc055;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            width: 110px;
+            max-width: 100%;
+        }
+        h1 {
+            color: #0f3d68;
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #555;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .stat-card h3 {
+            font-size: 36px;
+            margin-bottom: 5px;
+        }
+        .stat-card p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .stat-card.occupied {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .stat-card.vacant {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .units-table {
+            margin: 30px auto 0 auto;
+            border-collapse: collapse;
+            width: 100%;
+            background: #fafbfc;
+            border-radius: 10px;
+            box-shadow: 0 1px 8px #2e8bc022;
+            overflow: hidden;
+        }
+        .units-table th, .units-table td {
+            border: 1px solid #e0e7ef;
+            padding: 12px 15px;
+            font-size: 15px;
+            text-align: center;
+        }
+        .units-table th {
+            background: #e6f1fc;
+            color: #2e8bc0;
+            font-weight: 700;
+        }
+        .units-table td {
+            color: #353e4d;
+        }
+        .units-table tr:hover {
+            background-color: #f5f8fb;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .status-occupied {
+            background-color: #fee;
+            color: #c33;
+        }
+        .status-vacant {
+            background-color: #efe;
+            color: #3c3;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .units-table {
+                font-size: 13px;
+            }
+            .units-table th, .units-table td {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-container">
+            <img src="/static/imam_university_logo.png" alt="شعار جامعة الإمام محمد بن سعود الإسلامية" />
+        </div>
+        <h1>إدارة الشقق السكنية</h1>
+        <p class="subtitle">قائمة الشقق في العمارات السكنية</p>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <h3>1,020</h3>
+                <p>إجمالي الشقق</p>
+            </div>
+            <div class="stat-card occupied">
+                <h3>982</h3>
+                <p>الشقق المشغولة</p>
+            </div>
+            <div class="stat-card vacant">
+                <h3>38</h3>
+                <p>الشقق الشاغرة</p>
+            </div>
+        </div>
+
+        <table class="units-table">
+            <thead>
+                <tr>
+                    <th>رقم الشقة</th>
+                    <th>رقم العمارة</th>
+                    <th>الحالة</th>
+                    <th>رقم الوحدة</th>
+                </tr>
+            </thead>
+            <tbody>
+<tr><td>شقة1</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>1</td></tr>
+<tr><td>شقة2</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>2</td></tr>
+<tr><td>شقة3</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>3</td></tr>
+<tr><td>شقة4</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>4</td></tr>
+<tr><td>شقة5</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>5</td></tr>
+<tr><td>شقة6</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>6</td></tr>
+<tr><td>شقة7</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>7</td></tr>
+<tr><td>شقة8</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>8</td></tr>
+<tr><td>شقة9</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>9</td></tr>
+<tr><td>شقة10</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>10</td></tr>
+<tr><td>شقة11</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>11</td></tr>
+<tr><td>شقة12</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>12</td></tr>
+<tr><td>شقة13</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>13</td></tr>
+<tr><td>شقة14</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>14</td></tr>
+<tr><td>شقة15</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>15</td></tr>
+<tr><td>شقة16</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>16</td></tr>
+<tr><td>شقة17</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>17</td></tr>
+<tr><td>شقة18</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>18</td></tr>
+<tr><td>شقة19</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>19</td></tr>
+<tr><td>شقة20</td><td>عمارة 1</td><td><span class="status-badge status-occupied">مشغول</span></td><td>20</td></tr>
+<tr><td>شقة1</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>1</td></tr>
+<tr><td>شقة2</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>2</td></tr>
+<tr><td>شقة3</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>3</td></tr>
+<tr><td>شقة4</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>4</td></tr>
+<tr><td>شقة5</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>5</td></tr>
+<tr><td>شقة6</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>6</td></tr>
+<tr><td>شقة7</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>7</td></tr>
+<tr><td>شقة8</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>8</td></tr>
+<tr><td>شقة9</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>9</td></tr>
+<tr><td>شقة10</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>10</td></tr>
+<tr><td>شقة11</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>11</td></tr>
+<tr><td>شقة12</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>12</td></tr>
+<tr><td>شقة13</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>13</td></tr>
+<tr><td>شقة14</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>14</td></tr>
+<tr><td>شقة15</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>15</td></tr>
+<tr><td>شقة16</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>16</td></tr>
+<tr><td>شقة17</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>17</td></tr>
+<tr><td>شقة18</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>18</td></tr>
+<tr><td>شقة19</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>19</td></tr>
+<tr><td>شقة20</td><td>عمارة 2</td><td><span class="status-badge status-occupied">مشغول</span></td><td>20</td></tr>
+<tr><td>شقة1</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>1</td></tr>
+<tr><td>شقة2</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>2</td></tr>
+<tr><td>شقة3</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>3</td></tr>
+<tr><td>شقة4</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>4</td></tr>
+<tr><td>شقة5</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>5</td></tr>
+<tr><td>شقة6</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>6</td></tr>
+<tr><td>شقة7</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>7</td></tr>
+<tr><td>شقة8</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>8</td></tr>
+<tr><td>شقة9</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>9</td></tr>
+<tr><td>شقة10</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>10</td></tr>
+<tr><td>شقة11</td><td>عمارة 3</td><td><span class="status-badge status-vacant">شاغر</span></td><td>11</td></tr>
+<tr><td>شقة12</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>12</td></tr>
+<tr><td>شقة13</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>13</td></tr>
+<tr><td>شقة14</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>14</td></tr>
+<tr><td>شقة15</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>15</td></tr>
+<tr><td>شقة16</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>16</td></tr>
+<tr><td>شقة17</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>17</td></tr>
+<tr><td>شقة18</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>18</td></tr>
+<tr><td>شقة19</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>19</td></tr>
+<tr><td>شقة20</td><td>عمارة 3</td><td><span class="status-badge status-occupied">مشغول</span></td><td>20</td></tr>
+<tr><td>شقة1</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>1</td></tr>
+<tr><td>شقة2</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>2</td></tr>
+<tr><td>شقة3</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>3</td></tr>
+<tr><td>شقة4</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>4</td></tr>
+<tr><td>شقة5</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>5</td></tr>
+<tr><td>شقة6</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>6</td></tr>
+<tr><td>شقة7</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>7</td></tr>
+<tr><td>شقة8</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>8</td></tr>
+<tr><td>شقة9</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>9</td></tr>
+<tr><td>شقة10</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>10</td></tr>
+<tr><td>شقة11</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>11</td></tr>
+<tr><td>شقة12</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>12</td></tr>
+<tr><td>شقة13</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>13</td></tr>
+<tr><td>شقة14</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>14</td></tr>
+<tr><td>شقة15</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>15</td></tr>
+<tr><td>شقة16</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>16</td></tr>
+<tr><td>شقة17</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>17</td></tr>
+<tr><td>شقة18</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>18</td></tr>
+<tr><td>شقة19</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>19</td></tr>
+<tr><td>شقة20</td><td>عمارة 4</td><td><span class="status-badge status-occupied">مشغول</span></td><td>20</td></tr>
+<tr><td>شقة1</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>1</td></tr>
+<tr><td>شقة2</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>2</td></tr>
+<tr><td>شقة3</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>3</td></tr>
+<tr><td>شقة4</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>4</td></tr>
+<tr><td>شقة5</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>5</td></tr>
+<tr><td>شقة6</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>6</td></tr>
+<tr><td>شقة7</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>7</td></tr>
+<tr><td>شقة8</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>8</td></tr>
+<tr><td>شقة9</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>9</td></tr>
+<tr><td>شقة10</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>10</td></tr>
+<tr><td>شقة11</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>11</td></tr>
+<tr><td>شقة12</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>12</td></tr>
+<tr><td>شقة13</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>13</td></tr>
+<tr><td>شقة14</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>14</td></tr>
+<tr><td>شقة15</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>15</td></tr>
+<tr><td>شقة16</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>16</td></tr>
+<tr><td>شقة17</td><td>عمارة 5</td><td><span class="status-badge status-vacant">شاغر</span></td><td>17</td></tr>
+<tr><td>شقة18</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>18</td></tr>
+<tr><td>شقة19</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>19</td></tr>
+<tr><td>شقة20</td><td>عمارة 5</td><td><span class="status-badge status-occupied">مشغول</span></td><td>20</td></tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -384,7 +384,10 @@ for (resident_id,) in all_residents:
             "و",
             "ي",
         ]
-        plate_number = f"{random.choice(arabic_letters)} {random.choice(arabic_letters)} {random.choice(arabic_letters)} {random.randint(1000, 9999)}"
+        plate_number = (
+            f"{random.choice(arabic_letters)} {random.choice(arabic_letters)} "
+            f"{random.choice(arabic_letters)} {random.randint(1000, 9999)}"
+        )
 
         vehicle_type = random.choice(vehicle_types)
         vehicle_color = random.choice(vehicle_colors)
@@ -393,7 +396,10 @@ for (resident_id,) in all_residents:
 
         cursor.execute(
             """
-            INSERT INTO vehicle_stickers (sticker_number, plate_number, resident_id, vehicle_type, vehicle_color, issue_date, status)
+            INSERT INTO vehicle_stickers (
+                sticker_number, plate_number, resident_id,
+                vehicle_type, vehicle_color, issue_date, status
+            )
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
             (

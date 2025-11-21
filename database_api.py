@@ -628,6 +628,57 @@ def get_all_buildings():
     return buildings
 
 
+def get_all_units():
+    """
+    الحصول على جميع الوحدات السكنية مع معلومات المباني
+    Get all residential units with building information
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT
+            u.id,
+            u.unit_number as unitNumber,
+            u.unit_type as unitType,
+            u.status,
+            b.building_number as buildingNumber,
+            b.building_type as buildingType
+        FROM units u
+        LEFT JOIN buildings b ON u.building_id = b.id
+        ORDER BY b.building_number, CAST(u.unit_number AS INTEGER)
+    """
+    )
+    units = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return units
+
+
+def get_units_statistics():
+    """
+    الحصول على إحصائيات الوحدات السكنية
+    Get residential units statistics
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # إحصائيات عامة
+    cursor.execute(
+        """
+        SELECT
+            COUNT(*) as total_units,
+            SUM(CASE WHEN status = 'مشغول' THEN 1 ELSE 0 END) as occupied_units,
+            SUM(CASE WHEN status = 'شاغر' THEN 1 ELSE 0 END) as vacant_units,
+            SUM(CASE WHEN unit_type = 'شقة' THEN 1 ELSE 0 END) as apartments_count,
+            SUM(CASE WHEN unit_type = 'فيلا' THEN 1 ELSE 0 END) as villas_count
+        FROM units
+    """
+    )
+    stats = dict(cursor.fetchone())
+    conn.close()
+    return stats
+
+
 def get_comprehensive_statistics():
     """
     الحصول على إحصائيات شاملة للنظام
@@ -761,9 +812,11 @@ def get_comprehensive_statistics():
             "parking_utilization": round(parking_utilization, 1),
             "stickers_per_resident": round(stickers_per_resident, 2),
             "active_sticker_rate": round(
-                (stickers_stats["active_stickers"] / stickers_stats["total_stickers"] * 100)
-                if stickers_stats["total_stickers"] > 0
-                else 0,
+                (
+                    (stickers_stats["active_stickers"] / stickers_stats["total_stickers"] * 100)
+                    if stickers_stats["total_stickers"] > 0
+                    else 0
+                ),
                 1,
             ),
         },

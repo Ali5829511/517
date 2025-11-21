@@ -1,55 +1,103 @@
-# Docker - Files to ignore
-# ملفات لتجاهلها أثناء بناء Docker
+# .dockerignore for University Housing Management System
+# نظام إدارة الإسكان الجامعي
 
-# Git
-.git/
+# Git files
+.git
 .gitignore
-.github/
+.github
 
 # Python cache
-__pycache__/
+__pycache__
 *.py[cod]
 *$py.class
 *.so
-.pytest_cache/
-.mypy_cache/
+.Python
 
 # Virtual environments
-venv/
 env/
+venv/
 ENV/
-.venv/
-pip-log.txt
+env.bak/
+venv.bak/
 
-# Testing
-.coverage
-htmlcov/
-.tox/
-coverage.xml
-*.cover
-
-# Documentation
-*.md
-!README.md
-
-# Development
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# Temporary files
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Documentation (not needed in container)
+*.md
+!README.md
+docs/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Logs (will be created at runtime)
 *.log
-*.tmp
-*.bak
-uploads/
-processed_images/
 logs/
 
-# OS
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# Large data files
+# Uploaded files (will be created at runtime)
+uploads/*
+processed_images/*
+
+# Excel files (already in database)
 *.xlsx
+*.xls
 *.csv
+
+# Backup files
+*.bak
+*.backup
+
+# Shell scripts (if not needed)
+backup_system.bat
+backup_system.sh
+deploy_test.sh
+check_pr_conflicts.sh
+AUTO_COMPLETE_PRS.sh
+EXECUTE_PR_PLAN.sh
+
+# Development scripts
+run_local.bat
+run_local.sh
+setup_dev.sh
+
+# CI/CD files (not needed in production container)
+.circleci/
+.travis.yml
+azure-pipelines.yml
+
+# Database backups
+*.db.backup
+*.sqlite3.backup
+
+# Node modules (if any)
+node_modules/
+package-lock.json
+yarn.lock
